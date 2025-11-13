@@ -4,6 +4,7 @@ OpenAI API ile özet, sorular ve flashcard üretme fonksiyonları
 """
 
 import json
+import random
 from typing import Dict, List, Any
 from openai import OpenAI
 from config import Config
@@ -346,6 +347,23 @@ Lütfen sadece JSON formatında yanıt ver."""
                 response_clean = response_clean[:-3]
             
             questions = json.loads(response_clean.strip())
+            
+            # Seçenekleri randomize et (doğru cevabı farklı şıklara dağıt)
+            for question in questions:
+                if 'options' in question and 'correct_answer' in question:
+                    options = question['options']
+                    correct_index = question['correct_answer']
+                    
+                    # Doğru cevabı sakla
+                    correct_answer = options[correct_index]
+                    
+                    # Seçenekleri karıştır
+                    random.shuffle(options)
+                    
+                    # Yeni doğru cevap indeksini bul
+                    new_correct_index = options.index(correct_answer)
+                    question['correct_answer'] = new_correct_index
+            
             return questions
         except json.JSONDecodeError:
             # JSON parse edilemezse, basit format döndür
@@ -415,6 +433,21 @@ Lütfen sadece JSON formatında yanıt ver."""
                 response_clean = response_clean[:-3]
             
             questions = json.loads(response_clean.strip())
+            
+            # Kısa cevap için seçenekleri randomize et (ilk eleman doğru cevap)
+            for question in questions:
+                if 'options' in question and len(question['options']) > 0:
+                    options = question['options']
+                    correct_answer = options[0]  # İlk eleman doğru cevap
+                    
+                    # Seçenekleri karıştır
+                    random.shuffle(options)
+                    
+                    # Doğru cevabın yeni pozisyonunu answer alanına kaydet
+                    question['answer'] = correct_answer
+                    # options dizisinde doğru cevabın indeksini de sakla
+                    question['correct_answer_index'] = options.index(correct_answer)
+            
             return questions
         except json.JSONDecodeError:
             return [{
@@ -480,6 +513,19 @@ Lütfen sadece JSON formatında yanıt ver."""
                 response_clean = response_clean[:-3]
             
             questions = json.loads(response_clean.strip())
+            
+            # Boş doldurma için seçenekleri randomize et
+            for question in questions:
+                if 'options' in question and 'answer' in question:
+                    options = question['options']
+                    correct_answer = question['answer']
+                    
+                    # Seçenekleri karıştır
+                    random.shuffle(options)
+                    
+                    # Doğru cevabın yeni pozisyonunu güncelle
+                    question['answer'] = correct_answer  # answer alanını koru
+            
             return questions
         except json.JSONDecodeError:
             return [{

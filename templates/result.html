@@ -488,7 +488,7 @@
                             <strong>{{ q.question }}</strong>
                         </div>
                         {% for option in q.options %}
-                        <div class="option quiz-option {% if loop.index0 == q.correct_answer %}correct-answer{% endif %}" 
+                        <div class="option quiz-option" 
                              data-option-index="{{ loop.index0 }}"
                              data-correct="{% if loop.index0 == q.correct_answer %}true{% else %}false{% endif %}"
                              data-question="mc-{{ loop.index }}"
@@ -526,7 +526,7 @@
                         (<span id="percentage-short-answer">0</span>%)
                     </div>
                     {% for q in results.short_answer %}
-                    <div class="question-card" data-question-id="sa-{{ loop.index }}" data-correct-answer="{{ q.answer }}">
+                    <div class="question-card" data-question-id="sa-{{ loop.index }}" data-correct-answer="{{ q.answer }}" {% if q.correct_answer_index is defined %}data-correct-index="{{ q.correct_answer_index }}"{% endif %}>
                         <div class="mb-3">
                             <span class="question-number">{{ loop.index }}</span>
                             <strong>{{ q.question }}</strong>
@@ -534,13 +534,15 @@
                         {% if q.options %}
                         <!-- Çeldirici seçenekler varsa çoktan seçmeli gibi göster -->
                         {% for option in q.options %}
-                        <div class="option quiz-option {% if option == q.answer %}correct-answer{% endif %}" 
+                        <div class="option quiz-option" 
                              data-option-value="{{ option }}"
-                             data-correct="{% if option == q.answer %}true{% else %}false{% endif %}"
+                             data-correct="{% if q.correct_answer_index is defined and loop.index0 == q.correct_answer_index %}true{% elif option == q.answer %}true{% else %}false{% endif %}"
                              data-question="sa-{{ loop.index }}"
                              onclick="selectAnswerQuiz(this, 'sa-{{ loop.index }}', '{{ q.answer }}')">
                             <strong>{{ ['A', 'B', 'C', 'D'][loop.index0] }})</strong> {{ option }}
-                            {% if option == q.answer %}
+                            {% if q.correct_answer_index is defined and loop.index0 == q.correct_answer_index %}
+                            <i class="bi bi-check-circle-fill text-success float-end answer-icon"></i>
+                            {% elif option == q.answer %}
                             <i class="bi bi-check-circle-fill text-success float-end answer-icon"></i>
                             {% endif %}
                         </div>
@@ -586,7 +588,7 @@
                         </div>
                         {% if q.options %}
                         {% for option in q.options %}
-                        <div class="option quiz-option {% if option == q.answer %}correct-answer{% endif %}" 
+                        <div class="option quiz-option" 
                              data-option-value="{{ option }}"
                              data-correct="{% if option == q.answer %}true{% else %}false{% endif %}"
                              data-question="fb-{{ loop.index }}"
@@ -626,9 +628,10 @@
                     {% for q in results.true_false %}
                     <div class="true-false-card" data-question-id="tf-{{ loop.index }}" data-correct-answer="{% if q.is_true %}true{% else %}false{% endif %}">
                         <div class="d-flex justify-content-between align-items-start mb-2">
-                            <div style="flex: 1;">
+                            <div style="flex: 1; display: flex; align-items: center; gap: 10px;">
                                 <span class="question-number">{{ loop.index }}</span>
                                 <strong>{{ q.statement }}</strong>
+                                <span class="answer-status-icon" style="display: none; font-size: 1.5em;"></span>
                             </div>
                             <div class="quiz-tf-buttons" style="margin-left: 15px; display: flex;">
                                 <button class="btn btn-outline-success btn-sm quiz-tf-btn" 
@@ -744,6 +747,12 @@
                 resetQuizSelections(type);
                 scoresCalculated[type] = false;
                 userAnswers[type] = {};
+                
+                // Skoru sıfırla
+                const scoreElement = document.getElementById('score-' + type);
+                const percentageElement = document.getElementById('percentage-' + type);
+                if (scoreElement) scoreElement.textContent = '0';
+                if (percentageElement) percentageElement.textContent = '0';
             } else {
                 // Quiz modu kapatılıyor
                 tabPane.classList.remove('quiz-mode-active');
@@ -794,9 +803,20 @@
                 btn.disabled = false;
             });
             
+            // Doğru-yanlış ikonları
+            tabPane.querySelectorAll('.answer-status-icon').forEach(icon => {
+                icon.innerHTML = '';
+                icon.style.display = 'none';
+            });
+            
             // Kısa cevap textarea'ları
             tabPane.querySelectorAll('.quiz-textarea').forEach(textarea => {
                 textarea.value = '';
+            });
+            
+            // Açıklamaları ve cevapları gizle
+            tabPane.querySelectorAll('.answer-explanation, .answer-reveal, .answer-icon').forEach(el => {
+                el.style.display = 'none';
             });
         }
         
@@ -864,7 +884,28 @@
         
         // Skor hesapla (tüm soru tipleri için)
         function calculateScore(type) {
-            if (!quizModeActive[type] || scoresCalculated[type]) return;
+            if (!quizModeActive[type]) return;
+            
+            // Eğer skor daha önce hesaplanmışsa, önce seçimleri sıfırla
+            if (scoresCalculated[type]) {
+                // Sadece görsel işaretleri temizle, kullanıcı cevaplarını koru
+                const tabPane = document.getElementById(type);
+                tabPane.querySelectorAll('.user-selected-correct, .user-selected-wrong, .show-correct-answer, .selected-correct, .selected-wrong').forEach(el => {
+                    el.classList.remove('user-selected-correct', 'user-selected-wrong', 'show-correct-answer', 'selected-correct', 'selected-wrong');
+                });
+                tabPane.querySelectorAll('.answer-icon, .answer-explanation, .answer-reveal, .answer-status-icon').forEach(el => {
+                    el.style.display = 'none';
+                    if (el.classList.contains('answer-status-icon')) {
+                        el.innerHTML = '';
+                    }
+                });
+                tabPane.querySelectorAll('.quiz-option, .quiz-tf-btn').forEach(el => {
+                    el.style.pointerEvents = '';
+                    if (el.classList.contains('quiz-tf-btn')) {
+                        el.disabled = false;
+                    }
+                });
+            }
             
             const tabPane = document.getElementById(type);
             const questionCards = tabPane.querySelectorAll('.question-card, .true-false-card');
@@ -941,18 +982,29 @@
                     const userSelectedBtn = userAnswer !== undefined ? 
                         card.querySelector(`.quiz-tf-btn[data-value="${userAnswer}"]`) : null;
                     const correctBtn = card.querySelector(`.quiz-tf-btn[data-value="${correctAnswer}"]`);
+                    const statusIcon = card.querySelector('.answer-status-icon');
                     
                     // Doğru cevabı göster
                     if (answerBadge) answerBadge.style.display = 'inline-block';
                     if (correctBtn) correctBtn.classList.add('selected-correct');
                     
-                    // Kullanıcı cevabını kontrol et
+                    // Kullanıcı cevabını kontrol et ve ikon ekle
                     if (userSelectedBtn) {
                         if (userAnswer === correctAnswer) {
                             userSelectedBtn.classList.add('selected-correct');
                             correctCount++;
+                            // Yeşil tik ikonu
+                            if (statusIcon) {
+                                statusIcon.innerHTML = '<i class="bi bi-check-circle-fill text-success"></i>';
+                                statusIcon.style.display = 'inline-block';
+                            }
                         } else {
                             userSelectedBtn.classList.add('selected-wrong');
+                            // Kırmızı çarpı ikonu
+                            if (statusIcon) {
+                                statusIcon.innerHTML = '<i class="bi bi-x-circle-fill text-danger"></i>';
+                                statusIcon.style.display = 'inline-block';
+                            }
                         }
                     }
                     
@@ -1020,11 +1072,7 @@
             
             scoresCalculated[type] = true;
             
-            // Skor hesapla butonunu gizle
-            const calculateBtn = document.getElementById('calculate-score-' + type);
-            if (calculateBtn) {
-                calculateBtn.style.display = 'none';
-            }
+            // Skor hesapla butonunu gizleme - kullanıcı tekrar hesaplayabilir
         }
         
         // Yazdırma özelliği için
