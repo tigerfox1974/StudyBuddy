@@ -274,35 +274,64 @@ Lütfen özetini yapılandırılmış Markdown formatında ver."""
 
         return self._call_openai(prompt, temperature=0.5)
     
-    def generate_multiple_choice(self, text: str, count: int = 5) -> List[Dict[str, Any]]:
+    def generate_multiple_choice(self, text: str, count: int = 5, level: str = 'high_school', user_type: str = 'student') -> List[Dict[str, Any]]:
         """
-        Çoktan seçmeli sorular üretir
+        Seviyeye uygun çoktan seçmeli sorular üretir
         
         Args:
             text: Soru üretilecek metin
             count: Üretilecek soru sayısı
+            level: Kullanıcı seviyesi
+            user_type: Kullanıcı tipi
             
         Returns:
-            Soru listesi [{"question": "...", "options": ["A", "B", "C", "D"], "correct": 0}]
+            Soru listesi [{"question": "...", "options": [...], "correct_answer": 0, "difficulty": "simple"}]
         """
-        prompt = f"""Aşağıdaki metinden {count} adet çoktan seçmeli soru üret.
-Her soru için 4 seçenek (A, B, C, D) ver ve doğru cevabı belirt.
-Sorular metindeki önemli kavramları ve bilgileri test etmeli.
+        level_config = Config.LEVEL_SETTINGS.get(level, Config.LEVEL_SETTINGS['high_school'])
+        level_name = level_config['name']
+        difficulty_dist = level_config['difficulty']
+        
+        # Zorluk dağılımını hesapla
+        simple_count = int(count * difficulty_dist['simple'] / 100)
+        medium_count = int(count * difficulty_dist['medium'] / 100)
+        advanced_count = int(count * difficulty_dist['advanced'] / 100)
+        academic_count = count - simple_count - medium_count - advanced_count
+        
+        prompt = f"""Aşağıdaki metinden {level_name} seviyesine uygun {count} adet çoktan seçmeli soru üret.
+
+HEDEF KİTLE: {level_name}
+KULLANICI TİPİ: {"Öğrenci" if user_type == "student" else "Öğretmen (sınıf için hazırlıyor)"}
+
+ZORLUK DAĞILIMI (mutlaka uyulmalı):
+- {simple_count} adet BASIT soru (temel kavramlar, tanımlar, basit ilişkiler)
+- {medium_count} adet ORTA soru (kavramlar arası ilişkiler, neden-sonuç, karşılaştırma)
+- {advanced_count} adet İLERİ soru (analiz, sentez, derinlemesine anlama)
+{f"- {academic_count} adet AKADEMİK soru (eleştirel düşünme, karmaşık ilişkiler)" if academic_count > 0 else ""}
+
+ÖNEMLİ KURALLAR:
+1. Metindeki BAŞLIKLARI, ÜNİTELERİ ve KONU BAŞLIKLARINI tespit et
+2. Her önemli konudan MUTLAKA sorular sor
+3. Sorular içeriği ÖĞRETİR nitelikte olmalı, sadece ezber değil
+4. Yanlış şıklar mantıklı ama yanlış olmalı (çeldirici olmalı)
+5. Dili seviyeye uygun tut
+6. Her soruya detaylı açıklama ekle
 
 Yanıtını JSON formatında ver:
 [
   {{
-    "question": "Soru metni?",
-    "options": ["A seçeneği", "B seçeneği", "C seçeneği", "D seçeneği"],
+    "question": "Soru metni",
+    "options": ["Seçenek A", "Seçenek B", "Seçenek C", "Seçenek D"],
     "correct_answer": 0,
-    "explanation": "Doğru cevabın kısa açıklaması"
+    "difficulty": "simple",
+    "topic": "Konu başlığı",
+    "explanation": "Detaylı açıklama: Neden bu cevap doğru, diğerleri neden yanlış"
   }}
 ]
 
 Metin:
 {text}
 
-Lütfen sadece JSON formatında yanıt ver, başka açıklama ekleme."""
+Lütfen sadece JSON formatında yanıt ver."""
 
         response = self._call_openai(prompt, temperature=0.7)
         
@@ -472,33 +501,55 @@ Lütfen sadece JSON formatında yanıt ver, başka açıklama ekleme."""
                 "explanation": response
             }]
     
-    def generate_flashcards(self, text: str, count: int = 10) -> List[Dict[str, str]]:
+    def generate_flashcards(self, text: str, count: int = 10, level: str = 'high_school', user_type: str = 'student') -> List[Dict[str, str]]:
         """
-        Flashcard'lar (çift yönlü kartlar) üretir
+        Seviyeye uygun flashcard'lar üretir
         
         Args:
             text: Flashcard üretilecek metin
             count: Üretilecek flashcard sayısı
+            level: Kullanıcı seviyesi
+            user_type: Kullanıcı tipi
             
         Returns:
-            Flashcard listesi [{"front": "soru/terim", "back": "cevap/açıklama"}]
+            Flashcard listesi [{"front": "soru", "back": "cevap", "topic": "konu"}]
         """
-        prompt = f"""Aşağıdaki metinden {count} adet flashcard (çalışma kartı) üret.
-Her kartın ön yüzünde bir soru veya terim, arka yüzünde cevap veya açıklama olmalı.
-Flashcard'lar önemli kavramları, terimleri ve bilgileri içermeli.
+        level_config = Config.LEVEL_SETTINGS.get(level, Config.LEVEL_SETTINGS['high_school'])
+        level_name = level_config['name']
+        
+        prompt = f"""Aşağıdaki metinden {level_name} seviyesine uygun {count} adet flashcard (çalışma kartı) üret.
+
+HEDEF KİTLE: {level_name}
+
+ÇOK ÖNEMLİ KURALLAR:
+1. Metindeki BAŞLIKLARI, ÜNİTELERİ ve KONU BAŞLIKLARINI tespit et
+2. Her flashcard belirli bir KONU/KAVRAM hakkında olmalı
+3. Ön yüz: Konuyu anlatan SORU (sadece terim değil!)
+4. Arka yüz: Detaylı, öğretici AÇIKLAMA (sadece tanım değil!)
+5. Flashcard'lar konunun ÖZÜNÜ öğretmeli
+6. Sadece dokümandaki kelimeleri sorma, KAVRAMI öğret
+
+YANLIŞ ÖRNEK (yapma!):
+Front: "Fotosentez nedir?"
+Back: "Bitkilerin ışıkla besin üretmesidir."
+
+DOĞRU ÖRNEK (yap!):
+Front: "Fotosentez sırasında bitki hücresinde hangi dönüşümler gerçekleşir ve bu sürecin canlılar için önemi nedir?"
+Back: "Klorofil molekülleri ışık enerjisini yakalar ve bu enerjiyle su molekülleri parçalanır. CO2 ve sudan glikoz sentezlenir. Bu süreç atmosfere oksijen salar ve besin zincirinin temelidir. Tüm canlılar doğrudan veya dolaylı olarak fotosenteze bağımlıdır."
 
 Yanıtını JSON formatında ver:
 [
   {{
-    "front": "Soru veya terim",
-    "back": "Cevap veya açıklama"
+    "front": "Derinlemesine öğretici soru",
+    "back": "Detaylı, kavramsal açıklama",
+    "topic": "Konu başlığı"
   }}
 ]
 
 Metin:
 {text}
 
-Lütfen sadece JSON formatında yanıt ver, başka açıklama ekleme."""
+Lütfen sadece JSON formatında yanıt ver."""
 
         response = self._call_openai(prompt, temperature=0.6)
         

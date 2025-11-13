@@ -224,6 +224,18 @@
         </div>
         {% endif %}
         
+        <!-- Cache Hit Uyarısı -->
+        {% if from_cache %}
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-lightning-fill"></i> <strong>Hızlı Sonuç!</strong> 
+            Bu dosya daha önce işlenmişti. Kayıtlı sonuçlar gösteriliyor.
+            {% if results.token_used %}
+            <br><small>Token Tasarrufu: ~{{ results.token_used }} | İlk İşlenme: {{ results.cached_date }}</small>
+            {% endif %}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endif %}
+        
         <div class="header">
             <div class="d-flex justify-content-between align-items-center flex-wrap">
                 <div>
@@ -275,7 +287,11 @@
                 <div class="tab-pane fade show active" id="summary" role="tabpanel">
                     <h3 class="mb-4">Konu Özeti</h3>
                     <div class="summary-box">
-                        {{ results.summary | safe | replace('\n', '<br>') }}
+                        {% if results.summary_html %}
+                            {{ results.summary_html | safe }}
+                        {% else %}
+                            {{ results.summary | safe | replace('\n', '<br>') }}
+                        {% endif %}
                     </div>
                 </div>
                 

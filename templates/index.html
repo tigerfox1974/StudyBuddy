@@ -161,6 +161,35 @@
         {% endwith %}
         
         <form id="uploadForm" action="{{ url_for('process') }}" method="POST" enctype="multipart/form-data">
+            <!-- Profil Seçimi -->
+            <div class="profile-selection mb-4">
+                <h5><i class="bi bi-person-circle"></i> Kimsiniz?</h5>
+                <div class="btn-group w-100" role="group">
+                    <input type="radio" class="btn-check" name="user_type" id="student" value="student" checked>
+                    <label class="btn btn-outline-primary" for="student">
+                        <i class="bi bi-mortarboard"></i> Öğrenci
+                    </label>
+                    
+                    <input type="radio" class="btn-check" name="user_type" id="teacher" value="teacher">
+                    <label class="btn btn-outline-primary" for="teacher">
+                        <i class="bi bi-person-workspace"></i> Öğretmen
+                    </label>
+                </div>
+            </div>
+            
+            <!-- Seviye Seçimi -->
+            <div class="level-selection mb-4">
+                <h5><i class="bi bi-bar-chart-steps"></i> Seviye</h5>
+                <select class="form-select form-select-lg" name="level" id="level" required>
+                    <option value="elementary">İlkokul (1-4. Sınıf) - 6-10 yaş</option>
+                    <option value="middle_school">Ortaokul (5-8. Sınıf) - 11-14 yaş</option>
+                    <option value="high_school" selected>Lise (9-12. Sınıf) - 15-18 yaş</option>
+                    <option value="university">Üniversite - 18+ yaş</option>
+                    <option value="exam_prep">Sınav Hazırlığı (YKS, KPSS, vb.) - 17+ yaş</option>
+                </select>
+            </div>
+            
+            <!-- Dosya Yükleme -->
             <div class="upload-area" onclick="document.getElementById('fileInput').click()">
                 <i class="bi bi-cloud-upload"></i>
                 <h4>Dosyanızı Yükleyin</h4>
