@@ -18,7 +18,10 @@ class Config:
     
     # OpenAI API ayarları
     OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY')
-    OPENAI_MODEL = os.environ.get('OPENAI_MODEL') or 'gpt-3.5-turbo'
+    OPENAI_MODEL = os.environ.get('OPENAI_MODEL') or 'gpt-4.1-mini'
+    
+    # Desteklenen modeller
+    SUPPORTED_MODELS = ['gpt-4.1-mini', 'gpt-4.1-mini-2025-04-14']
     
     # Demo modu (OpenAI API olmadan test için)
     DEMO_MODE = os.environ.get('DEMO_MODE', 'false').lower() in ('true', '1', 'yes')
