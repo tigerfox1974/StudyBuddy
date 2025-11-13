@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StudyBuddy - Dokümandan Sınav Modu</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .main-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            padding: 40px;
+            max-width: 700px;
+            width: 100%;
+            margin: 0 auto;
+        }
+        
+        .logo {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .logo i {
+            font-size: 60px;
+            color: #667eea;
+        }
+        
+        .logo h1 {
+            color: #333;
+            margin-top: 15px;
+            font-weight: 700;
+        }
+        
+        .logo p {
+            color: #666;
+            margin-top: 10px;
+        }
+        
+        .upload-area {
+            border: 3px dashed #667eea;
+            border-radius: 15px;
+            padding: 40px;
+            text-align: center;
+            background: #f8f9ff;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        
+        .upload-area:hover {
+            background: #eff1ff;
+            border-color: #764ba2;
+        }
+        
+        .upload-area i {
+            font-size: 50px;
+            color: #667eea;
+            margin-bottom: 20px;
+        }
+        
+        .btn-upload {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            padding: 15px 40px;
+            font-size: 18px;
+            border-radius: 50px;
+            margin-top: 20px;
+            font-weight: 600;
+        }
+        
+        .btn-upload:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .features {
+            margin-top: 30px;
+            padding-top: 30px;
+            border-top: 1px solid #e0e0e0;
+        }
+        
+        .feature-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            color: #555;
+        }
+        
+        .feature-item i {
+            color: #667eea;
+            margin-right: 10px;
+            font-size: 20px;
+        }
+        
+        .file-info {
+            display: none;
+            margin-top: 20px;
+            padding: 15px;
+            background: #e8f5e9;
+            border-radius: 10px;
+            color: #2e7d32;
+        }
+        
+        .file-info i {
+            color: #2e7d32;
+            margin-right: 8px;
+        }
+        
+        .spinner-border {
+            display: none;
+        }
+        
+        .loading .spinner-border {
+            display: inline-block;
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <div class="logo">
+            <i class="bi bi-book-half"></i>
+            <h1>StudyBuddy</h1>
+            <p>Dokümandan Sınav Modu</p>
+        </div>
+        
+        <!-- Demo Modu Uyarısı -->
+        {% if config.DEMO_MODE %}
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+            <i class="bi bi-info-circle-fill"></i> <strong>Demo Modu Aktif:</strong> 
+            OpenAI API olmadan çalışıyorsunuz. Sahte veriler gösterilecektir. 
+            Gerçek içerik için .env dosyasında DEMO_MODE=false yapın ve OpenAI API anahtarı ekleyin.
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endif %}
+        
+        <!-- Flash mesajları -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ 'danger' if category == 'error' else 'info' }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        
+        <form id="uploadForm" action="{{ url_for('process') }}" method="POST" enctype="multipart/form-data">
+            <div class="upload-area" onclick="document.getElementById('fileInput').click()">
+                <i class="bi bi-cloud-upload"></i>
+                <h4>Dosyanızı Yükleyin</h4>
+                <p class="text-muted">PDF, Word, PowerPoint veya Metin dosyası seçin</p>
+                <input type="file" id="fileInput" name="file" accept=".pdf,.docx,.doc,.pptx,.txt" style="display: none;" required>
+            </div>
+            
+            <div id="fileInfo" class="file-info">
+                <i class="bi bi-check-circle-fill"></i>
+                <span id="fileName">Dosya seçildi</span>
+            </div>
+            
+            <div class="text-center">
+                <button type="submit" class="btn btn-primary btn-upload" id="submitBtn">
+                    <i class="bi bi-magic"></i> İçerik Üret
+                    <span class="spinner-border spinner-border-sm" role="status"></span>
+                </button>
+            </div>
+        </form>
+        
+        <div class="features">
+            <h5 class="mb-3"><strong>Neler Oluşturulacak:</strong></h5>
+            <div class="feature-item">
+                <i class="bi bi-journal-text"></i>
+                <span>Konu Özeti</span>
+            </div>
+            <div class="feature-item">
+                <i class="bi bi-card-list"></i>
+                <span>Çoktan Seçmeli Sorular</span>
+            </div>
+            <div class="feature-item">
+                <i class="bi bi-pencil-square"></i>
+                <span>Kısa Cevap Soruları</span>
+            </div>
+            <div class="feature-item">
+                <i class="bi bi-dash-square"></i>
+                <span>Boş Doldurma Soruları</span>
+            </div>
+            <div class="feature-item">
+                <i class="bi bi-check2-square"></i>
+                <span>Doğru-Yanlış Soruları</span>
+            </div>
+            <div class="feature-item">
+                <i class="bi bi-collection"></i>
+                <span>Flashcard Çalışma Kartları</span>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Dosya seçildiğinde bilgi göster
+        document.getElementById('fileInput').addEventListener('change', function(e) {
+            const fileInfo = document.getElementById('fileInfo');
+            const fileName = document.getElementById('fileName');
+            
+            if (e.target.files.length > 0) {
+                fileName.textContent = e.target.files[0].name;
+                fileInfo.style.display = 'block';
+            } else {
+                fileInfo.style.display = 'none';
+            }
+        });
+        
+        // Form gönderilirken loading state
+        document.getElementById('uploadForm').addEventListener('submit', function(e) {
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.classList.add('loading');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> İşleniyor... <span class="spinner-border spinner-border-sm" role="status"></span>';
+        });
+    </script>
+</body>
+</html>
+

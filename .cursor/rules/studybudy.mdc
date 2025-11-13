@@ -1,0 +1,190 @@
+---
+description: "StudyBuddy – Dokümandan Sınav Modu – Project rules"
+globs: "*"
+alwaysApply: true
+---
+
+## Project Overview
+
+- Project name: **StudyBuddy – Dokümandan Sınav Modu**
+- Business goal (short): **Öğrencilerin PDF, Word, PowerPoint ve metin dosyalarındaki ders notlarını yükleyerek; bu dokümanlardan otomatik konu özeti, çoktan seçmeli sorular, kısa cevap soruları ve flashcard’lar üretmesini sağlamak. Bunu abonelik modeliyle para kazandıran, ölçeklenebilir bir web ürünü haline getirmek.**
+- Target users: **Lise, üniversite ve sınavlara (YKS, KPSS vb.) hazırlanan öğrenciler; orta vadede etüt merkezleri ve özel ders veren öğretmenler.**
+- Main platform(s): **Web uygulaması (masaüstü ve mobil tarayıcı üzerinden kullanılacak, ilk aşamada tek dil Türkçe, ileride çok dilliliğe açık).**
+- Any hard constraints (if any): **Kullanıcı tarafında kurulum gerektirmeden tarayıcıdan çalışmalı; en azından PDF, DOCX, PPTX ve TXT dosya türlerini desteklemeli; acemi kullanıcılar için basit, tek adımlı bir akışa sahip olmalı; ileride abonelik/ödeme entegrasyonuna uygun tasarlanmalı.**
+
+> Kullanıcı acemi bir programcıdır ve genellikle sadece bu bölümü düzenleyecektir.  
+> Aşağıdaki teknik kararlar, bu overview ve global User Rules temel alınarak ajan tarafından otomatik uygulanmalıdır.
+
+---
+
+## How the Agent Should Interpret This File
+
+- Bu dosya, StudyBuddy projesi için bir **mini “charter”** (proje sözleşmesi) olarak kabul edilmelidir.
+- Bu Project Rules + global **User Rules** birlikte:
+  - Uygun **teknoloji yığını**nı (stack),
+  - Mantıklı bir **mimari ve klasör yapısı**nı,
+  - Gerekirse **veritabanı yaklaşımını**,
+  - **Test çerçevesi**ni,
+  - Basit bir **DevOps / deployment** stratejisini
+  seçmek için temel oluşturur.
+- Her zaman şu varsayımlarla hareket et:
+  - Kullanıcı acemi ve Windows ağırlıklı çalışıyor.
+  - Basit, az sürtünmeli çözümler; ama kurumsal düşünülmüş, büyümeye açık bir yapı tercih edilmeli.
+  - Gereksiz karmaşadan ve moda teknolojilerden kaçın; **stabil ve dokümantasyonu bol** araçları seç.
+
+---
+
+## Technology Stack (Bu proje için seçilen)
+
+Bu proje özelinde teknoloji yığını şudur:
+
+- Backend:
+  - **Python 3 + Flask** tabanlı web uygulaması.
+- AI entegrasyonu:
+  - **OpenAI API** (model seçimi ajan tarafından belirlenebilir, maliyet / kalite dengesi gözetilerek).
+  - API anahtarı backend tarafında, ortam değişkeni veya konfig dosyası ile yönetilecek (asla frontend’e sızmayacak).
+- Doküman okuma (metne dönüştürme):
+  - PDF: `pypdf` veya `pdfplumber`
+  - Word (.docx): `python-docx`
+  - PowerPoint (.pptx): `python-pptx`
+  - Düz metin (.txt): standart dosya okuma
+- Arayüz:
+  - **Basit HTML + Bootstrap** (responsive, mobil uyumlu).
+- Veritabanı:
+  - MVP aşamasında zorunlu değil; tüm işlemler tek oturumda yürütülebilir.
+  - İleride kullanıcı kaydı / abonelik / kullanım log’ları için **SQLite + basit ORM (ör. SQLAlchemy)** tercih edilecektir.
+- Ortam:
+  - Geliştirme ortamı: Windows, VS Code.
+  - Deployment için ileride basit bir Linux sunucu veya PaaS (Render, Railway, Azure Web App vb.) hedeflenebilir.
+
+---
+
+## Architecture & Folder Structure (StudyBuddy için)
+
+- Varsayılan yaklaşım:
+  - **Basit, modüler monolith** Flask uygulaması.
+
+- Önerilen klasör yapısı:
+
+  - Proje kök dizini:
+    - `app.py` → Flask giriş noktası, route tanımları
+    - `config.py` → Konfigürasyon (OpenAI API key, temel ayarlar)
+    - `requirements.txt` → Python bağımlılıkları
+    - `services/`
+      - `pdf_reader.py` → Dokümanlardan metin çıkarma fonksiyonları
+      - `ai_questions.py` → OpenAI ile özet, sorular ve flashcard üreten fonksiyonlar
+    - `templates/`
+      - `index.html` → Dosya yükleme formu, temel ana sayfa
+      - `result.html` → Özet, test soruları, kısa cevap soruları, flashcard listesi
+    - `static/`
+      - `css/` (gerekirse özel stiller)
+      - `js/` (gerekirse küçük JS fonksiyonları)
+    - `uploads/` → Yüklenen dokümanların geçici tutulduğu klasör (gerekirse .gitignore’a alınacak)
+
+- Yeni dosya/klasör eklerken:
+  - Tam yolu belirtilmeli,
+  - Sorumluluğu 1–2 cümleyle özetlenmelidir.
+
+---
+
+## Database & Data Model (Bu proje için yaklaşım)
+
+- MVP:
+  - Kullanıcı girişi / hesap sistemi yoksa:
+    - Veritabanı zorunlu değil.
+    - Kullanıcının yüklediği dosya ve AI çıktıları sadece bellek/oturum bazlı olabilir.
+- İlerleyen fazlar:
+  - Kullanıcı kaydı, abonelik ve kullanım log’ları eklenecekse:
+    - Basit bir **SQLite** veritabanı tercih edilecektir.
+    - Önerilen temel tablolar:
+      - `users` → kullanıcı hesapları (email, şifre hash, abonelik planı vb.)
+      - `documents` → yüklenen dokümanlar (kullanıcıya bağlı, dosya adı, türü, boyutu)
+      - `jobs` → her “işleme” için kayıt (doc id, soru sayısı, süre, token tüketimi vb.)
+  - ORM:
+    - Tercihen **SQLAlchemy** kullanılacak,
+    - Migration yönetimi için basit bir araç (ör. Alembic) değerlendirilebilir, ancak kullanıcı seviyesine göre adım adım açıklanacaktır.
+
+---
+
+## Testing Strategy (StudyBuddy için)
+
+- Test framework:
+  - **pytest** (Python ekosisteminde basit ve yaygın).
+
+- Test öncelikleri:
+  - `services/pdf_reader.py`:
+    - Farklı dosya türlerinden (küçük test PDF, DOCX, PPTX, TXT) metin çıkarma fonksiyonlarının doğru çalıştığının test edilmesi.
+  - `services/ai_questions.py`:
+    - Doğrudan OpenAI’ye bağlı kısımlar için tam unit test yerine:
+      - Prompt formatlama fonksiyonları,
+      - Çıktının yapısal doğruluğu (örneğin, her çoktan seçmeli soruda 4 seçenek olması, cevap alanının varlığı) test edilebilir.
+  - `app.py`:
+    - Flask test client ile basit entegrasyon testi:
+      - `/` endpoint’inin 200 dönmesi,
+      - `/process` için örnek bir dosya upload’ında başarılı response alınması.
+
+- Kullanıcı için test komutu:
+  - `pytest` komutu ile tüm testlerin çalıştırılabileceği şekilde yapılandırılmalıdır.
+
+---
+
+## DevOps & Running Locally (StudyBuddy için)
+
+- Lokal çalıştırma adımları (Windows + VS Code varsayımı):
+
+  1. Python 3 kurulmuş olmalı (3.10+ önerilir).
+  2. Proje klasöründe sanal ortam oluştur:
+     - `python -m venv .venv`
+  3. Sanal ortamı aktif et:
+     - `.\.venv\Scripts\activate`
+  4. Bağımlılıkları kur:
+     - `pip install -r requirements.txt`
+  5. Gerekli ortam değişkenlerini ayarla (geliştirme için):
+     - `OPENAI_API_KEY` → OpenAI API anahtarı
+  6. Flask uygulamasını çalıştır:
+     - `flask run`  
+       veya  
+     - `python app.py` (seçilen yapıya göre)
+
+- Deployment (ileriki faz için öneri):
+
+  - Basit bir **Dockerfile**:
+    - Python base image,
+    - `requirements.txt` install,
+    - `flask run` veya WSGI sunucu (gunicorn) ile başlatma.
+  - Küçük bir cloud servise (Render, Railway, Azure Web App vs.) deploy edilebilir.
+  - Gizli bilgilerin (OpenAI key vb.) ortamlarda **environment variable** ile yönetilmesi zorunlu.
+
+---
+
+## Documentation
+
+- README içermesi gerekenler:
+  - Proje özeti (StudyBuddy’nin ne yaptığı),
+  - Teknoloji yığını (Python + Flask + OpenAI + belge okuma kütüphaneleri),
+  - Kurulum adımları (sanat ortam, bağımlılıklar, ortam değişkenleri),
+  - Çalıştırma komutları,
+  - Temel kullanım senaryosu (dosya yükle → sonuçları gör).
+
+- İleride:
+  - `docs/` klasörü altında:
+    - Mimari tasarım notları (servislerin sorumlulukları),
+    - API dokümantasyonu (eğer REST endpoint’leri dışa açılırsa),
+    - Kullanıcı kılavuzu (ekran ekran kısa açıklama) hazırlanabilir.
+
+---
+
+## Special Constraints For This Project
+
+- Kullanıcı:
+  - **Acemi programcıdır**,
+  - Ağırlıklı olarak **Windows + VS Code / Visual Studio** kullanır.
+- Bu nedenle:
+  - Karmaşık microservice mimarilerinden, Kubernetes’ten ve ağır CI/CD düzenlerinden kaçınılmalıdır.
+  - Kurulum adımları, komutlar ve dosya konumları **adım adım** ve net yazılmalıdır.
+  - “Set up X” gibi belirsiz ifadeler yerine:
+    - Hangi dosyanın açılacağı,
+    - Hangi kodun nereye yapıştırılacağı,
+    - Hangi komutun terminalde çalıştırılacağı,
+    açık ve doğrudan belirtilmelidir.
+

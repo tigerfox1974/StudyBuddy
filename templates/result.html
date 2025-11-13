@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sonuçlar - StudyBuddy</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .header {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header h1 {
+            color: #333;
+            margin: 0;
+            font-size: 28px;
+        }
+        
+        .header p {
+            color: #666;
+            margin: 5px 0 0 0;
+        }
+        
+        .content-container {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .nav-tabs {
+            border-bottom: 2px solid #e0e0e0;
+        }
+        
+        .nav-tabs .nav-link {
+            color: #666;
+            border: none;
+            padding: 12px 20px;
+            margin-right: 5px;
+            border-radius: 10px 10px 0 0;
+            font-weight: 500;
+        }
+        
+        .nav-tabs .nav-link:hover {
+            background: #f5f5f5;
+            color: #667eea;
+        }
+        
+        .nav-tabs .nav-link.active {
+            background: #667eea;
+            color: white;
+        }
+        
+        .tab-content {
+            padding: 30px 0;
+        }
+        
+        .question-card {
+            background: #f8f9ff;
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 10px;
+        }
+        
+        .question-number {
+            background: #667eea;
+            color: white;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        
+        .option {
+            background: white;
+            padding: 12px 15px;
+            margin: 8px 0;
+            border-radius: 8px;
+            border: 2px solid #e0e0e0;
+            transition: all 0.3s;
+        }
+        
+        .option:hover {
+            border-color: #667eea;
+            background: #f8f9ff;
+        }
+        
+        .correct-answer {
+            background: #e8f5e9;
+            border-color: #4caf50;
+            font-weight: 500;
+        }
+        
+        .flashcard {
+            perspective: 1000px;
+            margin-bottom: 20px;
+            height: 250px;
+        }
+        
+        .flashcard-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+            cursor: pointer;
+        }
+        
+        .flashcard.flipped .flashcard-inner {
+            transform: rotateY(180deg);
+        }
+        
+        .flashcard-front, .flashcard-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .flashcard-front {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .flashcard-back {
+            background: white;
+            color: #333;
+            transform: rotateY(180deg);
+            border: 2px solid #667eea;
+        }
+        
+        .btn-home {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            color: white;
+            padding: 12px 30px;
+            border-radius: 50px;
+            font-weight: 600;
+        }
+        
+        .btn-home:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+            color: white;
+        }
+        
+        .summary-box {
+            background: #f8f9ff;
+            padding: 25px;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+            line-height: 1.8;
+        }
+        
+        .badge-custom {
+            background: #667eea;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: 500;
+        }
+        
+        .true-false-card {
+            background: white;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-radius: 10px;
+            border: 2px solid #e0e0e0;
+        }
+        
+        .true-badge {
+            background: #4caf50;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+        
+        .false-badge {
+            background: #f44336;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Demo Modu Uyarısı -->
+        {% if config.DEMO_MODE %}
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+            <i class="bi bi-info-circle-fill"></i> <strong>Demo Modu:</strong> 
+            Bu içerikler sahte verilerdir. Gerçek AI üretimi için OpenAI API anahtarı gereklidir.
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endif %}
+        
+        <div class="header">
+            <div class="d-flex justify-content-between align-items-center flex-wrap">
+                <div>
+                    <h1><i class="bi bi-check-circle text-success"></i> İçerik Başarıyla Oluşturuldu!</h1>
+                    <p class="mb-0"><i class="bi bi-file-earmark"></i> {{ filename }}</p>
+                </div>
+                <a href="{{ url_for('index') }}" class="btn btn-home">
+                    <i class="bi bi-house"></i> Ana Sayfa
+                </a>
+            </div>
+        </div>
+        
+        <div class="content-container">
+            <ul class="nav nav-tabs" id="resultTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="summary-tab" data-bs-toggle="tab" data-bs-target="#summary" type="button">
+                        <i class="bi bi-journal-text"></i> Özet
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="multiple-choice-tab" data-bs-toggle="tab" data-bs-target="#multiple-choice" type="button">
+                        <i class="bi bi-card-list"></i> Çoktan Seçmeli
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="short-answer-tab" data-bs-toggle="tab" data-bs-target="#short-answer" type="button">
+                        <i class="bi bi-pencil-square"></i> Kısa Cevap
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="fill-blank-tab" data-bs-toggle="tab" data-bs-target="#fill-blank" type="button">
+                        <i class="bi bi-dash-square"></i> Boş Doldurma
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="true-false-tab" data-bs-toggle="tab" data-bs-target="#true-false" type="button">
+                        <i class="bi bi-check2-square"></i> Doğru-Yanlış
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="flashcards-tab" data-bs-toggle="tab" data-bs-target="#flashcards" type="button">
+                        <i class="bi bi-collection"></i> Flashcards
+                    </button>
+                </li>
+            </ul>
+            
+            <div class="tab-content" id="resultTabsContent">
+                <!-- Özet -->
+                <div class="tab-pane fade show active" id="summary" role="tabpanel">
+                    <h3 class="mb-4">Konu Özeti</h3>
+                    <div class="summary-box">
+                        {{ results.summary | safe | replace('\n', '<br>') }}
+                    </div>
+                </div>
+                
+                <!-- Çoktan Seçmeli Sorular -->
+                <div class="tab-pane fade" id="multiple-choice" role="tabpanel">
+                    <h3 class="mb-4">Çoktan Seçmeli Sorular <span class="badge-custom">{{ results.multiple_choice | length }}</span></h3>
+                    {% for q in results.multiple_choice %}
+                    <div class="question-card">
+                        <div class="mb-3">
+                            <span class="question-number">{{ loop.index }}</span>
+                            <strong>{{ q.question }}</strong>
+                        </div>
+                        {% for option in q.options %}
+                        <div class="option {% if loop.index0 == q.correct_answer %}correct-answer{% endif %}">
+                            <strong>{{ ['A', 'B', 'C', 'D'][loop.index0] }})</strong> {{ option }}
+                            {% if loop.index0 == q.correct_answer %}
+                            <i class="bi bi-check-circle-fill text-success float-end"></i>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                        {% if q.explanation %}
+                        <div class="mt-3 text-muted">
+                            <small><i class="bi bi-info-circle"></i> {{ q.explanation }}</small>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                <!-- Kısa Cevap Soruları -->
+                <div class="tab-pane fade" id="short-answer" role="tabpanel">
+                    <h3 class="mb-4">Kısa Cevap Soruları <span class="badge-custom">{{ results.short_answer | length }}</span></h3>
+                    {% for q in results.short_answer %}
+                    <div class="question-card">
+                        <div class="mb-3">
+                            <span class="question-number">{{ loop.index }}</span>
+                            <strong>{{ q.question }}</strong>
+                        </div>
+                        <div class="alert alert-info mb-0">
+                            <strong><i class="bi bi-lightbulb"></i> Örnek Cevap:</strong><br>
+                            {{ q.answer }}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                <!-- Boş Doldurma Soruları -->
+                <div class="tab-pane fade" id="fill-blank" role="tabpanel">
+                    <h3 class="mb-4">Boş Doldurma Soruları <span class="badge-custom">{{ results.fill_blank | length }}</span></h3>
+                    {% for q in results.fill_blank %}
+                    <div class="question-card">
+                        <div class="mb-3">
+                            <span class="question-number">{{ loop.index }}</span>
+                            <strong>{{ q.question }}</strong>
+                        </div>
+                        {% if q.options %}
+                        {% for option in q.options %}
+                        <div class="option {% if option == q.answer %}correct-answer{% endif %}">
+                            <strong>{{ ['A', 'B', 'C', 'D'][loop.index0] }})</strong> {{ option }}
+                            {% if option == q.answer %}
+                            <i class="bi bi-check-circle-fill text-success float-end"></i>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                        {% else %}
+                        <div class="alert alert-success mb-0">
+                            <strong><i class="bi bi-check-lg"></i> Cevap:</strong> {{ q.answer }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                <!-- Doğru-Yanlış Soruları -->
+                <div class="tab-pane fade" id="true-false" role="tabpanel">
+                    <h3 class="mb-4">Doğru-Yanlış Soruları <span class="badge-custom">{{ results.true_false | length }}</span></h3>
+                    {% for q in results.true_false %}
+                    <div class="true-false-card">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                                <span class="question-number">{{ loop.index }}</span>
+                                <strong>{{ q.statement }}</strong>
+                            </div>
+                            <span class="{% if q.is_true %}true-badge{% else %}false-badge{% endif %}">
+                                {% if q.is_true %}DOĞRU{% else %}YANLIŞ{% endif %}
+                            </span>
+                        </div>
+                        {% if q.explanation %}
+                        <div class="mt-3 text-muted">
+                            <small><i class="bi bi-info-circle"></i> {{ q.explanation }}</small>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                <!-- Flashcards -->
+                <div class="tab-pane fade" id="flashcards" role="tabpanel">
+                    <h3 class="mb-4">Flashcard Çalışma Kartları <span class="badge-custom">{{ results.flashcards | length }}</span></h3>
+                    <p class="text-muted mb-4"><i class="bi bi-hand-index"></i> Kartları çevirmek için üzerine tıklayın</p>
+                    
+                    <div class="row">
+                        {% for card in results.flashcards %}
+                        <div class="col-md-6 mb-4">
+                            <div class="flashcard" onclick="this.classList.toggle('flipped')">
+                                <div class="flashcard-inner">
+                                    <div class="flashcard-front">
+                                        <div>
+                                            <div class="mb-2"><i class="bi bi-question-circle" style="font-size: 30px;"></i></div>
+                                            <h5>{{ card.front }}</h5>
+                                        </div>
+                                    </div>
+                                    <div class="flashcard-back">
+                                        <div>
+                                            <div class="mb-2"><i class="bi bi-lightbulb" style="font-size: 30px; color: #667eea;"></i></div>
+                                            <p>{{ card.back }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Yazdırma özelliği için
+        function printContent() {
+            window.print();
+        }
+    </script>
+</body>
+</html>
+
