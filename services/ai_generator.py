@@ -383,15 +383,20 @@ KULLANICI TİPİ: {"Öğrenci" if user_type == "student" else "Öğretmen (sın�
 3. Sorular içeriği ÖĞRETİR nitelikte olmalı, sadece ezber değil
 4. Dili seviyeye uygun tut
 5. Her soruya detaylı örnek cevap ver
+6. Her soru için 4 seçenek üret: 1 doğru cevap + 3 çeldirici seçenek
+7. Çeldirici seçenekler mantıklı ama yanlış olmalı, konuyla ilgili ama hatalı bilgiler içermeli
 
 Yanıtını JSON formatında ver:
 [
   {{
     "question": "Soru metni?",
-    "answer": "Detaylı örnek cevap",
+    "answer": "Detaylı doğru cevap",
+    "options": ["Doğru cevap", "Çeldirici 1 (mantıklı ama yanlış)", "Çeldirici 2 (mantıklı ama yanlış)", "Çeldirici 3 (mantıklı ama yanlış)"],
     "topic": "Konu başlığı"
   }}
 ]
+
+ÖNEMLİ: options dizisinin ilk elemanı MUTLAKA doğru cevap olmalı. Diğer 3 seçenek çeldirici olmalı.
 
 Metin:
 {text}
