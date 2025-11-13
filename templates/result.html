@@ -465,19 +465,19 @@
                 </div>
                 
                 <!-- Çoktan Seçmeli Sorular -->
-                <div class="tab-pane fade" id="multiple-choice" role="tabpanel">
+                <div class="tab-pane fade quiz-mode-active" id="multiple-choice" role="tabpanel">
                     <div class="quiz-header">
                         <h3>Çoktan Seçmeli Sorular <span class="badge-custom">{{ results.multiple_choice | length }}</span></h3>
                         <div>
-                            <button class="btn btn-outline-primary" onclick="toggleQuizMode('multiple-choice')" id="quiz-toggle-multiple-choice">
-                                <i class="bi bi-eye-slash"></i> <span id="quiz-status-multiple-choice">Quiz Modu: Kapalı</span>
+                            <button class="btn btn-primary" onclick="toggleQuizMode('multiple-choice')" id="quiz-toggle-multiple-choice">
+                                <i class="bi bi-eye"></i> <span id="quiz-status-multiple-choice">Quiz Modu: Açık</span>
                             </button>
-                            <button class="btn btn-success" onclick="calculateScore('multiple-choice')" id="calculate-score-multiple-choice" style="display: none; margin-left: 10px;">
+                            <button class="btn btn-success" onclick="calculateScore('multiple-choice')" id="calculate-score-multiple-choice" style="display: inline-block; margin-left: 10px;">
                                 <i class="bi bi-calculator"></i> Skor Hesapla
                             </button>
                         </div>
                     </div>
-                    <div class="quiz-stats" id="quiz-stats-multiple-choice" style="display: none;">
+                    <div class="quiz-stats" id="quiz-stats-multiple-choice" style="display: block;">
                         <strong>Skorunuz:</strong> <span id="score-multiple-choice">0</span> / {{ results.multiple_choice | length }} 
                         (<span id="percentage-multiple-choice">0</span>%)
                     </div>
@@ -509,19 +509,19 @@
                 </div>
                 
                 <!-- Kısa Cevap Soruları -->
-                <div class="tab-pane fade" id="short-answer" role="tabpanel">
+                <div class="tab-pane fade quiz-mode-active" id="short-answer" role="tabpanel">
                     <div class="quiz-header">
                         <h3>Kısa Cevap Soruları <span class="badge-custom">{{ results.short_answer | length }}</span></h3>
                         <div>
-                            <button class="btn btn-outline-primary" onclick="toggleQuizMode('short-answer')" id="quiz-toggle-short-answer">
-                                <i class="bi bi-eye-slash"></i> <span id="quiz-status-short-answer">Quiz Modu: Kapalı</span>
+                            <button class="btn btn-primary" onclick="toggleQuizMode('short-answer')" id="quiz-toggle-short-answer">
+                                <i class="bi bi-eye"></i> <span id="quiz-status-short-answer">Quiz Modu: Açık</span>
                             </button>
-                            <button class="btn btn-success" onclick="calculateScore('short-answer')" id="calculate-score-short-answer" style="display: none; margin-left: 10px;">
+                            <button class="btn btn-success" onclick="calculateScore('short-answer')" id="calculate-score-short-answer" style="display: inline-block; margin-left: 10px;">
                                 <i class="bi bi-calculator"></i> Skor Hesapla
                             </button>
                         </div>
                     </div>
-                    <div class="quiz-stats" id="quiz-stats-short-answer" style="display: none;">
+                    <div class="quiz-stats" id="quiz-stats-short-answer" style="display: block;">
                         <strong>Skorunuz:</strong> <span id="score-short-answer">0</span> / {{ results.short_answer | length }}
                         (<span id="percentage-short-answer">0</span>%)
                     </div>
@@ -562,19 +562,19 @@
                 </div>
                 
                 <!-- Boş Doldurma Soruları -->
-                <div class="tab-pane fade" id="fill-blank" role="tabpanel">
+                <div class="tab-pane fade quiz-mode-active" id="fill-blank" role="tabpanel">
                     <div class="quiz-header">
                         <h3>Boş Doldurma Soruları <span class="badge-custom">{{ results.fill_blank | length }}</span></h3>
                         <div>
-                            <button class="btn btn-outline-primary" onclick="toggleQuizMode('fill-blank')" id="quiz-toggle-fill-blank">
-                                <i class="bi bi-eye-slash"></i> <span id="quiz-status-fill-blank">Quiz Modu: Kapalı</span>
+                            <button class="btn btn-primary" onclick="toggleQuizMode('fill-blank')" id="quiz-toggle-fill-blank">
+                                <i class="bi bi-eye"></i> <span id="quiz-status-fill-blank">Quiz Modu: Açık</span>
                             </button>
-                            <button class="btn btn-success" onclick="calculateScore('fill-blank')" id="calculate-score-fill-blank" style="display: none; margin-left: 10px;">
+                            <button class="btn btn-success" onclick="calculateScore('fill-blank')" id="calculate-score-fill-blank" style="display: inline-block; margin-left: 10px;">
                                 <i class="bi bi-calculator"></i> Skor Hesapla
                             </button>
                         </div>
                     </div>
-                    <div class="quiz-stats" id="quiz-stats-fill-blank" style="display: none;">
+                    <div class="quiz-stats" id="quiz-stats-fill-blank" style="display: block;">
                         <strong>Skorunuz:</strong> <span id="score-fill-blank">0</span> / {{ results.fill_blank | length }}
                         (<span id="percentage-fill-blank">0</span>%)
                     </div>
@@ -607,19 +607,19 @@
                 </div>
                 
                 <!-- Doğru-Yanlış Soruları -->
-                <div class="tab-pane fade" id="true-false" role="tabpanel">
+                <div class="tab-pane fade quiz-mode-active" id="true-false" role="tabpanel">
                     <div class="quiz-header">
                         <h3>Doğru-Yanlış Soruları <span class="badge-custom">{{ results.true_false | length }}</span></h3>
                         <div>
-                            <button class="btn btn-outline-primary" onclick="toggleQuizMode('true-false')" id="quiz-toggle-true-false">
-                                <i class="bi bi-eye-slash"></i> <span id="quiz-status-true-false">Quiz Modu: Kapalı</span>
+                            <button class="btn btn-primary" onclick="toggleQuizMode('true-false')" id="quiz-toggle-true-false">
+                                <i class="bi bi-eye"></i> <span id="quiz-status-true-false">Quiz Modu: Açık</span>
                             </button>
-                            <button class="btn btn-success" onclick="calculateScore('true-false')" id="calculate-score-true-false" style="display: none; margin-left: 10px;">
+                            <button class="btn btn-success" onclick="calculateScore('true-false')" id="calculate-score-true-false" style="display: inline-block; margin-left: 10px;">
                                 <i class="bi bi-calculator"></i> Skor Hesapla
                             </button>
                         </div>
                     </div>
-                    <div class="quiz-stats" id="quiz-stats-true-false" style="display: none;">
+                    <div class="quiz-stats" id="quiz-stats-true-false" style="display: block;">
                         <strong>Skorunuz:</strong> <span id="score-true-false">0</span> / {{ results.true_false | length }}
                         (<span id="percentage-true-false">0</span>%)
                     </div>
@@ -630,7 +630,7 @@
                                 <span class="question-number">{{ loop.index }}</span>
                                 <strong>{{ q.statement }}</strong>
                             </div>
-                            <div class="quiz-tf-buttons" style="margin-left: 15px; display: none;">
+                            <div class="quiz-tf-buttons" style="margin-left: 15px; display: flex;">
                                 <button class="btn btn-outline-success btn-sm quiz-tf-btn" 
                                         onclick="selectTrueFalse('tf-{{ loop.index }}', true)"
                                         data-question="tf-{{ loop.index }}"
@@ -640,7 +640,7 @@
                                         data-question="tf-{{ loop.index }}"
                                         data-value="false">YANLIŞ</button>
                             </div>
-                            <span class="answer-badge {% if q.is_true %}true-badge{% else %}false-badge{% endif %}">
+                            <span class="answer-badge {% if q.is_true %}true-badge{% else %}false-badge{% endif %}" style="display: none;">
                                 {% if q.is_true %}DOĞRU{% else %}YANLIŞ{% endif %}
                             </span>
                         </div>
@@ -691,10 +691,10 @@
     <script>
         // Quiz modu durumu
         let quizModeActive = {
-            'multiple-choice': false,
-            'short-answer': false,
-            'fill-blank': false,
-            'true-false': false
+            'multiple-choice': true,  // Varsayılan olarak açık
+            'short-answer': true,     // Varsayılan olarak açık
+            'fill-blank': true,       // Varsayılan olarak açık
+            'true-false': true         // Varsayılan olarak açık
         };
         
         let userAnswers = {
@@ -1031,6 +1031,40 @@
         function printContent() {
             window.print();
         }
+        
+        // Sayfa yüklendiğinde tüm sekmeler için quiz modunu aç
+        document.addEventListener('DOMContentLoaded', function() {
+            const quizTypes = ['multiple-choice', 'short-answer', 'fill-blank', 'true-false'];
+            quizTypes.forEach(type => {
+                // Quiz modunu aç (ama toggleQuizMode çağırmadan, direkt DOM'u güncelle)
+                const tabPane = document.getElementById(type);
+                if (tabPane) {
+                    tabPane.classList.add('quiz-mode-active');
+                    
+                    const statusSpan = document.getElementById('quiz-status-' + type);
+                    const toggleBtn = document.getElementById('quiz-toggle-' + type);
+                    const statsDiv = document.getElementById('quiz-stats-' + type);
+                    const calculateBtn = document.getElementById('calculate-score-' + type);
+                    
+                    if (statusSpan) {
+                        statusSpan.textContent = 'Quiz Modu: Açık';
+                    }
+                    if (toggleBtn) {
+                        toggleBtn.querySelector('i').className = 'bi bi-eye';
+                        toggleBtn.classList.remove('btn-outline-primary');
+                        toggleBtn.classList.add('btn-primary');
+                    }
+                    if (statsDiv) statsDiv.style.display = 'block';
+                    if (calculateBtn) calculateBtn.style.display = 'inline-block';
+                    
+                    // Doğru-yanlış için butonları göster, badge'i gizle
+                    if (type === 'true-false') {
+                        tabPane.querySelectorAll('.quiz-tf-buttons').forEach(btn => btn.style.display = 'flex');
+                        tabPane.querySelectorAll('.answer-badge').forEach(badge => badge.style.display = 'none');
+                    }
+                }
+            });
+        });
     </script>
 </body>
 </html>
