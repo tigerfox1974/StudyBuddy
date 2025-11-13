@@ -241,24 +241,36 @@ Dokümanda ele alınan konular, öğrencilerin konuyu anlaması için gerekli te
         else:
             return "Bu demo modu için hazırlanmış sahte içeriktir. Gerçek AI üretimi için OpenAI API anahtarı gereklidir."
     
-    def generate_summary(self, text: str, language: str = 'tr') -> str:
+    def generate_summary(self, text: str, level: str = 'high_school', user_type: str = 'student') -> str:
         """
-        Metinden özet üretir
+        Metinden seviyeye uygun özet üretir
         
         Args:
             text: Özetlenecek metin
-            language: Dil kodu (varsayılan: 'tr')
+            level: Kullanıcı seviyesi
+            user_type: Kullanıcı tipi
             
         Returns:
-            Özet metin
+            Markdown formatında özet
         """
-        prompt = f"""Aşağıdaki metni öğrenciler için anlaşılır ve kapsamlı bir şekilde özetle.
-Özet, ana konuları, önemli kavramları ve kilit noktaları içermelidir.
+        level_config = Config.LEVEL_SETTINGS.get(level, Config.LEVEL_SETTINGS['high_school'])
+        age_desc = level_config['age_range']
+        level_name = level_config['name']
+        
+        prompt = f"""Aşağıdaki metni {level_name} ({age_desc}) seviyesindeki {"öğrenciler" if user_type == "student" else "öğretmenin sınıfı"} için anlaşılır ve kapsamlı bir şekilde özetle.
+
+ÖNEMLI KURALLAR:
+1. Dili seviyeye uygun tut ({"basit ve anlaşılır" if level in ["elementary", "middle_school"] else "akademik ve detaylı"})
+2. Ana konuları, önemli kavramları ve kilit noktaları içer
+3. Başlıklar ve alt başlıklar kullan
+4. Markdown formatında yaz (## başlıklar, - madde işaretleri)
+5. Önemli terimleri **kalın** yap
+6. Konular arasında boşluk bırak
 
 Metin:
 {text}
 
-Lütfen özetini madde madde yapılandırılmış şekilde ver."""
+Lütfen özetini yapılandırılmış Markdown formatında ver."""
 
         return self._call_openai(prompt, temperature=0.5)
     
@@ -507,22 +519,29 @@ Lütfen sadece JSON formatında yanıt ver, başka açıklama ekleme."""
                 "back": response
             }]
     
-    def generate_all_content(self, text: str) -> Dict[str, Any]:
+    def generate_all_content(self, text: str, level: str = 'high_school', user_type: str = 'student') -> Dict[str, Any]:
         """
-        Tüm içerikleri tek seferde üretir
+        Tüm içerikleri seviyeye göre tek seferde üretir
         
         Args:
             text: İçerik üretilecek metin
+            level: Kullanıcı seviyesi (elementary, middle_school, high_school, university, exam_prep)
+            user_type: Kullanıcı tipi (student, teacher)
             
         Returns:
             Tüm içerikleri içeren dict
         """
+        # Seviye ayarlarini al
+        level_config = Config.LEVEL_SETTINGS.get(level, Config.LEVEL_SETTINGS['high_school'])
+        question_count = level_config['questions_per_type']
+        flashcard_count = question_count * 2  # Flashcard sayisi daha fazla
+        
         return {
-            "summary": self.generate_summary(text),
-            "multiple_choice": self.generate_multiple_choice(text, Config.DEFAULT_QUESTION_COUNT),
-            "short_answer": self.generate_short_answer(text, Config.DEFAULT_QUESTION_COUNT),
-            "fill_blank": self.generate_fill_blank(text, Config.DEFAULT_QUESTION_COUNT),
-            "true_false": self.generate_true_false(text, Config.DEFAULT_QUESTION_COUNT),
-            "flashcards": self.generate_flashcards(text, Config.DEFAULT_FLASHCARD_COUNT)
+            "summary": self.generate_summary(text, level, user_type),
+            "multiple_choice": self.generate_multiple_choice(text, question_count, level, user_type),
+            "short_answer": self.generate_short_answer(text, question_count, level, user_type),
+            "fill_blank": self.generate_fill_blank(text, question_count, level, user_type),
+            "true_false": self.generate_true_false(text, question_count, level, user_type),
+            "flashcards": self.generate_flashcards(text, flashcard_count, level, user_type)
         }
 

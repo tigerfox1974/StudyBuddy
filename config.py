@@ -26,6 +26,44 @@ class Config:
     # Demo modu (OpenAI API olmadan test için)
     DEMO_MODE = os.environ.get('DEMO_MODE', 'false').lower() in ('true', '1', 'yes')
     
+    # SQLite Database
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'sqlite:///studybuddy.db'
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
+    
+    # Seviye bazli soru sayilari ve zorluk dagilimi
+    LEVEL_SETTINGS = {
+        'elementary': {
+            'name': 'İlkokul (1-4. Sınıf)',
+            'age_range': '6-10 yaş',
+            'questions_per_type': 10,
+            'difficulty': {'simple': 80, 'medium': 20, 'advanced': 0, 'academic': 0}
+        },
+        'middle_school': {
+            'name': 'Ortaokul (5-8. Sınıf)',
+            'age_range': '11-14 yaş',
+            'questions_per_type': 15,
+            'difficulty': {'simple': 50, 'medium': 40, 'advanced': 10, 'academic': 0}
+        },
+        'high_school': {
+            'name': 'Lise (9-12. Sınıf)',
+            'age_range': '15-18 yaş',
+            'questions_per_type': 20,
+            'difficulty': {'simple': 30, 'medium': 50, 'advanced': 20, 'academic': 0}
+        },
+        'university': {
+            'name': 'Üniversite',
+            'age_range': '18+ yaş',
+            'questions_per_type': 25,
+            'difficulty': {'simple': 0, 'medium': 20, 'advanced': 60, 'academic': 20}
+        },
+        'exam_prep': {
+            'name': 'Sınav Hazırlığı (YKS, KPSS, vb.)',
+            'age_range': '17+ yaş',
+            'questions_per_type': 30,
+            'difficulty': {'simple': 20, 'medium': 40, 'advanced': 30, 'academic': 10}
+        }
+    }
+    
     # Dosya yükleme ayarları
     MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16 MB maksimum dosya boyutu
     UPLOAD_FOLDER = 'uploads'
