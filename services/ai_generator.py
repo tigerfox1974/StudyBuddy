@@ -356,33 +356,47 @@ Lütfen sadece JSON formatında yanıt ver."""
                 "explanation": response
             }]
     
-    def generate_short_answer(self, text: str, count: int = 5) -> List[Dict[str, str]]:
+    def generate_short_answer(self, text: str, count: int = 5, level: str = 'high_school', user_type: str = 'student') -> List[Dict[str, str]]:
         """
-        Kısa cevap soruları üretir
+        Seviyeye uygun kısa cevap soruları üretir
         
         Args:
             text: Soru üretilecek metin
             count: Üretilecek soru sayısı
+            level: Kullanıcı seviyesi
+            user_type: Kullanıcı tipi
             
         Returns:
-            Soru listesi [{"question": "...", "answer": "..."}]
+            Soru listesi [{"question": "...", "answer": "...", "topic": "..."}]
         """
-        prompt = f"""Aşağıdaki metinden {count} adet kısa cevap sorusu üret.
-Her soru açık uçlu olmalı ve öğrencinin konuyu anladığını test etmeli.
-Örnek cevapları da ver.
+        level_config = Config.LEVEL_SETTINGS.get(level, Config.LEVEL_SETTINGS['high_school'])
+        level_name = level_config['name']
+        
+        prompt = f"""Aşağıdaki metinden {level_name} seviyesine uygun {count} adet kısa cevap sorusu üret.
+
+HEDEF KİTLE: {level_name}
+KULLANICI TİPİ: {"Öğrenci" if user_type == "student" else "Öğretmen (sınıf için hazırlıyor)"}
+
+ÖNEMLİ KURALLAR:
+1. Metindeki BAŞLIKLARI, ÜNİTELERİ ve KONU BAŞLIKLARINI tespit et
+2. Her önemli konudan MUTLAKA sorular sor
+3. Sorular içeriği ÖĞRETİR nitelikte olmalı, sadece ezber değil
+4. Dili seviyeye uygun tut
+5. Her soruya detaylı örnek cevap ver
 
 Yanıtını JSON formatında ver:
 [
   {{
     "question": "Soru metni?",
-    "answer": "Örnek cevap"
+    "answer": "Detaylı örnek cevap",
+    "topic": "Konu başlığı"
   }}
 ]
 
 Metin:
 {text}
 
-Lütfen sadece JSON formatında yanıt ver, başka açıklama ekleme."""
+Lütfen sadece JSON formatında yanıt ver."""
 
         response = self._call_openai(prompt, temperature=0.7)
         
@@ -403,18 +417,34 @@ Lütfen sadece JSON formatında yanıt ver, başka açıklama ekleme."""
                 "answer": response
             }]
     
-    def generate_fill_blank(self, text: str, count: int = 5) -> List[Dict[str, Any]]:
+    def generate_fill_blank(self, text: str, count: int = 5, level: str = 'high_school', user_type: str = 'student') -> List[Dict[str, Any]]:
         """
-        Boş doldurma soruları üretir
+        Seviyeye uygun boş doldurma soruları üretir
         
         Args:
             text: Soru üretilecek metin
             count: Üretilecek soru sayısı
+            level: Kullanıcı seviyesi
+            user_type: Kullanıcı tipi
             
         Returns:
-            Soru listesi [{"question": "... ___ ...", "answer": "cevap", "options": [...]}]
+            Soru listesi [{"question": "... ___ ...", "answer": "cevap", "options": [...], "topic": "..."}]
         """
-        prompt = f"""Aşağıdaki metinden {count} adet boş doldurma sorusu üret.
+        level_config = Config.LEVEL_SETTINGS.get(level, Config.LEVEL_SETTINGS['high_school'])
+        level_name = level_config['name']
+        
+        prompt = f"""Aşağıdaki metinden {level_name} seviyesine uygun {count} adet boş doldurma sorusu üret.
+
+HEDEF KİTLE: {level_name}
+KULLANICI TİPİ: {"Öğrenci" if user_type == "student" else "Öğretmen (sınıf için hazırlıyor)"}
+
+ÖNEMLİ KURALLAR:
+1. Metindeki BAŞLIKLARI, ÜNİTELERİ ve KONU BAŞLIKLARINI tespit et
+2. Her önemli konudan MUTLAKA sorular sor
+3. Boş bırakılan yer önemli bir KAVRAM olmalı (sadece kelime değil)
+4. Yanlış şıklar mantıklı ama yanlış olmalı (çeldirici)
+5. Dili seviyeye uygun tut
+
 Her soruda önemli bir kelime veya kavram boş bırakılmalı (_____ ile gösterilmeli).
 Her soru için doğru cevabı ve 3 yanlış seçenek daha ver (toplam 4 seçenek).
 
@@ -422,15 +452,16 @@ Yanıtını JSON formatında ver:
 [
   {{
     "question": "Cümle metni _____ devam eder.",
-    "answer": "doğru kelime",
-    "options": ["doğru kelime", "yanlış1", "yanlış2", "yanlış3"]
+    "answer": "doğru kelime/kavram",
+    "options": ["doğru kelime/kavram", "yanlış1", "yanlış2", "yanlış3"],
+    "topic": "Konu başlığı"
   }}
 ]
 
 Metin:
 {text}
 
-Lütfen sadece JSON formatında yanıt ver, başka açıklama ekleme."""
+Lütfen sadece JSON formatında yanıt ver."""
 
         response = self._call_openai(prompt, temperature=0.7)
         
@@ -452,34 +483,49 @@ Lütfen sadece JSON formatında yanıt ver, başka açıklama ekleme."""
                 "options": ["hata", "tekrar", "dene", "lütfen"]
             }]
     
-    def generate_true_false(self, text: str, count: int = 5) -> List[Dict[str, Any]]:
+    def generate_true_false(self, text: str, count: int = 5, level: str = 'high_school', user_type: str = 'student') -> List[Dict[str, Any]]:
         """
-        Doğru-Yanlış soruları üretir
+        Seviyeye uygun doğru-yanlış soruları üretir
         
         Args:
             text: Soru üretilecek metin
             count: Üretilecek soru sayısı
+            level: Kullanıcı seviyesi
+            user_type: Kullanıcı tipi
             
         Returns:
-            Soru listesi [{"statement": "...", "is_true": true/false, "explanation": "..."}]
+            Soru listesi [{"statement": "...", "is_true": true/false, "explanation": "...", "topic": "..."}]
         """
-        prompt = f"""Aşağıdaki metinden {count} adet doğru-yanlış sorusu üret.
-Her ifade metindeki bilgilere dayanmalı.
-Hem doğru hem yanlış ifadeler olmalı.
+        level_config = Config.LEVEL_SETTINGS.get(level, Config.LEVEL_SETTINGS['high_school'])
+        level_name = level_config['name']
+        
+        prompt = f"""Aşağıdaki metinden {level_name} seviyesine uygun {count} adet doğru-yanlış sorusu üret.
+
+HEDEF KİTLE: {level_name}
+KULLANICI TİPİ: {"Öğrenci" if user_type == "student" else "Öğretmen (sınıf için hazırlıyor)"}
+
+ÖNEMLİ KURALLAR:
+1. Metindeki BAŞLIKLARI, ÜNİTELERİ ve KONU BAŞLIKLARINI tespit et
+2. Her önemli konudan MUTLAKA sorular sor
+3. Hem doğru hem yanlış ifadeler olmalı (yaklaşık %50-%50)
+4. Yanlış ifadeler mantıklı ama yanlış olmalı (çeldirici)
+5. Dili seviyeye uygun tut
+6. Her ifadeye detaylı açıklama ekle
 
 Yanıtını JSON formatında ver:
 [
   {{
     "statement": "İfade metni",
     "is_true": true,
-    "explanation": "Neden doğru/yanlış olduğunun açıklaması"
+    "explanation": "Detaylı açıklama: Neden doğru/yanlış olduğu",
+    "topic": "Konu başlığı"
   }}
 ]
 
 Metin:
 {text}
 
-Lütfen sadece JSON formatında yanıt ver, başka açıklama ekleme."""
+Lütfen sadece JSON formatında yanıt ver."""
 
         response = self._call_openai(prompt, temperature=0.7)
         

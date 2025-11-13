@@ -44,8 +44,19 @@
             box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
         }
         
+        .tabs-wrapper {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: white;
+            padding-top: 20px;
+            margin-top: -20px;
+            border-radius: 15px 15px 0 0;
+        }
+        
         .nav-tabs {
             border-bottom: 2px solid #e0e0e0;
+            background: white;
         }
         
         .nav-tabs .nav-link {
@@ -55,6 +66,7 @@
             margin-right: 5px;
             border-radius: 10px 10px 0 0;
             font-weight: 500;
+            transition: all 0.3s;
         }
         
         .nav-tabs .nav-link:hover {
