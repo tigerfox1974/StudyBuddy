@@ -257,6 +257,8 @@ Dokümanda ele alınan konular, öğrencilerin konuyu anlaması için gerekli te
         level_config = Config.LEVEL_SETTINGS.get(level, Config.LEVEL_SETTINGS['high_school'])
         age_desc = level_config['age_range']
         level_name = level_config['name']
+        short_cfg = level_config.get('short_answer', {'max_words': 4})
+        max_words = short_cfg.get('max_words', 4)
         
         prompt = f"""Aşağıdaki metni {level_name} ({age_desc}) seviyesindeki {"öğrenciler" if user_type == "student" else "öğretmenin sınıfı"} için anlaşılır ve kapsamlı bir şekilde özetle.
 
@@ -400,21 +402,18 @@ KULLANICI TİPİ: {"Öğrenci" if user_type == "student" else "Öğretmen (sın�
 2. Her önemli konudan MUTLAKA sorular sor
 3. Sorular içeriği ÖĞRETİR nitelikte olmalı, sadece ezber değil
 4. Dili seviyeye uygun tut
-5. Her soruya detaylı örnek cevap ver
-6. Her soru için 4 seçenek üret: 1 doğru cevap + 3 çeldirici seçenek
-7. Çeldirici seçenekler mantıklı ama yanlış olmalı, konuyla ilgili ama hatalı bilgiler içermeli
+5. Her cevabı en fazla {max_words} kelime olacak şekilde kısa, noktasız ifadeler halinde ver
+6. Her soru için aynı anlama gelebilecek en fazla 2 alternatif kısa ifade daha ekle (accepted_answers alanında listelenmiş halde)
 
 Yanıtını JSON formatında ver:
 [
   {{
     "question": "Soru metni?",
-    "answer": "Detaylı doğru cevap",
-    "options": ["Doğru cevap", "Çeldirici 1 (mantıklı ama yanlış)", "Çeldirici 2 (mantıklı ama yanlış)", "Çeldirici 3 (mantıklı ama yanlış)"],
+    "answer": "3-4 kelimelik kısa ifade",
+    "accepted_answers": ["alternatif 1", "alternatif 2"],
     "topic": "Konu başlığı"
   }}
 ]
-
-ÖNEMLİ: options dizisinin ilk elemanı MUTLAKA doğru cevap olmalı. Diğer 3 seçenek çeldirici olmalı.
 
 Metin:
 {text}
@@ -434,19 +433,22 @@ Lütfen sadece JSON formatında yanıt ver."""
             
             questions = json.loads(response_clean.strip())
             
-            # Kısa cevap için seçenekleri randomize et (ilk eleman doğru cevap)
+            def clamp_words(text: str) -> str:
+                words = text.strip().split()
+                if not words:
+                    return ""
+                return " ".join(words[:max_words])
+            
             for question in questions:
-                if 'options' in question and len(question['options']) > 0:
-                    options = question['options']
-                    correct_answer = options[0]  # İlk eleman doğru cevap
-                    
-                    # Seçenekleri karıştır
-                    random.shuffle(options)
-                    
-                    # Doğru cevabın yeni pozisyonunu answer alanına kaydet
-                    question['answer'] = correct_answer
-                    # options dizisinde doğru cevabın indeksini de sakla
-                    question['correct_answer_index'] = options.index(correct_answer)
+                question['answer'] = clamp_words(question.get('answer', ''))
+                
+                accepted = question.get('accepted_answers') or []
+                cleaned = []
+                for alt in accepted:
+                    clamped = clamp_words(alt)
+                    if clamped and clamped.lower() != question['answer'].lower():
+                        cleaned.append(clamped)
+                question['accepted_answers'] = cleaned[:2]
             
             return questions
         except json.JSONDecodeError:

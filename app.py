@@ -75,6 +75,8 @@ def process():
     # Profil ve seviye bilgilerini al
     user_level = request.form.get('level', 'high_school')
     user_type = request.form.get('user_type', 'student')
+    short_settings = Config.LEVEL_SETTINGS.get(user_level, Config.LEVEL_SETTINGS['high_school']).get('short_answer', {})
+    short_answer_max_words = short_settings.get('max_words', 4)
     
     try:
         emit_progress(5, 'Dosya yükleniyor...')
@@ -96,8 +98,8 @@ def process():
         cached_result = check_cache(file_hash, user_level, user_type)
         
         if cached_result:
-            # ✅ CACHE HIT - Daha önce işlenmiş!
-            print(f"✅ Cache hit! Token saved: ~{cached_result.token_used}")
+            # CACHE HIT - Daha once islenmis!
+            print(f"[CACHE HIT] Token saved: ~{cached_result.token_used}")
             
             # İstatistik güncelle
             stats = UsageStats.get_or_create()
@@ -116,10 +118,11 @@ def process():
                                    results=results_data,
                                    from_cache=True,
                                    user_level=user_level,
-                                   user_type=user_type)
+                                   user_type=user_type,
+                                   short_answer_max_words=short_answer_max_words)
         
-        # ❌ CACHE MISS - İlk defa işleniyor
-        print(f"❌ Cache miss - İşleniyor: {filename}")
+        # CACHE MISS - Ilk defa isleniyor
+        print(f"[CACHE MISS] Isleniyor: {filename}")
         
         emit_progress(25, 'Dosya kaydediliyor...')
         
@@ -189,7 +192,8 @@ def process():
                                    from_cache=False,
                                    user_level=user_level,
                                    user_type=user_type,
-                                   processing_time=processing_time)
+                                   processing_time=processing_time,
+                                   short_answer_max_words=short_answer_max_words)
         
         except ValueError as e:
             if os.path.exists(file_path):

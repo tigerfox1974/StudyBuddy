@@ -36,31 +36,36 @@ class Config:
             'name': 'İlkokul (1-4. Sınıf)',
             'age_range': '6-10 yaş',
             'questions_per_type': 10,
-            'difficulty': {'simple': 80, 'medium': 20, 'advanced': 0, 'academic': 0}
+            'difficulty': {'simple': 80, 'medium': 20, 'advanced': 0, 'academic': 0},
+            'short_answer': {'max_words': 3}
         },
         'middle_school': {
             'name': 'Ortaokul (5-8. Sınıf)',
             'age_range': '11-14 yaş',
             'questions_per_type': 15,
-            'difficulty': {'simple': 50, 'medium': 40, 'advanced': 10, 'academic': 0}
+            'difficulty': {'simple': 50, 'medium': 40, 'advanced': 10, 'academic': 0},
+            'short_answer': {'max_words': 4}
         },
         'high_school': {
             'name': 'Lise (9-12. Sınıf)',
             'age_range': '15-18 yaş',
             'questions_per_type': 20,
-            'difficulty': {'simple': 30, 'medium': 50, 'advanced': 20, 'academic': 0}
+            'difficulty': {'simple': 30, 'medium': 50, 'advanced': 20, 'academic': 0},
+            'short_answer': {'max_words': 5}
         },
         'university': {
             'name': 'Üniversite',
             'age_range': '18+ yaş',
             'questions_per_type': 25,
-            'difficulty': {'simple': 0, 'medium': 20, 'advanced': 60, 'academic': 20}
+            'difficulty': {'simple': 0, 'medium': 20, 'advanced': 60, 'academic': 20},
+            'short_answer': {'max_words': 7}
         },
         'exam_prep': {
             'name': 'Sınav Hazırlığı (YKS, KPSS, vb.)',
             'age_range': '17+ yaş',
             'questions_per_type': 30,
-            'difficulty': {'simple': 20, 'medium': 40, 'advanced': 30, 'academic': 10}
+            'difficulty': {'simple': 20, 'medium': 40, 'advanced': 30, 'academic': 10},
+            'short_answer': {'max_words': 7}
         }
     }
     
