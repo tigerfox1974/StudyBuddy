@@ -71,17 +71,34 @@ def save_to_cache(file_hash, filename, file_type, file_size, user_level, user_ty
     Returns:
         Result object
     """
-    # Yeni document kaydi olustur
-    # Artik composite unique constraint var, ayni kombinasyon varsa constraint hatasi almayiz
-    document = Document(
+    # Once ayni kombinasyon var mi kontrol et
+    existing_document = Document.query.filter_by(
         file_hash=file_hash,
-        original_filename=filename,
-        file_type=file_type,
-        file_size=file_size,
         user_level=user_level,
         user_type=user_type
-    )
-    db.session.add(document)
+    ).first()
+    
+    if existing_document:
+        # Mevcut document varsa, eski result'u sil ve yenisini olustur
+        # (Kullanici ayni dosyayi tekrar yuklerse guncel sonuc almali)
+        for old_result in existing_document.results:
+            db.session.delete(old_result)
+        document = existing_document
+        # Son erisim zamanini guncelle
+        from datetime import datetime
+        document.last_accessed = datetime.utcnow()
+    else:
+        # Yeni document kaydi olustur
+        document = Document(
+            file_hash=file_hash,
+            original_filename=filename,
+            file_type=file_type,
+            file_size=file_size,
+            user_level=user_level,
+            user_type=user_type
+        )
+        db.session.add(document)
+    
     db.session.flush()  # ID'yi al
     
     # Result kaydi olustur

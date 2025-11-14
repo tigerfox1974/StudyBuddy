@@ -326,6 +326,18 @@
             const progressContainer = document.getElementById('progressContainer');
             const progressBar = document.getElementById('progressBar');
             const progressText = document.getElementById('progressText');
+            const uploadArea = document.querySelector('.upload-area');
+            const fileInfo = document.getElementById('fileInfo');
+            const profileSelection = document.querySelector('.profile-selection');
+            const levelSelection = document.querySelector('.level-selection');
+            const features = document.querySelector('.features');
+            
+            // Formu gizle
+            uploadArea.style.display = 'none';
+            fileInfo.style.display = 'none';
+            profileSelection.style.display = 'none';
+            levelSelection.style.display = 'none';
+            features.style.display = 'none';
             
             submitBtn.classList.add('loading');
             submitBtn.disabled = true;

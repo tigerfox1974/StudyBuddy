@@ -13,13 +13,8 @@ class Document(db.Model):
     """Yuklenen dokumanlar"""
     __tablename__ = 'documents'
     
-    # Composite unique constraint: ayni dosya farkli level/type'da farkli sonuclar uretir
-    __table_args__ = (
-        db.UniqueConstraint('file_hash', 'user_level', 'user_type', name='uix_document_user'),
-    )
-    
     id = db.Column(db.Integer, primary_key=True)
-    file_hash = db.Column(db.String(32), nullable=False, index=True)  # unique=True KALDIRILDI
+    file_hash = db.Column(db.String(32), nullable=False, index=True)  # UNIQUE constraint yok - ayni dosya tekrar yuklenebilir
     original_filename = db.Column(db.String(255), nullable=False)
     file_type = db.Column(db.String(10), nullable=False)
     file_size = db.Column(db.Integer, nullable=False)

@@ -431,6 +431,26 @@
             color: white !important;
             border-color: #f44336 !important;
         }
+        
+        .short-answer-input,
+        .fill-blank-input {
+            border-width: 2px;
+            border-color: #d0d7ff;
+        }
+        
+        .short-answer-input:focus,
+        .fill-blank-input:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+        
+        .answer-status-text {
+            font-size: 0.9rem;
+        }
+        
+        .free-answer-feedback {
+            font-size: 0.95rem;
+        }
     </style>
 </head>
 <body>
@@ -521,18 +541,24 @@
                 <div class="tab-pane fade quiz-mode-active" id="multiple-choice" role="tabpanel">
                     <div class="quiz-header">
                         <h3>Çoktan Seçmeli Sorular <span class="badge-custom">{{ results.multiple_choice | length }}</span></h3>
-                        <div>
+                        <div class="d-flex flex-wrap gap-2">
                             <button class="btn btn-primary" onclick="toggleQuizMode('multiple-choice')" id="quiz-toggle-multiple-choice">
                                 <i class="bi bi-eye"></i> <span id="quiz-status-multiple-choice">Quiz Modu: Açık</span>
                             </button>
-                            <button class="btn btn-success" onclick="calculateScore('multiple-choice')" id="calculate-score-multiple-choice" style="display: inline-block; margin-left: 10px;">
+                            <button class="btn btn-success" onclick="calculateScore('multiple-choice')" id="calculate-score-multiple-choice" style="display: inline-block;">
                                 <i class="bi bi-calculator"></i> Skor Hesapla
+                            </button>
+                            <button class="btn btn-outline-secondary" onclick="resetQuiz('multiple-choice')" id="reset-multiple-choice" style="display: inline-block;">
+                                <i class="bi bi-arrow-counterclockwise"></i> Sıfırla
                             </button>
                         </div>
                     </div>
                     <div class="quiz-stats" id="quiz-stats-multiple-choice" style="display: block;">
                         <strong>Skorunuz:</strong> <span id="score-multiple-choice">0</span> / {{ results.multiple_choice | length }} 
                         (<span id="percentage-multiple-choice">0</span>%)
+                        <span class="ms-3 text-success"><i class="bi bi-check-circle-fill"></i> Doğru: <span id="correct-count-multiple-choice">0</span></span>
+                        <span class="ms-3 text-danger"><i class="bi bi-x-circle-fill"></i> Yanlış: <span id="wrong-count-multiple-choice">0</span></span>
+                        <span class="ms-3 text-primary"><i class="bi bi-info-circle-fill"></i> Boş: <span id="blank-count-multiple-choice">0</span></span>
                     </div>
                     {% for q in results.multiple_choice %}
                     <div class="question-card" data-question-id="mc-{{ loop.index }}" data-correct-answer="{{ q.correct_answer }}">
@@ -565,46 +591,48 @@
                 <div class="tab-pane fade quiz-mode-active" id="short-answer" role="tabpanel">
                     <div class="quiz-header">
                         <h3>Kısa Cevap Soruları <span class="badge-custom">{{ results.short_answer | length }}</span></h3>
-                        <div>
+                        <div class="d-flex flex-wrap gap-2">
                             <button class="btn btn-primary" onclick="toggleQuizMode('short-answer')" id="quiz-toggle-short-answer">
                                 <i class="bi bi-eye"></i> <span id="quiz-status-short-answer">Quiz Modu: Açık</span>
                             </button>
-                            <button class="btn btn-success" onclick="calculateScore('short-answer')" id="calculate-score-short-answer" style="display: inline-block; margin-left: 10px;">
+                            <button class="btn btn-success" onclick="calculateScore('short-answer')" id="calculate-score-short-answer" style="display: inline-block;">
                                 <i class="bi bi-calculator"></i> Skor Hesapla
+                            </button>
+                            <button class="btn btn-outline-secondary" onclick="resetQuiz('short-answer')" id="reset-short-answer" style="display: inline-block;">
+                                <i class="bi bi-arrow-counterclockwise"></i> Sıfırla
                             </button>
                         </div>
                     </div>
                     <div class="quiz-stats" id="quiz-stats-short-answer" style="display: block;">
                         <strong>Skorunuz:</strong> <span id="score-short-answer">0</span> / {{ results.short_answer | length }}
                         (<span id="percentage-short-answer">0</span>%)
+                        <span class="ms-3 text-success"><i class="bi bi-check-circle-fill"></i> Doğru: <span id="correct-count-short-answer">0</span></span>
+                        <span class="ms-3 text-danger"><i class="bi bi-x-circle-fill"></i> Yanlış: <span id="wrong-count-short-answer">0</span></span>
+                        <span class="ms-3 text-primary"><i class="bi bi-info-circle-fill"></i> Boş: <span id="blank-count-short-answer">0</span></span>
                     </div>
                     {% for q in results.short_answer %}
-                    <div class="question-card" data-question-id="sa-{{ loop.index }}" data-correct-answer="{{ q.answer }}" {% if q.correct_answer_index is defined %}data-correct-index="{{ q.correct_answer_index }}"{% endif %}>
+                    <div class="question-card"
+                         data-question-id="sa-{{ loop.index }}"
+                         data-correct-answer="{{ q.answer }}"
+                         data-alt-answers='{{ (q.accepted_answers if q.accepted_answers is defined else []) | tojson | safe }}'>
                         <div class="mb-3">
                             <span class="question-number">{{ loop.index }}</span>
                             <strong>{{ q.question }}</strong>
                         </div>
-                        {% if q.options %}
-                        <!-- Çeldirici seçenekler - çoktan seçmeli gibi göster -->
-                        {% for option in q.options %}
-                        <div class="option quiz-option" 
-                             data-option-value="{{ option }}"
-                             data-correct="{% if q.correct_answer_index is defined and loop.index0 == q.correct_answer_index %}true{% elif option == q.answer %}true{% else %}false{% endif %}"
-                             data-question="sa-{{ loop.index }}"
-                             onclick="selectAnswerQuiz(this, 'sa-{{ loop.index }}', '{{ q.answer }}')">
-                            <strong>{{ ['A', 'B', 'C', 'D'][loop.index0] }})</strong> {{ option }}
-                            {% if q.correct_answer_index is defined and loop.index0 == q.correct_answer_index %}
-                            <i class="bi bi-check-circle-fill text-success float-end answer-icon"></i>
-                            {% elif option == q.answer %}
-                            <i class="bi bi-check-circle-fill text-success float-end answer-icon"></i>
-                            {% endif %}
+                        <div class="mb-2">
+                            <textarea class="form-control short-answer-input"
+                                      rows="2"
+                                      placeholder="En fazla {{ short_answer_max_words }} kelime yazın"
+                                      data-max-words="{{ short_answer_max_words }}"
+                                      id="short-answer-input-{{ loop.index }}"></textarea>
                         </div>
-                        {% endfor %}
-                        {% endif %}
-                        <div class="alert alert-info mb-0 answer-reveal" style="display: none;">
-                            <strong><i class="bi bi-lightbulb"></i> Örnek Cevap:</strong><br>
-                            {{ q.answer }}
+                        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="saveShortAnswer('sa-{{ loop.index }}')">
+                                <i class="bi bi-save"></i> Cevabı Kaydet
+                            </button>
+                            <small class="answer-status-text text-muted" id="short-status-sa-{{ loop.index }}">Henüz cevap girilmedi.</small>
                         </div>
+                        <div class="free-answer-feedback alert mt-3" style="display: none;"></div>
                     </div>
                     {% endfor %}
                 </div>
@@ -613,43 +641,44 @@
                 <div class="tab-pane fade quiz-mode-active" id="fill-blank" role="tabpanel">
                     <div class="quiz-header">
                         <h3>Boş Doldurma Soruları <span class="badge-custom">{{ results.fill_blank | length }}</span></h3>
-                        <div>
+                        <div class="d-flex flex-wrap gap-2">
                             <button class="btn btn-primary" onclick="toggleQuizMode('fill-blank')" id="quiz-toggle-fill-blank">
                                 <i class="bi bi-eye"></i> <span id="quiz-status-fill-blank">Quiz Modu: Açık</span>
                             </button>
-                            <button class="btn btn-success" onclick="calculateScore('fill-blank')" id="calculate-score-fill-blank" style="display: inline-block; margin-left: 10px;">
+                            <button class="btn btn-success" onclick="calculateScore('fill-blank')" id="calculate-score-fill-blank" style="display: inline-block;">
                                 <i class="bi bi-calculator"></i> Skor Hesapla
+                            </button>
+                            <button class="btn btn-outline-secondary" onclick="resetQuiz('fill-blank')" id="reset-fill-blank" style="display: inline-block;">
+                                <i class="bi bi-arrow-counterclockwise"></i> Sıfırla
                             </button>
                         </div>
                     </div>
                     <div class="quiz-stats" id="quiz-stats-fill-blank" style="display: block;">
                         <strong>Skorunuz:</strong> <span id="score-fill-blank">0</span> / {{ results.fill_blank | length }}
                         (<span id="percentage-fill-blank">0</span>%)
+                        <span class="ms-3 text-success"><i class="bi bi-check-circle-fill"></i> Doğru: <span id="correct-count-fill-blank">0</span></span>
+                        <span class="ms-3 text-danger"><i class="bi bi-x-circle-fill"></i> Yanlış: <span id="wrong-count-fill-blank">0</span></span>
+                        <span class="ms-3 text-primary"><i class="bi bi-info-circle-fill"></i> Boş: <span id="blank-count-fill-blank">0</span></span>
                     </div>
                     {% for q in results.fill_blank %}
-                    <div class="question-card" data-question-id="fb-{{ loop.index }}" data-correct-answer="{{ q.answer }}">
+                    <div class="question-card"
+                         data-question-id="fb-{{ loop.index }}"
+                         data-correct-answer="{{ q.answer }}"
+                         data-alt-answers='{{ (q.accepted_answers if q.accepted_answers is defined else []) | tojson | safe }}'>
                         <div class="mb-3">
                             <span class="question-number">{{ loop.index }}</span>
                             <strong>{{ q.question }}</strong>
                         </div>
-                        {% if q.options %}
-                        {% for option in q.options %}
-                        <div class="option quiz-option" 
-                             data-option-value="{{ option }}"
-                             data-correct="{% if option == q.answer %}true{% else %}false{% endif %}"
-                             data-question="fb-{{ loop.index }}"
-                             onclick="selectAnswerQuiz(this, 'fb-{{ loop.index }}', '{{ q.answer }}')">
-                            <strong>{{ ['A', 'B', 'C', 'D'][loop.index0] }})</strong> {{ option }}
-                            {% if option == q.answer %}
-                            <i class="bi bi-check-circle-fill text-success float-end answer-icon"></i>
-                            {% endif %}
+                        <div class="mb-2">
+                            <input type="text" class="form-control fill-blank-input" placeholder="Boşluğu doldurun" id="fill-blank-input-{{ loop.index }}">
                         </div>
-                        {% endfor %}
-                        {% else %}
-                        <div class="alert alert-success mb-0 answer-reveal" style="display: none;">
-                            <strong><i class="bi bi-check-lg"></i> Cevap:</strong> {{ q.answer }}
+                        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="saveFillBlank('fb-{{ loop.index }}')">
+                                <i class="bi bi-save"></i> Cevabı Kaydet
+                            </button>
+                            <small class="answer-status-text text-muted" id="fill-status-fb-{{ loop.index }}">Henüz cevap girilmedi.</small>
                         </div>
-                        {% endif %}
+                        <div class="free-answer-feedback alert mt-3" style="display: none;"></div>
                     </div>
                     {% endfor %}
                 </div>
@@ -658,18 +687,24 @@
                 <div class="tab-pane fade quiz-mode-active" id="true-false" role="tabpanel">
                     <div class="quiz-header">
                         <h3>Doğru-Yanlış Soruları <span class="badge-custom">{{ results.true_false | length }}</span></h3>
-                        <div>
+                        <div class="d-flex flex-wrap gap-2">
                             <button class="btn btn-primary" onclick="toggleQuizMode('true-false')" id="quiz-toggle-true-false">
                                 <i class="bi bi-eye"></i> <span id="quiz-status-true-false">Quiz Modu: Açık</span>
                             </button>
-                            <button class="btn btn-success" onclick="calculateScore('true-false')" id="calculate-score-true-false" style="display: inline-block; margin-left: 10px;">
+                            <button class="btn btn-success" onclick="calculateScore('true-false')" id="calculate-score-true-false" style="display: inline-block;">
                                 <i class="bi bi-calculator"></i> Skor Hesapla
+                            </button>
+                            <button class="btn btn-outline-secondary" onclick="resetQuiz('true-false')" id="reset-true-false" style="display: inline-block;">
+                                <i class="bi bi-arrow-counterclockwise"></i> Sıfırla
                             </button>
                         </div>
                     </div>
                     <div class="quiz-stats" id="quiz-stats-true-false" style="display: block;">
                         <strong>Skorunuz:</strong> <span id="score-true-false">0</span> / {{ results.true_false | length }}
                         (<span id="percentage-true-false">0</span>%)
+                        <span class="ms-3 text-success"><i class="bi bi-check-circle-fill"></i> Doğru: <span id="correct-count-true-false">0</span></span>
+                        <span class="ms-3 text-danger"><i class="bi bi-x-circle-fill"></i> Yanlış: <span id="wrong-count-true-false">0</span></span>
+                        <span class="ms-3 text-primary"><i class="bi bi-info-circle-fill"></i> Boş: <span id="blank-count-true-false">0</span></span>
                     </div>
                     {% for q in results.true_false %}
                     <div class="true-false-card" data-question-id="tf-{{ loop.index }}" data-correct-answer="{% if q.is_true %}true{% else %}false{% endif %}">
@@ -746,14 +781,6 @@
             'true-false': true
         };
         
-        // Kullanıcı cevapları
-        let userAnswers = {
-            'multiple-choice': {},
-            'short-answer': {},
-            'fill-blank': {},
-            'true-false': {}
-        };
-        
         // Skor hesaplama durumu
         let scoresCalculated = {
             'multiple-choice': false,
@@ -761,6 +788,168 @@
             'fill-blank': false,
             'true-false': false
         };
+        
+        const SHORT_ANSWER_THRESHOLD = 0.9;
+        const SHORT_ANSWER_PARTIAL_THRESHOLD = 0.75;
+        const FILL_BLANK_THRESHOLD = 0.95;
+        
+        function normalizeText(text) {
+            if (!text) return '';
+            const map = { 'ı': 'i', 'ğ': 'g', 'ş': 's', 'ö': 'o', 'ü': 'u', 'ç': 'c' };
+            return text
+                .toLowerCase()
+                .trim()
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '')
+                .replace(/[ığşöüç]/g, match => map[match] || match)
+                .replace(/[^\w\s]/g, ' ')
+                .replace(/\s+/g, ' ')
+                .trim();
+        }
+        
+        function levenshtein(a, b) {
+            if (a === b) return 0;
+            if (!a) return b.length;
+            if (!b) return a.length;
+            const matrix = Array.from({ length: a.length + 1 }, () => new Array(b.length + 1).fill(0));
+            for (let i = 0; i <= a.length; i++) matrix[i][0] = i;
+            for (let j = 0; j <= b.length; j++) matrix[0][j] = j;
+            for (let i = 1; i <= a.length; i++) {
+                for (let j = 1; j <= b.length; j++) {
+                    const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+                    matrix[i][j] = Math.min(
+                        matrix[i - 1][j] + 1,
+                        matrix[i][j - 1] + 1,
+                        matrix[i - 1][j - 1] + cost
+                    );
+                }
+            }
+            return matrix[a.length][b.length];
+        }
+        
+        function similarityScore(a, b) {
+            if (!a.length || !b.length) return 0;
+            const distance = levenshtein(a, b);
+            return 1 - distance / Math.max(a.length, b.length);
+        }
+        
+        function updateStatusText(element, state, extra = {}) {
+            if (!element) return;
+            element.classList.remove('text-muted', 'text-success', 'text-danger', 'text-warning');
+            switch (state) {
+                case 'saved':
+                    element.textContent = 'Cevabınız kaydedildi.';
+                    element.classList.add('text-success');
+                    break;
+                case 'partial':
+                    element.textContent = 'Cevabınız değerlendirildi (kısmen doğru).';
+                    element.classList.add('text-warning');
+                    break;
+                case 'wrong':
+                    element.textContent = 'Cevabınız değerlendirildi.';
+                    element.classList.add('text-danger');
+                    break;
+                case 'too-long':
+                    element.textContent = `En fazla ${extra.maxWords || '?'} kelime yazabilirsiniz.`;
+                    element.classList.add('text-warning');
+                    break;
+                default:
+                    element.textContent = 'Henüz cevap girilmedi.';
+                    element.classList.add('text-muted');
+            }
+        }
+        
+        function showFreeAnswerFeedback(card, status, payload = {}) {
+            const feedback = card.querySelector('.free-answer-feedback');
+            if (!feedback) return;
+            
+            feedback.classList.remove('alert-success', 'alert-warning', 'alert-danger', 'alert-primary', 'alert-info');
+            
+            if (status === 'hidden') {
+                feedback.style.display = 'none';
+                feedback.innerHTML = '';
+                return;
+            }
+            
+            let icon = 'info-circle';
+            let textClass = 'alert-primary';
+            let content = '';
+            
+            if (status === 'blank') {
+                textClass = 'alert-primary';
+                icon = 'info-circle';
+                content = `<strong>Cevap girilmedi.</strong><br>Örnek cevap: <em>${payload.correct || '-'}</em>`;
+            } else if (status === 'correct') {
+                textClass = 'alert-success';
+                icon = 'check-circle';
+                content = `<strong>Tebrikler! Doğru cevap.</strong><br>Benzerlik: ${(payload.similarity * 100).toFixed(0)}%<br>Sizin cevabınız: <em>${payload.user}</em>`;
+            } else if (status === 'partial') {
+                textClass = 'alert-warning';
+                icon = 'exclamation-triangle';
+                content = `<strong>Neredeyse doğru!</strong><br>Benzerlik: ${(payload.similarity * 100).toFixed(0)}%<br>Sizin cevabınız: <em>${payload.user}</em><br>Örnek cevap: <em>${payload.correct}</em>`;
+            } else if (status === 'wrong') {
+                textClass = 'alert-danger';
+                icon = 'x-circle';
+                content = `<strong>Yanlış cevap.</strong><br>Benzerlik: ${(payload.similarity * 100).toFixed(0)}%<br>Sizin cevabınız: <em>${payload.user}</em><br>Örnek cevap: <em>${payload.correct}</em>`;
+            }
+            
+            feedback.classList.add(textClass);
+            feedback.innerHTML = `<i class="bi bi-${icon}"></i> ${content}`;
+            feedback.style.display = 'block';
+        }
+        
+        function saveShortAnswer(questionId) {
+            const card = document.querySelector(`[data-question-id="${questionId}"]`);
+            if (!card) return;
+            const textarea = card.querySelector('.short-answer-input');
+            const status = card.querySelector('.answer-status-text');
+            if (!textarea) return;
+            const value = textarea.value.trim();
+            const maxWords = parseInt(textarea.dataset.maxWords || '6', 10);
+            const words = value.split(/\s+/).filter(Boolean);
+            
+            if (!value) {
+                delete card.dataset.userAnswer;
+                updateStatusText(status, 'empty');
+                showFreeAnswerFeedback(card, 'hidden');
+                return;
+            }
+            
+            if (words.length > maxWords) {
+                updateStatusText(status, 'too-long', { maxWords });
+                showFreeAnswerFeedback(card, 'hidden');
+                return;
+            }
+            
+            const limitedValue = words.slice(0, maxWords).join(' ');
+            if (limitedValue !== value) {
+                textarea.value = limitedValue;
+            }
+            
+            card.dataset.userAnswer = limitedValue;
+            updateStatusText(status, 'saved');
+            showFreeAnswerFeedback(card, 'hidden');
+        }
+        
+        function saveFillBlank(questionId) {
+            const card = document.querySelector(`[data-question-id="${questionId}"]`);
+            if (!card) return;
+            const input = card.querySelector('.fill-blank-input');
+            const status = card.querySelector('.answer-status-text');
+            if (!input) return;
+            const value = input.value.trim();
+            
+            if (!value) {
+                delete card.dataset.userAnswer;
+                updateStatusText(status, 'empty');
+                showFreeAnswerFeedback(card, 'hidden');
+                return;
+            }
+            
+            card.dataset.userAnswer = value;
+            updateStatusText(status, 'saved');
+            showFreeAnswerFeedback(card, 'hidden');
+        }
         
         // Quiz modunu aç/kapat
         function toggleQuizMode(type) {
@@ -770,6 +959,7 @@
             const statusSpan = document.getElementById('quiz-status-' + type);
             const statsDiv = document.getElementById('quiz-stats-' + type);
             const calculateBtn = document.getElementById('calculate-score-' + type);
+            const resetBtn = document.getElementById('reset-' + type);
             
             if (quizModeActive[type]) {
                 // Quiz modu açılıyor
@@ -784,6 +974,7 @@
                 }
                 if (statsDiv) statsDiv.style.display = 'block';
                 if (calculateBtn) calculateBtn.style.display = 'inline-block';
+                if (resetBtn) resetBtn.style.display = 'inline-block';
                 
                 // Doğru-yanlış için butonları göster, badge'i gizle
                 if (type === 'true-false') {
@@ -794,7 +985,6 @@
                 // Tüm seçimleri temizle
                 resetQuizSelections(type);
                 scoresCalculated[type] = false;
-                userAnswers[type] = {};
                 
                 // Skoru sıfırla
                 const scoreElement = document.getElementById('score-' + type);
@@ -814,6 +1004,7 @@
                 }
                 if (statsDiv) statsDiv.style.display = 'none';
                 if (calculateBtn) calculateBtn.style.display = 'none';
+                if (resetBtn) resetBtn.style.display = 'none';
                 
                 // Doğru-yanlış için butonları gizle, badge'i göster
                 if (type === 'true-false') {
@@ -823,7 +1014,6 @@
                 
                 // Tüm seçimleri ve skorları temizle
                 resetQuizSelections(type);
-                userAnswers[type] = {};
                 scoresCalculated[type] = false;
                 
                 // Cevapları tekrar göster
@@ -851,6 +1041,11 @@
                 }
             });
             
+            // Kullanıcı cevaplarını temizle
+            tabPane.querySelectorAll('.question-card, .true-false-card').forEach(card => {
+                delete card.dataset.userAnswer;
+            });
+            
             // Doğru-yanlış butonları
             tabPane.querySelectorAll('.quiz-tf-btn').forEach(btn => {
                 btn.classList.remove('selected-true', 'selected-false', 'selected-correct', 'selected-wrong');
@@ -863,9 +1058,25 @@
                 icon.style.display = 'none';
             });
             
-            // Kısa cevap textarea'ları
-            tabPane.querySelectorAll('.quiz-textarea').forEach(textarea => {
-                textarea.value = '';
+            tabPane.querySelectorAll('.short-answer-input').forEach(input => {
+                input.value = '';
+                input.disabled = false;
+            });
+            
+            tabPane.querySelectorAll('.fill-blank-input').forEach(input => {
+                input.value = '';
+                input.disabled = false;
+            });
+            
+            tabPane.querySelectorAll('.answer-status-text').forEach(status => {
+                updateStatusText(status, 'empty');
+            });
+            
+            tabPane.querySelectorAll('.free-answer-feedback').forEach(el => {
+                el.style.display = 'none';
+                el.innerHTML = '';
+                el.classList.remove('alert-success', 'alert-warning', 'alert-danger', 'alert-primary', 'alert-info');
+                el.classList.add('alert');
             });
             
             // Açıklamaları ve cevapları gizle
@@ -882,10 +1093,14 @@
             else if (questionId.startsWith('sa-')) type = 'short-answer';
             
             // Skor hesaplandıysa veya quiz modu kapalıysa çık
-            if (!quizModeActive[type] || scoresCalculated[type]) return;
+            if (!quizModeActive[type] || scoresCalculated[type]) {
+                return;
+            }
             
             const questionCard = element.closest('.question-card');
-            if (!questionCard) return;
+            if (!questionCard) {
+                return;
+            }
             
             const allOptions = questionCard.querySelectorAll('.quiz-option');
             
@@ -899,18 +1114,10 @@
             
             // Kullanıcı cevabını kaydet
             if (type === 'multiple-choice') {
-                userAnswers[type][questionId] = parseInt(element.dataset.optionIndex);
+                questionCard.dataset.userAnswer = element.dataset.optionIndex;
             } else {
-                userAnswers[type][questionId] = element.dataset.optionValue;
+                questionCard.dataset.userAnswer = element.dataset.optionValue;
             }
-            
-            console.log(`[${type}] Soru: ${questionId}, Cevap:`, userAnswers[type][questionId]);
-        }
-        
-        // Kısa cevap için metin kaydetme
-        function saveTextAnswer(questionId, answer) {
-            if (!quizModeActive['short-answer'] || scoresCalculated['short-answer']) return;
-            userAnswers['short-answer'][questionId] = answer;
         }
         
         // Doğru-yanlış seçimi
@@ -932,7 +1139,9 @@
             }
             
             // Kullanıcı cevabını kaydet
-            userAnswers['true-false'][questionId] = value;
+            if (questionCard) {
+                questionCard.dataset.userAnswer = value ? 'true' : 'false';
+            }
         }
         
         // Skor hesapla (tüm soru tipleri için)
@@ -950,29 +1159,58 @@
                 return;
             }
             
-            // Önceki hesaplamayı temizle
-            if (scoresCalculated[type]) {
-                console.log('Önceki hesaplama temizleniyor...');
-                resetQuizSelections(type);
-                scoresCalculated[type] = false;
-            }
+            // HER ZAMAN ÖNCEKİ TÜM RENKLERİ VE İŞARETLERİ TEMİZLE! (SARI KALSIN)
+            console.log('Önceki tüm işaretler temizleniyor...');
+            tabPane.querySelectorAll('.quiz-option').forEach(el => {
+                // Sadece hesaplama sonucu renklerini temizle, SARIYI KORU
+                el.classList.remove('user-selected-correct', 'user-selected-wrong', 'show-correct-answer', 'no-answer-given');
+                el.style.pointerEvents = '';
+                
+                // Info ikonlarını kaldır
+                const infoWrapper = el.querySelector('.info-icon-wrapper');
+                if (infoWrapper) {
+                    infoWrapper.remove();
+                }
+            });
+            
+            // Doğru-yanlış için de temizle
+            tabPane.querySelectorAll('.quiz-tf-btn').forEach(btn => {
+                btn.classList.remove('selected-true', 'selected-false', 'selected-correct', 'selected-wrong');
+                btn.disabled = false;
+            });
+            
+            tabPane.querySelectorAll('.answer-status-icon').forEach(icon => {
+                icon.innerHTML = '';
+                icon.style.display = 'none';
+            });
             
             const questionCards = tabPane.querySelectorAll('.question-card, .true-false-card');
             let correctCount = 0;
+            let wrongCount = 0;
+            let blankCount = 0;
             let totalQuestions = questionCards.length;
             
-            console.log(`Toplam ${totalQuestions} soru bulundu`);
-            console.log('Kullanıcı cevapları:', userAnswers[type]);
-            
             questionCards.forEach((card, index) => {
-                const questionId = card.dataset.questionId;
-                const userAnswer = userAnswers[type][questionId];
-                
-                console.log(`Soru ${index + 1} (${questionId}):`, {
-                    userAnswer,
-                    correctAnswer: card.dataset.correctAnswer
-                });
-                
+                let userAnswer = card.dataset.userAnswer;
+                if (userAnswer !== undefined) {
+                    if (type === 'multiple-choice') {
+                        userAnswer = parseInt(userAnswer);
+                    } else if (type === 'true-false') {
+                        userAnswer = userAnswer === 'true';
+                    }
+                } else if (type === 'short-answer') {
+                    const textarea = card.querySelector('.short-answer-input');
+                    if (textarea && textarea.value.trim()) {
+                        userAnswer = textarea.value.trim();
+                        card.dataset.userAnswer = userAnswer;
+                    }
+                } else if (type === 'fill-blank') {
+                    const input = card.querySelector('.fill-blank-input');
+                    if (input && input.value.trim()) {
+                        userAnswer = input.value.trim();
+                        card.dataset.userAnswer = userAnswer;
+                    }
+                }
                 if (type === 'multiple-choice') {
                     // ========== ÇOKTAN SEÇMELİ ==========
                     const correctAnswer = parseInt(card.dataset.correctAnswer);
@@ -997,9 +1235,10 @@
                         } else {
                             // YANLIŞ CEVAP: Seçilen kırmızı, doğru olan yeşil
                             userSelectedOption.classList.add('user-selected-wrong');
-                            if (correctOption) {
+                            if (correctOption && correctOption !== userSelectedOption) {
                                 correctOption.classList.add('show-correct-answer');
                             }
+                            wrongCount++;
                             console.log(`✗ Yanlış cevap`);
                         }
                     } else {
@@ -1017,76 +1256,66 @@
                             correctOption.appendChild(infoWrapper);
                         }
                         console.log(`- Cevap verilmedi (MAVİ)`);
+                        blankCount++;
                     }
                     
-                    // İkonları göster (sadece yeşiller için checkmark)
+                    // Tüm seçenekleri devre dışı bırak
                     allOptions.forEach(opt => {
-                        const icon = opt.querySelector('.answer-icon');
-                        if (icon && (opt.classList.contains('user-selected-correct') || opt.classList.contains('show-correct-answer'))) {
-                            icon.style.display = 'block';
-                        }
                         opt.style.pointerEvents = 'none';
                     });
                     
                 } else if (type === 'fill-blank' || type === 'short-answer') {
-                    // ========== BOŞ DOLDURMA VE KISA CEVAP ==========
-                    const correctAnswer = card.dataset.correctAnswer;
-                    const allOptions = card.querySelectorAll('.quiz-option');
+                    const correctAnswer = card.dataset.correctAnswer || '';
+                    const altAnswers = card.dataset.altAnswers ? JSON.parse(card.dataset.altAnswers) : [];
+                    const statusText = card.querySelector('.answer-status-text');
+                    const rawAnswer = typeof userAnswer === 'string' ? userAnswer.trim() : '';
+                    const threshold = type === 'short-answer' ? SHORT_ANSWER_THRESHOLD : FILL_BLANK_THRESHOLD;
+                    const partialThreshold = type === 'short-answer' ? SHORT_ANSWER_PARTIAL_THRESHOLD : FILL_BLANK_THRESHOLD;
+                    const candidates = [correctAnswer, ...altAnswers].filter(ans => ans && ans.trim());
                     
-                    if (allOptions.length === 0) {
-                        console.log('Bu soru için seçenek yok, atlanıyor');
-                        return;
-                    }
-                    
-                    // Doğru şıkkı bul
-                    const correctOption = card.querySelector(`.quiz-option[data-option-value="${correctAnswer}"]`);
-                    
-                    // Kullanıcının seçtiği şıkkı bul
-                    const userSelectedOption = userAnswer !== undefined ? 
-                        card.querySelector(`.quiz-option[data-option-value="${userAnswer}"]`) : null;
-                    
-                    if (userSelectedOption) {
-                        // Sarı işareti kaldır
-                        userSelectedOption.classList.remove('user-selected');
-                        
-                        if (userAnswer === correctAnswer) {
-                            // DOĞRU CEVAP: Sadece seçilen şık yeşil
-                            userSelectedOption.classList.add('user-selected-correct');
-                            correctCount++;
-                            console.log(`✓ Doğru cevap!`);
-                        } else {
-                            // YANLIŞ CEVAP: Seçilen kırmızı, doğru olan yeşil
-                            userSelectedOption.classList.add('user-selected-wrong');
-                            if (correctOption) {
-                                correctOption.classList.add('show-correct-answer');
-                            }
-                            console.log(`✗ Yanlış cevap`);
-                        }
+                    if (!rawAnswer) {
+                        blankCount++;
+                        showFreeAnswerFeedback(card, 'blank', { correct: correctAnswer });
+                        updateStatusText(statusText, 'empty');
                     } else {
-                        // CEVAP VERİLMEDİ: Doğru cevabı MAVİ göster + info ikonu
-                        if (correctOption) {
-                            correctOption.classList.add('no-answer-given');
-                            
-                            // Info ikonu ekle
-                            const infoWrapper = document.createElement('span');
-                            infoWrapper.className = 'info-icon-wrapper float-end';
-                            infoWrapper.innerHTML = `
-                                <i class="bi bi-info-circle-fill info-icon"></i>
-                                <span class="info-tooltip">Cevap verilmedi</span>
-                            `;
-                            correctOption.appendChild(infoWrapper);
+                        const normalizedUser = normalizeText(rawAnswer);
+                        let bestSimilarity = 0;
+                        let bestReference = correctAnswer;
+                        
+                        candidates.forEach(candidate => {
+                            const similarity = similarityScore(normalizedUser, normalizeText(candidate));
+                            if (similarity > bestSimilarity) {
+                                bestSimilarity = similarity;
+                                bestReference = candidate;
+                            }
+                        });
+                        
+                        if (bestSimilarity >= threshold) {
+                            correctCount++;
+                            showFreeAnswerFeedback(card, 'correct', {
+                                user: rawAnswer,
+                                correct: bestReference,
+                                similarity: bestSimilarity
+                            });
+                            updateStatusText(statusText, 'saved');
+                        } else if (type === 'short-answer' && bestSimilarity >= partialThreshold) {
+                            wrongCount++;
+                            showFreeAnswerFeedback(card, 'partial', {
+                                user: rawAnswer,
+                                correct: bestReference,
+                                similarity: bestSimilarity
+                            });
+                            updateStatusText(statusText, 'partial');
+                        } else {
+                            wrongCount++;
+                            showFreeAnswerFeedback(card, 'wrong', {
+                                user: rawAnswer,
+                                correct: bestReference,
+                                similarity: bestSimilarity
+                            });
+                            updateStatusText(statusText, 'wrong');
                         }
-                        console.log(`- Cevap verilmedi (MAVİ)`);
                     }
-                    
-                    // İkonları göster (sadece yeşiller için checkmark)
-                    allOptions.forEach(opt => {
-                        const icon = opt.querySelector('.answer-icon');
-                        if (icon && (opt.classList.contains('user-selected-correct') || opt.classList.contains('show-correct-answer'))) {
-                            icon.style.display = 'block';
-                        }
-                        opt.style.pointerEvents = 'none';
-                    });
                     
                 } else if (type === 'true-false') {
                     // Doğru-yanlış
@@ -1114,6 +1343,7 @@
                             if (correctBtn) correctBtn.classList.add('selected-correct');
                             if (answerBadge) answerBadge.style.display = 'inline-block';
                             userSelectedBtn.classList.add('selected-wrong');
+                            wrongCount++;
                             // Kırmızı çarpı ikonu
                             if (statusIcon) {
                                 statusIcon.innerHTML = '<i class="bi bi-x-circle-fill text-danger"></i>';
@@ -1124,6 +1354,7 @@
                         // Kullanıcı hiçbir şey seçmedi → Sadece doğru cevabı göster
                         if (correctBtn) correctBtn.classList.add('selected-correct');
                         if (answerBadge) answerBadge.style.display = 'inline-block';
+                        blankCount++;
                     }
                     
                     // Tüm butonları devre dışı bırak
@@ -1152,9 +1383,45 @@
                 percentageElement.textContent = percentage;
             }
             
+            const correctSpan = document.getElementById('correct-count-' + type);
+            if (correctSpan) correctSpan.textContent = correctCount;
+            const wrongSpan = document.getElementById('wrong-count-' + type);
+            if (wrongSpan) wrongSpan.textContent = wrongCount;
+            const blankSpan = document.getElementById('blank-count-' + type);
+            if (blankSpan) blankSpan.textContent = blankCount;
+            
             scoresCalculated[type] = true;
             
             console.log(`=== SONUÇ: ${correctCount}/${totalQuestions} (${Math.round((correctCount/totalQuestions)*100)}%) ===`);
+        }
+        
+        function resetQuiz(type) {
+            const tabPane = document.getElementById(type);
+            if (!tabPane) return;
+            
+            resetQuizSelections(type);
+            scoresCalculated[type] = false;
+            
+            // İstatistikleri sıfırla
+            const scoreElement = document.getElementById('score-' + type);
+            if (scoreElement) scoreElement.textContent = '0';
+            const percentageElement = document.getElementById('percentage-' + type);
+            if (percentageElement) percentageElement.textContent = '0';
+            
+            const correctSpan = document.getElementById('correct-count-' + type);
+            if (correctSpan) correctSpan.textContent = '0';
+            const wrongSpan = document.getElementById('wrong-count-' + type);
+            if (wrongSpan) wrongSpan.textContent = '0';
+            const blankSpan = document.getElementById('blank-count-' + type);
+            if (blankSpan) blankSpan.textContent = '0';
+            
+            // Quiz modu aktifse sarı şıkların kalması için pointerEvents açık bırak
+            tabPane.querySelectorAll('.quiz-option').forEach(opt => {
+                opt.style.pointerEvents = '';
+            });
+            tabPane.querySelectorAll('.quiz-tf-btn').forEach(btn => {
+                btn.disabled = false;
+            });
         }
         
         // Yazdırma özelliği için
@@ -1175,6 +1442,7 @@
                     const toggleBtn = document.getElementById('quiz-toggle-' + type);
                     const statsDiv = document.getElementById('quiz-stats-' + type);
                     const calculateBtn = document.getElementById('calculate-score-' + type);
+                    const resetBtn = document.getElementById('reset-' + type);
                     
                     if (statusSpan) {
                         statusSpan.textContent = 'Quiz Modu: Açık';
@@ -1186,6 +1454,7 @@
                     }
                     if (statsDiv) statsDiv.style.display = 'block';
                     if (calculateBtn) calculateBtn.style.display = 'inline-block';
+                    if (resetBtn) resetBtn.style.display = 'inline-block';
                     
                     // Doğru-yanlış için butonları göster, badge'i gizle
                     if (type === 'true-false') {
