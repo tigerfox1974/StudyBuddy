@@ -547,11 +547,6 @@
                             {% endif %}
                         </div>
                         {% endfor %}
-                        {% else %}
-                        <!-- Seçenek yoksa uyarı göster -->
-                        <div class="alert alert-warning mb-0">
-                            <i class="bi bi-exclamation-triangle"></i> Bu soru için seçenekler üretilemedi.
-                        </div>
                         {% endif %}
                         <div class="alert alert-info mb-0 answer-reveal" style="display: none;">
                             <strong><i class="bi bi-lightbulb"></i> Örnek Cevap:</strong><br>
@@ -924,6 +919,9 @@
                     
                     // Kullanıcı cevabını kontrol et
                     if (userSelectedOption) {
+                        // Önce sarı işareti kaldır
+                        userSelectedOption.classList.remove('user-selected');
+                        
                         if (userAnswer === correctAnswer) {
                             // Kullanıcı doğru seçti → Sadece seçilen şık yeşil
                             userSelectedOption.classList.add('user-selected-correct');
@@ -962,6 +960,9 @@
                     
                     // Kullanıcı cevabını kontrol et
                     if (userSelectedOption) {
+                        // Önce sarı işareti kaldır
+                        userSelectedOption.classList.remove('user-selected');
+                        
                         if (userAnswer === correctAnswer) {
                             // Kullanıcı doğru seçti → Sadece seçilen şık yeşil
                             userSelectedOption.classList.add('user-selected-correct');
@@ -1046,6 +1047,9 @@
                         
                         // Kullanıcı cevabını kontrol et
                         if (userSelectedOption) {
+                            // Önce sarı işareti kaldır
+                            userSelectedOption.classList.remove('user-selected');
+                            
                             if (userAnswer === correctAnswer) {
                                 // Kullanıcı doğru seçti → Sadece seçilen şık yeşil
                                 userSelectedOption.classList.add('user-selected-correct');
