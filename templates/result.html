@@ -532,7 +532,7 @@
                             <strong>{{ q.question }}</strong>
                         </div>
                         {% if q.options %}
-                        <!-- Çeldirici seçenekler varsa çoktan seçmeli gibi göster -->
+                        <!-- Çeldirici seçenekler - çoktan seçmeli gibi göster -->
                         {% for option in q.options %}
                         <div class="option quiz-option" 
                              data-option-value="{{ option }}"
@@ -548,11 +548,9 @@
                         </div>
                         {% endfor %}
                         {% else %}
-                        <!-- Seçenek yoksa textarea göster -->
-                        <div class="mb-3">
-                            <textarea class="form-control quiz-textarea" rows="3" placeholder="Cevabınızı buraya yazın..." 
-                                      data-question="sa-{{ loop.index }}" 
-                                      oninput="saveTextAnswer('sa-{{ loop.index }}', this.value)"></textarea>
+                        <!-- Seçenek yoksa uyarı göster -->
+                        <div class="alert alert-warning mb-0">
+                            <i class="bi bi-exclamation-triangle"></i> Bu soru için seçenekler üretilemedi.
                         </div>
                         {% endif %}
                         <div class="alert alert-info mb-0 answer-reveal" style="display: none;">
@@ -924,20 +922,29 @@
                     const userSelectedOption = userAnswer !== undefined ? 
                         card.querySelector(`.quiz-option[data-option-index="${userAnswer}"]`) : null;
                     
-                    // Doğru cevabı göster (yeşil)
-                    if (correctOption) {
-                        correctOption.classList.add('show-correct-answer');
-                        const icon = correctOption.querySelector('.answer-icon');
-                        if (icon) icon.style.display = 'block';
-                    }
-                    
                     // Kullanıcı cevabını kontrol et
                     if (userSelectedOption) {
                         if (userAnswer === correctAnswer) {
+                            // Kullanıcı doğru seçti → Sadece seçilen şık yeşil
                             userSelectedOption.classList.add('user-selected-correct');
+                            const icon = userSelectedOption.querySelector('.answer-icon');
+                            if (icon) icon.style.display = 'block';
                             correctCount++;
                         } else {
+                            // Kullanıcı yanlış seçti → Doğru cevap yeşil, seçilen kırmızı
+                            if (correctOption) {
+                                correctOption.classList.add('show-correct-answer');
+                                const icon = correctOption.querySelector('.answer-icon');
+                                if (icon) icon.style.display = 'block';
+                            }
                             userSelectedOption.classList.add('user-selected-wrong');
+                        }
+                    } else {
+                        // Kullanıcı hiçbir şey seçmedi → Sadece doğru cevabı göster
+                        if (correctOption) {
+                            correctOption.classList.add('show-correct-answer');
+                            const icon = correctOption.querySelector('.answer-icon');
+                            if (icon) icon.style.display = 'block';
                         }
                     }
                     
@@ -945,7 +952,6 @@
                     allOptions.forEach(opt => {
                         opt.style.pointerEvents = 'none';
                     });
-                    
                 } else if (type === 'fill-blank') {
                     // Boş doldurma
                     const correctAnswer = card.dataset.correctAnswer;
@@ -954,19 +960,30 @@
                     const userSelectedOption = userAnswer !== undefined ? 
                         card.querySelector(`.quiz-option[data-option-value="${userAnswer}"]`) : null;
                     
-                    // Doğru cevabı göster
-                    if (correctOption) {
-                        correctOption.classList.add('show-correct-answer');
-                        const icon = correctOption.querySelector('.answer-icon');
-                        if (icon) icon.style.display = 'block';
-                    }
-                    
                     // Kullanıcı cevabını kontrol et
-                    if (userSelectedOption && userAnswer === correctAnswer) {
-                        userSelectedOption.classList.add('user-selected-correct');
-                        correctCount++;
-                    } else if (userSelectedOption) {
-                        userSelectedOption.classList.add('user-selected-wrong');
+                    if (userSelectedOption) {
+                        if (userAnswer === correctAnswer) {
+                            // Kullanıcı doğru seçti → Sadece seçilen şık yeşil
+                            userSelectedOption.classList.add('user-selected-correct');
+                            const icon = userSelectedOption.querySelector('.answer-icon');
+                            if (icon) icon.style.display = 'block';
+                            correctCount++;
+                        } else {
+                            // Kullanıcı yanlış seçti → Doğru cevap yeşil, seçilen kırmızı
+                            if (correctOption) {
+                                correctOption.classList.add('show-correct-answer');
+                                const icon = correctOption.querySelector('.answer-icon');
+                                if (icon) icon.style.display = 'block';
+                            }
+                            userSelectedOption.classList.add('user-selected-wrong');
+                        }
+                    } else {
+                        // Kullanıcı hiçbir şey seçmedi → Sadece doğru cevabı göster
+                        if (correctOption) {
+                            correctOption.classList.add('show-correct-answer');
+                            const icon = correctOption.querySelector('.answer-icon');
+                            if (icon) icon.style.display = 'block';
+                        }
                     }
                     
                     // Tüm seçenekleri devre dışı bırak
@@ -984,13 +1001,10 @@
                     const correctBtn = card.querySelector(`.quiz-tf-btn[data-value="${correctAnswer}"]`);
                     const statusIcon = card.querySelector('.answer-status-icon');
                     
-                    // Doğru cevabı göster
-                    if (answerBadge) answerBadge.style.display = 'inline-block';
-                    if (correctBtn) correctBtn.classList.add('selected-correct');
-                    
                     // Kullanıcı cevabını kontrol et ve ikon ekle
                     if (userSelectedBtn) {
                         if (userAnswer === correctAnswer) {
+                            // Kullanıcı doğru seçti → Sadece seçilen buton yeşil
                             userSelectedBtn.classList.add('selected-correct');
                             correctCount++;
                             // Yeşil tik ikonu
@@ -999,6 +1013,9 @@
                                 statusIcon.style.display = 'inline-block';
                             }
                         } else {
+                            // Kullanıcı yanlış seçti → Doğru buton yeşil, seçilen kırmızı
+                            if (correctBtn) correctBtn.classList.add('selected-correct');
+                            if (answerBadge) answerBadge.style.display = 'inline-block';
                             userSelectedBtn.classList.add('selected-wrong');
                             // Kırmızı çarpı ikonu
                             if (statusIcon) {
@@ -1006,6 +1023,10 @@
                                 statusIcon.style.display = 'inline-block';
                             }
                         }
+                    } else {
+                        // Kullanıcı hiçbir şey seçmedi → Sadece doğru cevabı göster
+                        if (correctBtn) correctBtn.classList.add('selected-correct');
+                        if (answerBadge) answerBadge.style.display = 'inline-block';
                     }
                     
                     // Tüm butonları devre dışı bırak
@@ -1023,33 +1044,36 @@
                         const userSelectedOption = userAnswer !== undefined ? 
                             card.querySelector(`.quiz-option[data-option-value="${userAnswer}"]`) : null;
                         
-                        // Doğru cevabı göster
-                        if (correctOption) {
-                            correctOption.classList.add('show-correct-answer');
-                            const icon = correctOption.querySelector('.answer-icon');
-                            if (icon) icon.style.display = 'block';
-                        }
-                        
                         // Kullanıcı cevabını kontrol et
-                        if (userSelectedOption && userAnswer === correctAnswer) {
-                            userSelectedOption.classList.add('user-selected-correct');
-                            correctCount++;
-                        } else if (userSelectedOption) {
-                            userSelectedOption.classList.add('user-selected-wrong');
+                        if (userSelectedOption) {
+                            if (userAnswer === correctAnswer) {
+                                // Kullanıcı doğru seçti → Sadece seçilen şık yeşil
+                                userSelectedOption.classList.add('user-selected-correct');
+                                const icon = userSelectedOption.querySelector('.answer-icon');
+                                if (icon) icon.style.display = 'block';
+                                correctCount++;
+                            } else {
+                                // Kullanıcı yanlış seçti → Doğru cevap yeşil, seçilen kırmızı
+                                if (correctOption) {
+                                    correctOption.classList.add('show-correct-answer');
+                                    const icon = correctOption.querySelector('.answer-icon');
+                                    if (icon) icon.style.display = 'block';
+                                }
+                                userSelectedOption.classList.add('user-selected-wrong');
+                            }
+                        } else {
+                            // Kullanıcı hiçbir şey seçmedi → Sadece doğru cevabı göster
+                            if (correctOption) {
+                                correctOption.classList.add('show-correct-answer');
+                                const icon = correctOption.querySelector('.answer-icon');
+                                if (icon) icon.style.display = 'block';
+                            }
                         }
                         
                         // Tüm seçenekleri devre dışı bırak
                         allOptions.forEach(opt => {
                             opt.style.pointerEvents = 'none';
                         });
-                    } else {
-                        // Textarea var, cevap göster
-                        const answerReveal = card.querySelector('.answer-reveal');
-                        if (answerReveal) answerReveal.style.display = 'block';
-                        
-                        // Textarea'yı devre dışı bırak
-                        const textarea = card.querySelector('.quiz-textarea');
-                        if (textarea) textarea.disabled = true;
                     }
                 }
                 
