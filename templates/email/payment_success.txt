@@ -1,0 +1,35 @@
+Merhaba {{ user.username }},
+
+Premium aboneliğiniz başarıyla aktif edildi!
+
+ÖDEME DETAYLARI:
+
+- Fatura No: {{ payment.invoice_number }}
+- Tarih: {{ payment.completed_at.strftime('%d %B %Y, %H:%M') if payment.completed_at else payment.created_at.strftime('%d %B %Y, %H:%M') }}
+- Plan: {{ plan.name }}
+- Tutar: ₺{{ payment.amount }}
+- Ödeme Yöntemi: Kredi Kartı
+
+
+PREMIUM ÖZELLİKLER:
+
+{% for highlight in plan.highlights %}
+- {{ highlight }}
+{% endfor %}
+
+
+Dashboard'unuza gitmek için:
+
+{{ dashboard_link }}
+
+
+Faturanız bu email'e eklenmiştir.
+
+
+Teşekkür ederiz,
+
+StudyBuddy Ekibi
+
+Destek: support@studybuddy.com
+
+

@@ -23,6 +23,10 @@
 - 🎨 **Modern Arayüz**: Bootstrap 5 ile responsive ve kullanıcı dostu tasarım
 - 🔄 **Interaktif Flashcard**: Tıklayarak çevrilebilen çalışma kartları
 - 🧪 **Demo Modu**: OpenAI API olmadan test edebilme (sahte verilerle)
+- ✅ **Abonelik Yönetimi:** Free ve Premium plan desteği
+- ✅ **Kullanım Limitleri:** Aylık dosya yükleme kotası
+- ✅ **Kullanım İstatistikleri:** Detaylı dashboard ve raporlama
+- ✅ **Cache Sistemi:** Token tasarrufu ve hızlı erişim
 
 ## Teknoloji Yığını
 
@@ -86,6 +90,16 @@ Windows CMD:
 pip install -r requirements.txt
 ```
 
+**Yeni Bağımlılıklar:**
+- `Flask-Limiter`: Rate limiting için (dosya yükleme limitleri)
+- `Flask-WTF`: CSRF protection için (form güvenliği)
+- `stripe`: Stripe ödeme entegrasyonu için
+- `reportlab`: PDF fatura oluşturma için
+
+**Not:** Production ortamında rate limiting için Redis kullanmak istiyorsanız:
+- Redis'i kurun: https://redis.io/docs/getting-started/
+- `.env` dosyasında `RATELIMIT_STORAGE_URI=redis://localhost:6379` ayarlayın
+
 ### 6. Ortam Değişkenlerini Ayarlayın
 
 Proje kök dizininde `.env` adlı bir dosya oluşturun ve aşağıdaki içeriği ekleyin:
@@ -127,12 +141,35 @@ flask run
 
 Uygulama varsayılan olarak http://localhost:5000 adresinde çalışacaktır.
 
+## Database Migration
+
+Yeni abonelik sistemi için migration çalıştırın:
+
+```bash
+python migrations/add_subscription_models.py
+```
+
+Bu migration:
+- `subscription` tablosunu oluşturur
+- `user_usage_stats` tablosunu oluşturur
+- Mevcut kullanıcılar için default subscription kayıtları oluşturur
+
+Ödeme sistemi için migration çalıştırın:
+
+```bash
+python migrations/add_payment_model.py
+```
+
+Bu migration:
+- `payments` tablosunu oluşturur
+- `invoices/` klasörünü oluşturur
+
 ## Kullanım
 
 1. Tarayıcınızda http://localhost:5000 adresine gidin
 2. "Dosyanızı Yükleyin" alanına tıklayın ve ders notlarınızı içeren bir dosya seçin
    - Desteklenen formatlar: PDF, DOCX, PPTX, TXT
-   - Maksimum dosya boyutu: 16 MB
+   - Maksimum dosya boyutu: Plan bazlı (Ücretsiz: 16 MB, Premium: 32 MB)
 3. "İçerik Üret" butonuna tıklayın
 4. İşlem tamamlandığında sonuç sayfasında aşağıdaki içerikler görüntülenecektir:
    - **Özet**: Dokümanın ana konularını içeren özet
@@ -175,7 +212,7 @@ StudyBuddy/
 
 - **PDF**: Tüm PDF dosyaları desteklenir. Sadece resimlerden oluşan PDF'ler için metin çıkarılamayabilir.
 - **DOCX**: Modern Word formatı (.docx) desteklenir.
-- **DOC**: Eski Word formatı (.doc) şu anda desteklenmemektedir. Dosyanızı .docx formatına dönüştürün.
+- **DOC**: Eski Word formatı (.doc) desteklenmemektedir. `.doc` dosyaları yükleme aşamasında reddedilir. Dosyanızı .docx formatına dönüştürün.
 - **PPTX**: PowerPoint sunumları desteklenir.
 - **TXT**: Düz metin dosyaları (UTF-8, Latin-1, CP1254 encoding'leri)
 
@@ -186,11 +223,24 @@ StudyBuddy/
 - Uzun dokümanlar otomatik olarak ~12000 token'a kısaltılır
 - API kullanımınızı [OpenAI Dashboard](https://platform.openai.com/usage) üzerinden takip edebilirsiniz
 
-### Güvenlik
+### Güvenlik Özellikleri
+
+StudyBuddy aşağıdaki güvenlik özellikleri ile korunmaktadır:
+
+- **Rate Limiting**: Kullanıcı başına saatte 10 dosya yükleme limiti (spam ve kötüye kullanımı önler)
+- **CSRF Protection**: Tüm formlarda CSRF token koruması (cross-site request forgery saldırılarına karşı)
+- **File Signature Validation**: Dosya içeriğinin uzantısıyla eşleşip eşleşmediğini kontrol eden magic number doğrulaması
+- **Session Security**: HttpOnly ve SameSite cookie ayarları ile güvenli oturum yönetimi
+- **Password Policy**: Güçlü şifre gereksinimleri (minimum 8 karakter, büyük/küçük harf, rakam)
+
+#### Güvenlik Ayarları
 
 - `.env` dosyasını asla Git'e eklemeyin (zaten .gitignore'da var)
 - OpenAI API anahtarınızı kimseyle paylaşmayın
 - Production ortamında güçlü bir SECRET_KEY kullanın
+- Production'da `SESSION_COOKIE_SECURE=true` yapın (HTTPS gerekli)
+- Production'da Redis kullanarak rate limiting'i yapılandırın: `RATELIMIT_STORAGE_URI=redis://localhost:6379`
+- `WTF_CSRF_ENABLED=true` olarak tutun (production için zorunlu)
 
 ## Demo Modu Kullanımı
 
@@ -212,6 +262,26 @@ Eğer OpenAI API anahtarınız yoksa veya önce uygulamayı test etmek istiyorsa
 3. Uygulamayı yeniden başlatın
 
 ## Sorun Giderme
+
+### "CSRF token missing" Hatası
+
+- **Çözüm:** Formlar otomatik olarak CSRF token içerir. Eğer bu hata alıyorsanız:
+  - Tarayıcı cache'ini temizleyin
+  - Sayfayı yenileyin (F5)
+  - `.env` dosyasında `WTF_CSRF_ENABLED=true` olduğundan emin olun
+
+### "Rate limit exceeded" Hatası
+
+- **Çözüm:** Kullanıcı başına saatte 10 dosya yükleme limiti vardır. Limit aşıldıysa:
+  - Bir saat bekleyin
+  - Veya `.env` dosyasında `RATELIMIT_ENABLED=false` yaparak test edebilirsiniz (sadece development için)
+
+### "File validation failed" Hatası
+
+- **Çözüm:** Dosya içeriği uzantısıyla eşleşmiyor. Örneğin:
+  - `.pdf` uzantılı bir dosya gerçekte PDF değilse reddedilir
+  - Dosyanın doğru formatta olduğundan emin olun
+  - `.env` dosyasında `VALIDATE_FILE_SIGNATURES=false` yaparak kontrolü devre dışı bırakabilirsiniz (sadece test için, güvenlik riski)
 
 ### "OPENAI_API_KEY ortam değişkeni ayarlanmamış" Hatası
 
@@ -240,9 +310,279 @@ pip install -r requirements.txt
 flask run --port 5001
 ```
 
+## Kimlik Doğrulama Sistemi
+
+StudyBuddy artık kullanıcı kayıt ve giriş sistemi ile geliyor! Dosya yükleme ve işleme için giriş yapmanız gerekmektedir.
+
+### Kurulum Adımları
+
+1. **Yeni bağımlılıkları yükleyin:**
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+2. **`.env.example` dosyasını `.env` olarak kopyalayın:**
+   ```bash
+   cp .env.example .env
+   ```
+   Windows PowerShell:
+   ```powershell
+   Copy-Item .env.example .env
+   ```
+
+3. **`.env` dosyasını düzenleyin:**
+   - `SECRET_KEY`: Güçlü random string oluşturun:
+     ```bash
+     python -c "import secrets; print(secrets.token_hex(32))"
+     ```
+   - **Email ayarları**: SMTP server bilgilerini girin (şifre sıfırlama için gerekli)
+   - Gmail kullanıyorsanız: 2FA aktif edin ve App Password oluşturun
+     - Google Account > Security > App Passwords
+     - `MAIL_SERVER=smtp.gmail.com`, `MAIL_PORT=587`
+     - `MAIL_USERNAME`: Gmail adresiniz
+     - `MAIL_PASSWORD`: Oluşturduğunuz App Password
+
+4. **Database migration**: İlk çalıştırmada otomatik oluşacak (User tablosu eklenecek)
+
+5. **Uygulamayı başlatın:**
+   ```bash
+   python app.py
+   ```
+
+### Email Konfigürasyonu
+
+#### Gmail için:
+- 2FA aktif edin
+- App Password oluşturun: Google Account > Security > App Passwords
+- `.env` dosyasında:
+  ```
+  MAIL_SERVER=smtp.gmail.com
+  MAIL_PORT=587
+  MAIL_USERNAME=your-email@gmail.com
+  MAIL_PASSWORD=your-app-password
+  ```
+
+#### SendGrid için:
+- API key alın, SMTP credentials kullanın
+- `.env` dosyasında SendGrid SMTP bilgilerini girin
+
+#### Mailgun için:
+- SMTP credentials alın
+- `.env` dosyasında Mailgun SMTP bilgilerini girin
+
+### Özellikler
+
+- ✅ **Kullanıcı kayıt ve giriş**: Email ve şifre ile kayıt olun
+- ✅ **Güvenli şifre hash'leme**: Bcrypt ile şifreler güvenli şekilde saklanır
+- ✅ **"Beni hatırla" özelliği**: 30 gün boyunca oturum açık kalır
+- ✅ **Email bazlı şifre sıfırlama**: Şifrenizi unuttuysanız email ile sıfırlayın
+- ✅ **Kullanıcı profil sayfası**: Hesap bilgilerinizi görüntüleyin
+- ✅ **Session yönetimi**: Güvenli oturum yönetimi
+
+### Güvenlik
+
+- **Şifre policy**: 
+  - Minimum 8 karakter
+  - En az bir büyük harf
+  - En az bir küçük harf
+  - En az bir rakam
+- **Session cookie güvenliği**: HttpOnly, SameSite koruması
+- **CSRF koruması**: ✅ Tüm formlarda aktif (Flask-WTF)
+- **Rate limiting**: ✅ Kullanıcı başına 10 upload/saat (Flask-Limiter)
+- **File signature validation**: ✅ Dosya içeriği doğrulaması (Magic Number)
+
+### Kullanım
+
+1. Ana sayfada "Kayıt Ol" butonuna tıklayın
+2. Email, kullanıcı adı ve şifre ile kayıt olun
+3. Otomatik olarak giriş yapılacak
+4. Dosya yükleme için giriş gerekli
+5. Şifrenizi unuttuysanız "Şifremi Unuttum" linkini kullanın
+
+### Troubleshooting
+
+- **Email gönderilmiyor**: SMTP ayarlarını kontrol edin, firewall/antivirus kontrol edin
+- **Login olmuyor**: Database'i sil ve yeniden oluşturun (`rm studybuddy.db` veya `del studybuddy.db`)
+- **Session sorunları**: Browser cache'i temizleyin, cookies'i silin
+
+### Geliştirme Notları
+
+- Production'da `SESSION_COOKIE_SECURE=true` yapın (HTTPS gerekli)
+- `SECRET_KEY`'i asla paylaşmayın veya commit etmeyin
+- Production'da Redis kullanarak rate limiting'i yapılandırın
+- `WTF_CSRF_ENABLED=true` olarak tutun (production için zorunlu)
+- Email verification sonraki fazda eklenecek
+
+### API Endpoints
+
+- `GET /`: Ana sayfa (anonim erişim)
+- `GET /register`: Kayıt sayfası
+- `POST /register`: Kayıt işlemi
+- `GET /login`: Giriş sayfası
+- `POST /login`: Giriş işlemi
+- `GET /logout`: Çıkış işlemi (login required)
+- `GET /profile`: Profil sayfası (login required)
+- `POST /process`: Dosya işleme (login required)
+- `GET /forgot-password`: Şifre sıfırlama talebi
+- `POST /forgot-password`: Email gönderimi
+- `GET /reset-password/<token>`: Şifre sıfırlama sayfası
+- `POST /reset-password/<token>`: Şifre güncelleme
+
+### Database Schema
+
+User tablosu eklendi:
+- `id`: Primary key
+- `email`: Unique, indexed
+- `username`: Unique
+- `password_hash`: Bcrypt hash
+- `is_active`: Hesap aktif mi
+- `is_verified`: Email doğrulandı mı
+- `subscription_plan`: Abonelik planı (free/premium)
+- `created_at`: Kayıt tarihi
+- `last_login`: Son giriş zamanı
+- `reset_token`: Şifre sıfırlama token'ı
+- `reset_token_expiry`: Token son kullanma tarihi
+
+## 📊 Abonelik Planları ve Limitler
+
+### Planlar
+
+StudyBuddy iki farklı abonelik planı sunar:
+
+#### 🆓 Ücretsiz Plan
+
+- **Aylık Limit:** 5 dosya yükleme
+- **Dosya Boyutu:** Maksimum 16 MB
+- **Özellikler:**
+  - Tüm soru tipleri (çoktan seçmeli, kısa cevap, boş doldurma, doğru-yanlış)
+  - Özet ve flashcard üretimi
+  - 30 gün geçmiş saklama
+  - Cache sistemi (token tasarrufu)
+
+#### ⭐ Premium Plan
+
+- **Aylık Limit:** Sınırsız dosya yükleme
+- **Dosya Boyutu:** Maksimum 32 MB
+- **Özellikler:**
+  - Tüm ücretsiz plan özellikleri
+  - Sınırsız dosya yükleme
+  - Öncelikli destek
+  - Sınırsız geçmiş saklama
+  - Gelişmiş export seçenekleri (yakında)
+
+### Kullanım Takibi
+
+Sistem, her kullanıcının aylık kullanımını otomatik olarak takip eder:
+
+- **Aylık Limit:** Her ayın 1'inde otomatik sıfırlanır
+- **Cache Hit:** Daha önce işlenmiş dosyalar limite sayılmaz
+- **Dashboard:** Kullanım istatistiklerinizi `/dashboard` sayfasından görüntüleyin
+- **Profil:** Kalan yükleme hakkınızı profil sayfanızda görebilirsiniz
+
+### Limit Aşımı
+
+Ücretsiz plandaki kullanıcılar aylık 5 dosya limitine ulaştığında:
+
+1. Ana sayfada uyarı mesajı görüntülenir
+2. Dosya yükleme butonu devre dışı kalır
+3. Premium plana geçiş önerisi sunulur
+4. Bir sonraki ayın 1'inde limit otomatik sıfırlanır
+
+### Plan Değiştirme
+
+StudyBuddy artık Stripe ödeme entegrasyonu ile Premium plana geçiş yapabilirsiniz!
+
+## 💳 Payment Integration (Stripe)
+
+StudyBuddy uses Stripe for secure payment processing.
+
+### Setup Stripe
+
+1. **Create Stripe Account**
+   - Sign up at https://stripe.com
+   - Complete account verification
+
+2. **Get API Keys**
+   - Go to Stripe Dashboard > Developers > API Keys
+   - Copy Publishable Key (pk_test_...)
+   - Copy Secret Key (sk_test_...)
+   - Add to `.env` file:
+     ```
+     STRIPE_PUBLISHABLE_KEY=pk_test_your_key_here
+     STRIPE_SECRET_KEY=sk_test_your_key_here
+     ```
+
+3. **Create Products and Prices**
+   - Go to Stripe Dashboard > Products
+   - Create product: "StudyBuddy Premium"
+   - Add price: ₺49.99 TRY, recurring monthly
+   - Copy Price ID (price_xxxxx)
+   - Update `config.py` or add to `.env`:
+     ```
+     STRIPE_PREMIUM_PRICE_ID=price_xxxxx
+     ```
+
+4. **Set Up Webhook**
+   - Go to Stripe Dashboard > Developers > Webhooks
+   - Click "Add endpoint"
+   - Endpoint URL: `https://yourdomain.com/stripe/webhook`
+   - Events to listen:
+     - `checkout.session.completed`
+     - `payment_intent.succeeded`
+     - `payment_intent.payment_failed`
+   - Copy Webhook Secret (whsec_xxxxx)
+   - Add to `.env`:
+     ```
+     STRIPE_WEBHOOK_SECRET=whsec_your_secret_here
+     ```
+
+5. **Test with Stripe CLI** (Development)
+   - Install Stripe CLI: https://stripe.com/docs/stripe-cli
+   - Login: `stripe login`
+   - Forward webhooks: `stripe listen --forward-to localhost:5000/stripe/webhook`
+   - Use test cards: https://stripe.com/docs/testing
+
+### Testing Payment Flow
+
+1. Register a new user
+2. Go to Pricing page
+3. Click "Planı Seç" for Premium
+4. Use test card: `4242 4242 4242 4242`
+5. Complete checkout on Stripe
+6. Verify:
+   - Redirected to success page
+   - Email received with invoice
+   - Subscription activated (check profile)
+   - Payment recorded in database
+
+### Invoice Generation
+
+Invoices are automatically generated as PDFs using ReportLab and emailed to users after successful payment. PDFs are stored temporarily in `invoices/` directory.
+
+### Database Migration
+
+Run the payment migration to create the Payment table:
+
+```bash
+python migrations/add_payment_model.py
+```
+
+This migration:
+- Creates `payments` table
+- Creates `invoices/` directory for PDF storage
+
+### Troubleshooting
+
+- **Webhook not receiving events**: Check Stripe CLI is running or webhook URL is correct
+- **Payment not activating subscription**: Check webhook signature verification
+- **Invoice not generated**: Check ReportLab installation and `invoices/` directory permissions
+- **Email not sent**: Verify SMTP settings in `.env`
+
 ## İleride Eklenebilecek Özellikler
 
-- [ ] Kullanıcı kayıt ve giriş sistemi
+- [x] Kullanıcı kayıt ve giriş sistemi
+- [x] Abonelik ve ödeme sistemi (temel yapı hazır, ödeme entegrasyonu bekleniyor)
+- [ ] Email doğrulama
 - [ ] Oluşturulan içerikleri kaydetme ve geçmiş
 - [ ] PDF olarak indirme özelliği
 - [ ] Yazdırma özelliği
@@ -250,7 +590,6 @@ flask run --port 5001
 - [ ] Çoklu dil desteği
 - [ ] DOC formatı desteği
 - [ ] OCR desteği (resimlerden metin çıkarma)
-- [ ] Abonelik ve ödeme sistemi
 - [ ] Mobil uygulama
 
 ## 🤝 Katkıda Bulunma

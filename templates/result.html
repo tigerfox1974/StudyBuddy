@@ -451,9 +451,42 @@
         .free-answer-feedback {
             font-size: 0.95rem;
         }
+        .user-navbar {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+        .user-navbar a {
+            color: white;
+            text-decoration: none;
+            margin-left: 15px;
+            font-weight: 500;
+        }
+        .user-navbar a:hover {
+            text-decoration: underline;
+        }
+        .user-info {
+            color: #666;
+            font-size: 14px;
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body>
+    <!-- Minimal Navbar -->
+    <div class="user-navbar">
+        {% if user and user.is_authenticated %}
+            <span style="color: white;">{{ user.username }}</span>
+            <a href="{{ url_for('index') }}">Ana Sayfa</a>
+            <a href="{{ url_for('profile') }}">Profil</a>
+            <a href="{{ url_for('logout') }}">Çıkış</a>
+        {% else %}
+            <a href="{{ url_for('index') }}">Ana Sayfa</a>
+            <a href="{{ url_for('login') }}">Giriş Yap</a>
+        {% endif %}
+    </div>
+    
     <div class="container">
         <!-- Demo Modu Uyarısı -->
         {% if config.DEMO_MODE %}
@@ -481,6 +514,9 @@
                 <div>
                     <h1><i class="bi bi-check-circle text-success"></i> İçerik Başarıyla Oluşturuldu!</h1>
                     <p class="mb-0"><i class="bi bi-file-earmark"></i> {{ filename }}</p>
+                    {% if user and user.is_authenticated %}
+                    <p class="user-info mb-0"><i class="bi bi-person"></i> {{ user.username }} tarafından işlendi</p>
+                    {% endif %}
                 </div>
                 <a href="{{ url_for('index') }}" class="btn btn-home">
                     <i class="bi bi-house"></i> Ana Sayfa

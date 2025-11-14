@@ -1,0 +1,254 @@
+{% extends 'base.html' %}
+
+{% block title %}Ödeme Başarılı - StudyBuddy{% endblock %}
+
+{% block extra_head %}
+<style>
+    body {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        padding: 40px 20px;
+    }
+    
+    .success-container {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+    
+    .success-hero {
+        text-align: center;
+        color: white;
+        margin-bottom: 40px;
+    }
+    
+    .success-icon {
+        font-size: 5rem;
+        color: #28a745;
+        margin-bottom: 20px;
+        animation: scaleIn 0.5s ease-out;
+    }
+    
+    @keyframes scaleIn {
+        from {
+            transform: scale(0);
+        }
+        to {
+            transform: scale(1);
+        }
+    }
+    
+    .success-hero h1 {
+        font-size: 2.5rem;
+        margin-bottom: 10px;
+    }
+    
+    .success-hero p {
+        font-size: 1.2rem;
+        opacity: 0.9;
+    }
+    
+    .success-card {
+        background: white;
+        border-radius: 20px;
+        padding: 40px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        margin-bottom: 20px;
+    }
+    
+    .card-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #333;
+        margin-bottom: 20px;
+        border-bottom: 2px solid #667eea;
+        padding-bottom: 10px;
+    }
+    
+    .info-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 12px 0;
+        border-bottom: 1px solid #eee;
+    }
+    
+    .info-row:last-child {
+        border-bottom: none;
+    }
+    
+    .info-label {
+        font-weight: 600;
+        color: #666;
+    }
+    
+    .info-value {
+        color: #333;
+    }
+    
+    .status-badge {
+        padding: 6px 15px;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+    
+    .status-badge.completed {
+        background: #d4edda;
+        color: #155724;
+    }
+    
+    .status-badge.pending {
+        background: #fff3cd;
+        color: #856404;
+    }
+    
+    .action-buttons {
+        display: flex;
+        gap: 15px;
+        margin-top: 30px;
+    }
+    
+    .btn-action {
+        flex: 1;
+        padding: 15px;
+        border-radius: 50px;
+        font-weight: 600;
+        text-decoration: none;
+        text-align: center;
+        transition: all 0.3s;
+    }
+    
+    .btn-primary-action {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+    
+    .btn-primary-action:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        color: white;
+    }
+    
+    .btn-secondary-action {
+        background: white;
+        color: #667eea;
+        border: 2px solid #667eea;
+    }
+    
+    .btn-secondary-action:hover {
+        background: #f8f9fa;
+        color: #667eea;
+    }
+    
+    .processing-message {
+        text-align: center;
+        padding: 40px;
+    }
+    
+    .spinner-border {
+        width: 3rem;
+        height: 3rem;
+        border-width: 0.3em;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="success-container">
+    <div class="success-hero">
+        {% if processing %}
+        <div class="spinner-border text-light mb-3" role="status">
+            <span class="visually-hidden">Yükleniyor...</span>
+        </div>
+        <h1>İşleminiz Tamamlanıyor...</h1>
+        <p>Ödemeniz işleniyor, lütfen bekleyin.</p>
+        {% else %}
+        <div class="success-icon">
+            <i class="bi bi-check-circle-fill"></i>
+        </div>
+        <h1>Ödemeniz Başarıyla Tamamlandı!</h1>
+        <p>Premium üyeliğiniz aktif edildi.</p>
+        {% endif %}
+    </div>
+    
+    {% if not processing %}
+    <div class="success-card">
+        <h2 class="card-title">Ödeme Detayları</h2>
+        
+        <div class="info-row">
+            <span class="info-label">Fatura No:</span>
+            <span class="info-value">{{ payment.invoice_number or 'Oluşturuluyor...' }}</span>
+        </div>
+        
+        <div class="info-row">
+            <span class="info-label">Tarih:</span>
+            <span class="info-value">{{ payment.completed_at.strftime('%d %B %Y, %H:%M') if payment.completed_at else payment.created_at.strftime('%d %B %Y, %H:%M') }}</span>
+        </div>
+        
+        <div class="info-row">
+            <span class="info-label">Tutar:</span>
+            <span class="info-value">{{ format_currency(payment.amount, payment.currency) }}</span>
+        </div>
+        
+        <div class="info-row">
+            <span class="info-label">Ödeme Yöntemi:</span>
+            <span class="info-value">{{ payment.payment_method or 'Kredi Kartı' }}</span>
+        </div>
+        
+        <div class="info-row">
+            <span class="info-label">Durum:</span>
+            <span class="status-badge {{ payment.status }}">{{ 'Tamamlandı' if payment.status == 'completed' else 'İşleniyor' }}</span>
+        </div>
+    </div>
+    
+    <div class="success-card">
+        <h2 class="card-title">Abonelik Detayları</h2>
+        
+        <div class="info-row">
+            <span class="info-label">Plan:</span>
+            <span class="info-value">{{ plan.name }}</span>
+        </div>
+        
+        <div class="info-row">
+            <span class="info-label">Faturalandırma Dönemi:</span>
+            <span class="info-value">{{ 'Aylık' if payment.billing_period == 'monthly' else payment.billing_period }}</span>
+        </div>
+        
+        <div class="info-row">
+            <span class="info-label">Aktif Özellikler:</span>
+            <span class="info-value">
+                <ul class="list-unstyled mb-0">
+                    {% for highlight in plan.highlights %}
+                    <li><i class="bi bi-check-circle text-success"></i> {{ highlight }}</li>
+                    {% endfor %}
+                </ul>
+            </span>
+        </div>
+    </div>
+    
+    <div class="success-card">
+        <div class="text-center mb-3">
+            <i class="bi bi-envelope-check text-success" style="font-size: 2rem;"></i>
+            <p class="mt-2 mb-0">Faturanız email adresinize gönderildi.</p>
+        </div>
+        
+        <div class="action-buttons">
+            <a href="{{ url_for('index') }}" class="btn-action btn-primary-action">
+                <i class="bi bi-file-earmark-arrow-up"></i> Döküman Yükle
+            </a>
+            <a href="{{ url_for('dashboard') }}" class="btn-action btn-secondary-action">
+                <i class="bi bi-bar-chart"></i> Dashboard'a Git
+            </a>
+        </div>
+    </div>
+    {% else %}
+    <div class="success-card">
+        <div class="processing-message">
+            <p class="text-muted">Ödemeniz webhook tarafından işleniyor. Birkaç saniye içinde tamamlanacaktır.</p>
+            <p class="text-muted">Sayfayı yenilemek için <a href="{{ url_for('checkout_success', session_id=request.args.get('session_id')) }}">buraya tıklayın</a>.</p>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+

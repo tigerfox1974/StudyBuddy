@@ -14,6 +14,11 @@
     <!-- Custom Styles -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
     
+    {# CSRF Token Macro - Tüm formlarda kullanılır #}
+    {% macro csrf_token_input() %}
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+    {% endmacro %}
+    
     <style>
         body {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -168,14 +173,56 @@
             color: #666;
             font-weight: 500;
         }
+        .user-navbar {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+        .user-navbar a {
+            color: white;
+            text-decoration: none;
+            margin-left: 15px;
+            font-weight: 500;
+        }
+        .user-navbar a:hover {
+            text-decoration: underline;
+        }
+        .welcome-badge {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 8px 15px;
+            border-radius: 20px;
+            color: white;
+            font-size: 14px;
+            margin-bottom: 15px;
+            display: inline-block;
+        }
     </style>
 </head>
 <body>
+    <!-- Minimal Navbar -->
+    <div class="user-navbar">
+        {% if user and user.is_authenticated %}
+            <span style="color: white;">Merhaba, {{ user.username }}</span>
+            <a href="{{ url_for('profile') }}">Profil</a>
+            <a href="{{ url_for('history') }}">Geçmişim</a>
+            <a href="{{ url_for('logout') }}">Çıkış</a>
+        {% else %}
+            <a href="{{ url_for('login') }}">Giriş Yap</a>
+            <a href="{{ url_for('register') }}">Kayıt Ol</a>
+        {% endif %}
+    </div>
+    
     <div class="main-container">
         <div class="logo">
             <i class="bi bi-book-half"></i>
             <h1>StudyBuddy</h1>
             <p>Dokümandan Sınav Modu</p>
+            {% if user and user.is_authenticated %}
+            <div class="welcome-badge">
+                <i class="bi bi-person-check"></i> Hoş geldiniz, {{ user.username }}!
+            </div>
+            {% endif %}
         </div>
         
         <!-- Demo Modu Uyarısı -->
@@ -200,7 +247,32 @@
             {% endif %}
         {% endwith %}
         
+        <!-- Kullanım Limiti Bilgisi (sadece giriş yapmış kullanıcılar için) -->
+        {% if user and user.is_authenticated and limit_info %}
+        <div class="alert {% if limit_info.remaining and limit_info.remaining > 0 %}alert-info{% else %}alert-warning{% endif %} alert-dismissible fade show" role="alert">
+            <div class="d-flex align-items-center">
+                <i class="bi bi-info-circle-fill me-2"></i>
+                <div>
+                    {% if limit_info.limit %}
+                        <strong>{{ limit_info.plan|upper }} Plan:</strong> 
+                        Bu ay <strong>{{ limit_info.used }}/{{ limit_info.limit }}</strong> dosya yüklediniz.
+                        {% if limit_info.remaining > 0 %}
+                            <strong>{{ limit_info.remaining }}</strong> yükleme hakkınız kaldı.
+                        {% else %}
+                            <strong>Aylık limitiniz doldu.</strong> 
+                            <a href="{{ url_for('pricing') }}" class="alert-link">Premium'a geçin</a> ve sınırsız yükleme yapın.
+                        {% endif %}
+                    {% else %}
+                        <strong>PREMIUM Plan:</strong> Sınırsız dosya yükleme hakkınız var! 🎉
+                    {% endif %}
+                </div>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endif %}
+        
         <form id="uploadForm" action="{{ url_for('process') }}" method="POST" enctype="multipart/form-data">
+            {{ csrf_token_input() }}
             <!-- Profil Seçimi -->
             <div class="profile-selection mb-4">
                 <h5><i class="bi bi-person-circle"></i> Kimsiniz?</h5>
@@ -234,7 +306,7 @@
                 <i class="bi bi-cloud-upload"></i>
                 <h4>Dosyanızı Yükleyin</h4>
                 <p class="text-muted">PDF, Word, PowerPoint veya Metin dosyası seçin</p>
-                <input type="file" id="fileInput" name="file" accept=".pdf,.docx,.doc,.pptx,.txt" style="display: none;" required>
+                <input type="file" id="fileInput" name="file" accept=".pdf,.docx,.pptx,.txt" style="display: none;" required>
             </div>
             
             <div id="fileInfo" class="file-info">
@@ -243,10 +315,23 @@
             </div>
             
             <div class="text-center">
-                <button type="submit" class="btn btn-primary btn-upload" id="submitBtn">
-                    <i class="bi bi-magic"></i> İçerik Üret
-                    <span class="spinner-border spinner-border-sm" role="status"></span>
-                </button>
+                {% if user and user.is_authenticated and limit_info and limit_info.remaining is not none and limit_info.remaining <= 0 %}
+                    <!-- Limit dolmuşsa butonu disable et -->
+                    <button type="button" class="btn btn-secondary btn-upload" disabled>
+                        <i class="bi bi-lock"></i> Aylık Limit Doldu
+                    </button>
+                    <div class="mt-2">
+                        <a href="{{ url_for('pricing') }}" class="btn btn-warning btn-sm">
+                            <i class="bi bi-star"></i> Premium'a Geç
+                        </a>
+                    </div>
+                {% else %}
+                    <!-- Normal submit butonu -->
+                    <button type="submit" class="btn btn-primary btn-upload" id="submitBtn">
+                        <i class="bi bi-magic"></i> İçerik Üret
+                        <span class="spinner-border spinner-border-sm" role="status"></span>
+                    </button>
+                {% endif %}
             </div>
             
             <!-- Progress Bar -->

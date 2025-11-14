@@ -1,0 +1,217 @@
+{% extends 'base.html' %}
+
+{% block title %}Ödeme - StudyBuddy{% endblock %}
+
+{% block extra_head %}
+<style>
+    body {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        padding: 40px 20px;
+    }
+    
+    .checkout-container {
+        max-width: 600px;
+        margin: 0 auto;
+    }
+    
+    .checkout-card {
+        background: white;
+        border-radius: 20px;
+        padding: 40px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    }
+    
+    .checkout-header {
+        text-align: center;
+        margin-bottom: 30px;
+    }
+    
+    .checkout-header h1 {
+        color: #333;
+        font-size: 2rem;
+        margin-bottom: 10px;
+    }
+    
+    .plan-summary {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 30px;
+    }
+    
+    .plan-name {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #667eea;
+        margin-bottom: 10px;
+    }
+    
+    .plan-price {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #333;
+    }
+    
+    .plan-features {
+        list-style: none;
+        padding: 0;
+        margin: 20px 0;
+    }
+    
+    .plan-features li {
+        padding: 8px 0;
+        display: flex;
+        align-items: center;
+    }
+    
+    .plan-features li i {
+        color: #28a745;
+        margin-right: 10px;
+    }
+    
+    .payment-summary {
+        border-top: 2px solid #eee;
+        padding-top: 20px;
+        margin-top: 20px;
+    }
+    
+    .summary-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 0;
+    }
+    
+    .summary-row.total {
+        font-size: 1.2rem;
+        font-weight: 700;
+        border-top: 2px solid #667eea;
+        padding-top: 15px;
+        margin-top: 10px;
+    }
+    
+    .security-badges {
+        text-align: center;
+        margin: 30px 0;
+        padding: 20px;
+        background: #f8f9fa;
+        border-radius: 10px;
+    }
+    
+    .security-badges i {
+        color: #28a745;
+        font-size: 1.5rem;
+        margin-right: 10px;
+    }
+    
+    .stripe-badge {
+        text-align: center;
+        margin-top: 20px;
+        color: #666;
+        font-size: 0.9rem;
+    }
+    
+    .btn-checkout {
+        width: 100%;
+        padding: 15px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        border-radius: 50px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        transition: all 0.3s;
+    }
+    
+    .btn-checkout:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+    }
+    
+    .btn-checkout:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="checkout-container">
+    <div class="checkout-card">
+        <div class="checkout-header">
+            <h1>Ödeme Onayı</h1>
+            <p class="text-muted">Seçtiğiniz planı onaylayın</p>
+        </div>
+        
+        <div class="plan-summary">
+            <div class="plan-name">{{ plan.name }}</div>
+            <div class="plan-price">
+                <span class="currency">₺</span>{{ plan.price }}
+                <span class="period">/{{ plan.billing_period }}</span>
+            </div>
+            
+            <ul class="plan-features">
+                {% for highlight in plan.highlights %}
+                <li>
+                    <i class="bi bi-check-circle-fill"></i>
+                    {{ highlight }}
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+        
+        <div class="payment-summary">
+            <div class="summary-row">
+                <span>Ara Toplam:</span>
+                <span>₺{{ plan.price }}</span>
+            </div>
+            {% if config.INVOICE_TAX_RATE > 0 %}
+            <div class="summary-row">
+                <span>KDV (%{{ config.INVOICE_TAX_RATE }}):</span>
+                <span>₺{{ (plan.price * config.INVOICE_TAX_RATE / 100) | round(2) }}</span>
+            </div>
+            {% endif %}
+            <div class="summary-row total">
+                <span>TOPLAM:</span>
+                <span>₺{{ plan.price if config.INVOICE_TAX_RATE == 0 else (plan.price * (1 + config.INVOICE_TAX_RATE / 100)) | round(2) }}</span>
+            </div>
+        </div>
+        
+        <form method="POST" action="{{ url_for('checkout') }}" id="checkoutForm">
+            {{ csrf_token_input() }}
+            <input type="hidden" name="plan_type" value="{{ plan_key }}">
+            
+            <div class="security-badges">
+                <i class="bi bi-shield-lock-fill"></i>
+                <strong>Güvenli Ödeme</strong>
+                <p class="text-muted mb-0" style="font-size: 0.9rem; margin-top: 5px;">
+                    Ödeme bilgileriniz Stripe tarafından güvenli şekilde işlenir
+                </p>
+            </div>
+            
+            <button type="submit" class="btn-checkout" id="checkoutBtn">
+                <i class="bi bi-credit-card"></i> Ödemeye Geç
+            </button>
+            
+            <div class="stripe-badge">
+                <i class="bi bi-shield-check"></i> Powered by Stripe
+            </div>
+            
+            <div class="text-center mt-3">
+                <a href="{{ url_for('pricing') }}" class="text-muted">Geri Dön</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // Form gönderimini kontrol et
+    document.getElementById('checkoutForm').addEventListener('submit', function(e) {
+        const btn = document.getElementById('checkoutBtn');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Yönlendiriliyor...';
+    });
+</script>
+{% endblock %}
+
+

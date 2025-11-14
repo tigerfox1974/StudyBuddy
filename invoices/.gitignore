@@ -1,0 +1,6 @@
+# Ignore all invoice PDFs (contain sensitive payment information)
+*.pdf
+
+# But track this .gitignore file itself
+!.gitignore
+

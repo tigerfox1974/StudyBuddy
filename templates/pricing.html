@@ -1,0 +1,213 @@
+{% extends 'base.html' %}
+
+{% block title %}Fiyatlandırma - StudyBuddy{% endblock %}
+
+{% block extra_head %}
+<style>
+    body {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        padding: 40px 20px;
+    }
+    
+    .pricing-container {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+    
+    .pricing-header {
+        text-align: center;
+        color: white;
+        margin-bottom: 50px;
+    }
+    
+    .pricing-header h1 {
+        font-size: 3rem;
+        font-weight: 700;
+        margin-bottom: 15px;
+    }
+    
+    .pricing-header p {
+        font-size: 1.2rem;
+        opacity: 0.9;
+    }
+    
+    .pricing-card {
+        background: white;
+        border-radius: 20px;
+        padding: 40px;
+        margin-bottom: 30px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        transition: transform 0.3s, box-shadow 0.3s;
+        height: 100%;
+    }
+    
+    .pricing-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 15px 50px rgba(0, 0, 0, 0.3);
+    }
+    
+    .pricing-card.free {
+        border: 3px solid #0d6efd;
+    }
+    
+    .pricing-card.premium {
+        border: 3px solid #ffd700;
+        position: relative;
+    }
+    
+    .pricing-card.premium::before {
+        content: 'Popüler';
+        position: absolute;
+        top: -15px;
+        right: 30px;
+        background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+        color: #333;
+        padding: 8px 20px;
+        border-radius: 20px;
+        font-weight: 700;
+        font-size: 0.9rem;
+    }
+    
+    .plan-name {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 10px;
+    }
+    
+    .plan-price {
+        font-size: 3rem;
+        font-weight: 700;
+        margin-bottom: 10px;
+    }
+    
+    .plan-price .currency {
+        font-size: 1.5rem;
+        vertical-align: top;
+    }
+    
+    .plan-price .period {
+        font-size: 1rem;
+        color: #666;
+        font-weight: 400;
+    }
+    
+    .plan-description {
+        color: #666;
+        margin-bottom: 30px;
+        font-size: 1.1rem;
+    }
+    
+    .plan-features {
+        list-style: none;
+        padding: 0;
+        margin-bottom: 30px;
+    }
+    
+    .plan-features li {
+        padding: 10px 0;
+        display: flex;
+        align-items: center;
+    }
+    
+    .plan-features li i {
+        color: #28a745;
+        margin-right: 10px;
+        font-size: 1.2rem;
+    }
+    
+    .plan-button {
+        width: 100%;
+        padding: 15px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        border-radius: 50px;
+        border: none;
+        transition: all 0.3s;
+    }
+    
+    .plan-button.current {
+        background: #6c757d;
+        color: white;
+        cursor: not-allowed;
+    }
+    
+    .plan-button.select {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+    
+    .plan-button.select:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+    }
+    
+    .plan-button.premium-btn {
+        background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+        color: #333;
+    }
+    
+    .plan-button.premium-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 20px rgba(255, 215, 0, 0.4);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="pricing-container">
+    <div class="pricing-header">
+        <h1>Planınızı Seçin</h1>
+        <p>İhtiyacınıza uygun planı seçin ve öğrenmeye başlayın</p>
+    </div>
+    
+    <div class="row g-4">
+        {% for plan_key, plan in plans.items() %}
+        <div class="col-md-6 col-lg-5 {% if plan_key == 'premium' %}offset-lg-1{% endif %}">
+            <div class="pricing-card {{ plan_key }}">
+                <div class="plan-name">{{ plan.name }}</div>
+                <div class="plan-price">
+                    <span class="currency">₺</span>{{ plan.price }}
+                    <span class="period">/{{ plan.billing_period }}</span>
+                </div>
+                <div class="plan-description">{{ plan.description }}</div>
+                
+                <ul class="plan-features">
+                    {% for highlight in plan.highlights %}
+                    <li>
+                        <i class="bi bi-check-circle-fill"></i>
+                        {{ highlight }}
+                    </li>
+                    {% endfor %}
+                </ul>
+                
+                <div>
+                    {% if current_user.is_authenticated %}
+                        {% if current_plan == plan_key %}
+                            <button class="plan-button current" disabled>
+                                <i class="bi bi-check-circle"></i> Mevcut Planınız
+                            </button>
+                        {% else %}
+                            {% if plan_key == 'free' %}
+                                <button class="plan-button select" disabled>
+                                    <i class="bi bi-info-circle"></i> Ücretsiz Plan
+                                </button>
+                            {% else %}
+                                <a href="{{ url_for('checkout', plan_type=plan_key) }}" class="plan-button {% if plan_key == 'premium' %}premium-btn{% else %}select{% endif %}" style="text-decoration: none; display: block;">
+                                    <i class="bi bi-star"></i> Planı Seç
+                                </a>
+                            {% endif %}
+                        {% endif %}
+                    {% else %}
+                        <a href="{{ url_for('register') }}" class="plan-button select" style="text-decoration: none; display: block;">
+                            <i class="bi bi-person-plus"></i> Kayıt Ol
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+

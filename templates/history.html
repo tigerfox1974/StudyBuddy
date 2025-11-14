@@ -1,0 +1,150 @@
+{% extends 'base.html' %}
+
+{% block title %}Geçmişim - StudyBuddy{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Header Section -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="text-white mb-2">
+                <i class="bi bi-clock-history"></i> 📚 Döküman Geçmişim
+            </h1>
+            <p class="text-white-50 mb-0">
+                Toplam <strong>{{ documents|length }}</strong> döküman işlediniz
+            </p>
+        </div>
+        <a href="{{ url_for('index') }}" class="btn btn-light">
+            <i class="bi bi-plus-circle"></i> Yeni Döküman Yükle
+        </a>
+    </div>
+
+    <!-- Empty State -->
+    {% if documents|length == 0 %}
+    <div class="card shadow-lg border-0">
+        <div class="card-body text-center py-5">
+            <i class="bi bi-inbox" style="font-size: 64px; color: #667eea; margin-bottom: 20px;"></i>
+            <h3 class="text-muted mb-3">Henüz hiç döküman işlemediniz</h3>
+            <p class="text-muted mb-4">Hemen başlayın ve ilk dökümanınızı yükleyin!</p>
+            <a href="{{ url_for('index') }}" class="btn btn-primary btn-lg">
+                <i class="bi bi-cloud-upload"></i> Yeni Döküman Yükle
+            </a>
+        </div>
+    </div>
+    {% else %}
+    <!-- Document Cards -->
+    <div class="row g-4">
+        {% for document in documents %}
+        <div class="col-md-6 col-lg-4">
+            <div class="card shadow-sm h-100 border-0" style="transition: transform 0.2s, box-shadow 0.2s;">
+                <div class="card-header bg-white border-bottom">
+                    <div class="d-flex align-items-center">
+                        {% if document.file_type == 'pdf' %}
+                            <i class="bi bi-file-pdf text-danger" style="font-size: 24px; margin-right: 10px;"></i>
+                        {% elif document.file_type == 'docx' or document.file_type == 'doc' %}
+                            <i class="bi bi-file-word text-primary" style="font-size: 24px; margin-right: 10px;"></i>
+                        {% elif document.file_type == 'pptx' or document.file_type == 'ppt' %}
+                            <i class="bi bi-file-slides text-warning" style="font-size: 24px; margin-right: 10px;"></i>
+                        {% elif document.file_type == 'txt' %}
+                            <i class="bi bi-file-text text-secondary" style="font-size: 24px; margin-right: 10px;"></i>
+                        {% else %}
+                            <i class="bi bi-file-earmark text-muted" style="font-size: 24px; margin-right: 10px;"></i>
+                        {% endif %}
+                        <h6 class="mb-0 text-truncate" title="{{ document.original_filename }}">
+                            {{ document.original_filename }}
+                        </h6>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- User Level Badge -->
+                    {% if document.user_level == 'elementary' %}
+                        <span class="badge bg-info mb-2">İlkokul</span>
+                    {% elif document.user_level == 'middle_school' %}
+                        <span class="badge bg-success mb-2">Ortaokul</span>
+                    {% elif document.user_level == 'high_school' %}
+                        <span class="badge bg-primary mb-2">Lise</span>
+                    {% elif document.user_level == 'university' %}
+                        <span class="badge bg-warning text-dark mb-2">Üniversite</span>
+                    {% elif document.user_level == 'exam_prep' %}
+                        <span class="badge bg-danger mb-2">Sınav Hazırlığı</span>
+                    {% else %}
+                        <span class="badge bg-secondary mb-2">{{ document.user_level }}</span>
+                    {% endif %}
+
+                    <!-- User Type Badge -->
+                    {% if document.user_type == 'student' %}
+                        <span class="badge bg-purple mb-2" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                            <i class="bi bi-mortarboard"></i> Öğrenci
+                        </span>
+                    {% else %}
+                        <span class="badge bg-purple mb-2" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                            <i class="bi bi-person-workspace"></i> Öğretmen
+                        </span>
+                    {% endif %}
+
+                    <div class="mt-3">
+                        <!-- File Size -->
+                        <div class="mb-2">
+                            <i class="bi bi-hdd text-muted"></i>
+                            <small class="text-muted">
+                                {% if document.file_size < 1024 %}
+                                    {{ document.file_size }} B
+                                {% elif document.file_size < 1048576 %}
+                                    {{ "%.2f"|format(document.file_size / 1024) }} KB
+                                {% else %}
+                                    {{ "%.2f"|format(document.file_size / 1048576) }} MB
+                                {% endif %}
+                            </small>
+                        </div>
+
+                        <!-- Upload Date -->
+                        <div class="mb-2">
+                            <i class="bi bi-calendar-plus text-muted"></i>
+                            <small class="text-muted">
+                                Yükleme: {% if document.created_at %}{{ document.created_at.strftime('%d %B %Y, %H:%M') }}{% else %}bilinmiyor{% endif %}
+                            </small>
+                        </div>
+
+                        <!-- Last Accessed -->
+                        <div class="mb-2">
+                            <i class="bi bi-clock text-muted"></i>
+                            <small class="text-muted">
+                                Son Erişim: {% if document.last_accessed %}{{ document.last_accessed.strftime('%d %B %Y, %H:%M') }}{% else %}bilinmiyor{% endif %}
+                            </small>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-white border-top">
+                    {% if document.results and document.results|length > 0 %}
+                        <a href="{{ url_for('view_result', result_id=document.results[0].id) }}" class="btn btn-primary w-100 mb-2">
+                            <i class="bi bi-eye"></i> Sonuçları Görüntüle
+                        </a>
+                    {% else %}
+                        <button class="btn btn-secondary w-100 mb-2" disabled>
+                            <i class="bi bi-exclamation-circle"></i> Sonuç Bulunamadı
+                        </button>
+                    {% endif %}
+                    <a href="{{ url_for('index') }}" class="btn btn-outline-secondary w-100">
+                        <i class="bi bi-arrow-clockwise"></i> Yeniden İşle
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>
+
+<style>
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15) !important;
+    }
+
+    .badge {
+        font-size: 0.75rem;
+        padding: 0.35em 0.65em;
+    }
+</style>
+{% endblock %}
+

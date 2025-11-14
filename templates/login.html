@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+
+{% block title %}Giriş Yap - StudyBuddy{% endblock %}
+
+{% block extra_head %}
+<style>
+    body {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .login-container {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 40px 20px;
+    }
+    
+    .login-card {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        padding: 40px;
+        max-width: 450px;
+        width: 100%;
+    }
+    
+    .login-logo {
+        text-align: center;
+        margin-bottom: 30px;
+    }
+    
+    .login-logo i {
+        font-size: 60px;
+        color: #667eea;
+    }
+    
+    .login-logo h2 {
+        color: #333;
+        margin-top: 15px;
+        font-weight: 700;
+    }
+    
+    .form-control:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+    }
+    
+    .btn-login {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        padding: 12px;
+        font-size: 18px;
+        border-radius: 50px;
+        font-weight: 600;
+        width: 100%;
+        transition: all 0.3s;
+    }
+    
+    .btn-login:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+    }
+    
+    .password-toggle {
+        position: relative;
+    }
+    
+    .password-toggle-icon {
+        position: absolute;
+        right: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        cursor: pointer;
+        color: #666;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="login-container">
+    <div class="login-card">
+        <div class="login-logo">
+            <i class="bi bi-book-half"></i>
+            <h2>StudyBuddy'ye Giriş Yap</h2>
+        </div>
+        
+        <form method="POST" action="{{ url_for('login') }}">
+            {{ csrf_token_input() }}
+            <div class="mb-3">
+                <label for="email" class="form-label">Email Adresi</label>
+                <input type="email" class="form-control" id="email" name="email" required placeholder="Email adresiniz" autofocus>
+            </div>
+            
+            <div class="mb-3 password-toggle">
+                <label for="password" class="form-label">Şifre</label>
+                <input type="password" class="form-control" id="password" name="password" required placeholder="Şifreniz">
+                <i class="bi bi-eye password-toggle-icon" id="togglePassword"></i>
+            </div>
+            
+            <div class="mb-3 form-check">
+                <input type="checkbox" class="form-check-input" id="remember_me" name="remember_me">
+                <label class="form-check-label" for="remember_me">Beni hatırla</label>
+            </div>
+            
+            <button type="submit" class="btn btn-primary btn-login">
+                <i class="bi bi-box-arrow-in-right"></i> Giriş Yap
+            </button>
+            
+            <div class="text-center mt-3">
+                <a href="{{ url_for('forgot_password') }}" class="text-decoration-none">Şifremi unuttum</a>
+            </div>
+            
+            <hr class="my-4">
+            
+            <div class="text-center">
+                <p class="mb-0">Hesabınız yok mu? <a href="{{ url_for('register') }}" class="text-decoration-none fw-bold">Kayıt olun</a></p>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // Password toggle
+    const togglePassword = document.getElementById('togglePassword');
+    const password = document.getElementById('password');
+    
+    togglePassword.addEventListener('click', function() {
+        const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+        password.setAttribute('type', type);
+        this.classList.toggle('bi-eye');
+        this.classList.toggle('bi-eye-slash');
+    });
+</script>
+{% endblock %}
+

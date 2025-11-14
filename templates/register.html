@@ -1,0 +1,194 @@
+{% extends "base.html" %}
+
+{% block title %}Kayıt Ol - StudyBuddy{% endblock %}
+
+{% block extra_head %}
+<style>
+    body {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .register-container {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 40px 20px;
+    }
+    
+    .register-card {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        padding: 40px;
+        max-width: 500px;
+        width: 100%;
+    }
+    
+    .register-logo {
+        text-align: center;
+        margin-bottom: 30px;
+    }
+    
+    .register-logo i {
+        font-size: 60px;
+        color: #667eea;
+    }
+    
+    .register-logo h2 {
+        color: #333;
+        margin-top: 15px;
+        font-weight: 700;
+    }
+    
+    .form-control:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+    }
+    
+    .btn-register {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        padding: 12px;
+        font-size: 18px;
+        border-radius: 50px;
+        font-weight: 600;
+        width: 100%;
+        transition: all 0.3s;
+    }
+    
+    .btn-register:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+    }
+    
+    .password-requirements {
+        font-size: 0.85rem;
+        color: #666;
+        margin-top: 5px;
+    }
+    
+    .password-requirements ul {
+        margin-bottom: 0;
+        padding-left: 20px;
+    }
+    
+    .password-strength {
+        height: 5px;
+        border-radius: 3px;
+        margin-top: 5px;
+        transition: all 0.3s;
+    }
+    
+    .password-strength.weak { background: #dc3545; width: 33%; }
+    .password-strength.medium { background: #ffc107; width: 66%; }
+    .password-strength.strong { background: #28a745; width: 100%; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="register-container">
+    <div class="register-card">
+        <div class="register-logo">
+            <i class="bi bi-book-half"></i>
+            <h2>StudyBuddy'ye Kayıt Ol</h2>
+        </div>
+        
+        <form method="POST" action="{{ url_for('register') }}" id="registerForm">
+            {{ csrf_token_input() }}
+            <div class="mb-3">
+                <label for="username" class="form-label">Kullanıcı Adı</label>
+                <input type="text" class="form-control" id="username" name="username" required placeholder="Kullanıcı adınız" minlength="3" maxlength="80">
+            </div>
+            
+            <div class="mb-3">
+                <label for="email" class="form-label">Email Adresi</label>
+                <input type="email" class="form-control" id="email" name="email" required placeholder="Email adresiniz">
+            </div>
+            
+            <div class="mb-3">
+                <label for="password" class="form-label">Şifre</label>
+                <input type="password" class="form-control" id="password" name="password" required placeholder="Şifreniz" minlength="8">
+                <div class="password-strength" id="passwordStrength"></div>
+                <div class="password-requirements">
+                    <small>Şifre gereksinimleri:</small>
+                    <ul>
+                        <li>En az 8 karakter</li>
+                        <li>En az bir büyük harf</li>
+                        <li>En az bir küçük harf</li>
+                        <li>En az bir rakam</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="mb-3">
+                <label for="password_confirm" class="form-label">Şifre Tekrar</label>
+                <input type="password" class="form-control" id="password_confirm" name="password_confirm" required placeholder="Şifrenizi tekrar girin">
+                <small class="text-danger" id="passwordMatch" style="display: none;">Şifreler eşleşmiyor</small>
+            </div>
+            
+            <div class="mb-3 form-check">
+                <input type="checkbox" class="form-check-input" id="terms" required>
+                <label class="form-check-label" for="terms">Kullanım şartlarını kabul ediyorum</label>
+            </div>
+            
+            <button type="submit" class="btn btn-primary btn-register">
+                <i class="bi bi-person-plus"></i> Kayıt Ol
+            </button>
+            
+            <hr class="my-4">
+            
+            <div class="text-center">
+                <p class="mb-0">Zaten hesabınız var mı? <a href="{{ url_for('login') }}" class="text-decoration-none fw-bold">Giriş yapın</a></p>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // Password match checker
+    const password = document.getElementById('password');
+    const passwordConfirm = document.getElementById('password_confirm');
+    const passwordMatch = document.getElementById('passwordMatch');
+    
+    function checkPasswordMatch() {
+        if (passwordConfirm.value && password.value !== passwordConfirm.value) {
+            passwordMatch.style.display = 'block';
+            passwordConfirm.setCustomValidity('Şifreler eşleşmiyor');
+        } else {
+            passwordMatch.style.display = 'none';
+            passwordConfirm.setCustomValidity('');
+        }
+    }
+    
+    password.addEventListener('input', checkPasswordMatch);
+    passwordConfirm.addEventListener('input', checkPasswordMatch);
+    
+    // Password strength calculator
+    const passwordStrength = document.getElementById('passwordStrength');
+    
+    password.addEventListener('input', function() {
+        const pwd = this.value;
+        let strength = 0;
+        
+        if (pwd.length >= 8) strength++;
+        if (/[A-Z]/.test(pwd)) strength++;
+        if (/[a-z]/.test(pwd)) strength++;
+        if (/\d/.test(pwd)) strength++;
+        if (/[!@#$%^&*(),.?":{}|<>]/.test(pwd)) strength++;
+        
+        passwordStrength.className = 'password-strength';
+        if (strength <= 2) {
+            passwordStrength.classList.add('weak');
+        } else if (strength <= 4) {
+            passwordStrength.classList.add('medium');
+        } else {
+            passwordStrength.classList.add('strong');
+        }
+    });
+</script>
+{% endblock %}
+

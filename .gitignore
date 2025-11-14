@@ -29,8 +29,11 @@ instance/
 .webassets-cache
 
 # Environment variables
+# ÖNEMLİ: .env dosyası asla commit edilmemelidir (API anahtarları, şifreler içerir)
 .env
 .env.local
+.env.*.local
+config.local.py
 
 # IDE
 .vscode/
@@ -46,6 +49,23 @@ Thumbs.db
 # Project specific
 uploads/
 *.log
+logs/
+
+# Database
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Security
+*.pem
+*.key
+*.crt
 
 # Test files
 test_files/

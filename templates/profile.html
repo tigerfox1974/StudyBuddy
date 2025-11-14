@@ -1,0 +1,304 @@
+{% extends "base.html" %}
+
+{% block title %}Profilim - StudyBuddy{% endblock %}
+
+{% block extra_head %}
+<style>
+    body {
+        background: #f8f9fa;
+        min-height: 100vh;
+    }
+    
+    .profile-container {
+        padding: 40px 20px;
+    }
+    
+    .profile-card {
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        padding: 30px;
+        margin-bottom: 20px;
+    }
+    
+    .profile-avatar {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 40px;
+        font-weight: bold;
+        margin: 0 auto 20px;
+    }
+    
+    .badge-plan {
+        padding: 8px 15px;
+        border-radius: 20px;
+        font-weight: 600;
+    }
+    
+    .badge-plan.free {
+        background: #0d6efd;
+        color: white;
+    }
+    
+    .badge-plan.premium {
+        background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+        color: #333;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="profile-container">
+    <div class="container">
+        <h1 class="mb-4">Profil Bilgilerim</h1>
+        
+        <div class="row">
+            <div class="col-md-8">
+                <!-- Profil Bilgileri Card -->
+                <div class="profile-card">
+                    <h3 class="mb-4">Profil Bilgileri</h3>
+                    
+                    <div class="profile-avatar">
+                        {{ user.username[0].upper() }}
+                    </div>
+                    
+                    <div class="text-center mb-4">
+                        <h4>{{ user.username }}</h4>
+                        <p class="text-muted mb-0">{{ user.email }}</p>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="row mb-3">
+                        <div class="col-sm-4"><strong>Kayıt Tarihi:</strong></div>
+                        <div class="col-sm-8">{{ user.created_at.strftime('%d %B %Y') }}</div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-sm-4"><strong>Son Giriş:</strong></div>
+                        <div class="col-sm-8">
+                            {% if user.last_login %}
+                                {{ user.last_login.strftime('%d %B %Y, %H:%M') }}
+                            {% else %}
+                                <span class="text-muted">Henüz giriş yapılmamış</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-sm-4"><strong>Hesap Durumu:</strong></div>
+                        <div class="col-sm-8">
+                            {% if user.is_active %}
+                                <span class="badge bg-success">Aktif</span>
+                            {% else %}
+                                <span class="badge bg-danger">Devre Dışı</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-sm-4"><strong>Email Doğrulama:</strong></div>
+                        <div class="col-sm-8">
+                            {% if user.is_verified %}
+                                <span class="badge bg-success">Doğrulandı</span>
+                            {% else %}
+                                <span class="badge bg-warning">Doğrulanmadı</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Güvenlik Card -->
+                <div class="profile-card">
+                    <h3 class="mb-4">Güvenlik</h3>
+                    <p class="text-muted">Şifre değiştirme ve iki faktörlü kimlik doğrulama özellikleri yakında eklenecektir.</p>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <!-- Kullanım İstatistikleri Card -->
+                <div class="profile-card">
+                    <h3 class="mb-4">Kullanım İstatistikleri</h3>
+                    
+                    {% if stats %}
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span><i class="bi bi-file-earmark-text text-primary"></i> Bu Ay Yüklenen</span>
+                            <strong>{{ stats.current_month.uploads }}</strong>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span><i class="bi bi-lightning text-warning"></i> Cache Hit</span>
+                            <strong>{{ stats.current_month.cache_hits }}</strong>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span><i class="bi bi-piggy-bank text-success"></i> Token Tasarrufu</span>
+                            <strong>{{ stats.current_month.tokens_saved }}</strong>
+                        </div>
+                        <hr>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span><i class="bi bi-collection text-info"></i> Toplam Döküman</span>
+                            <strong>{{ stats.total_documents }}</strong>
+                        </div>
+                    </div>
+                    
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-outline-primary w-100">
+                        <i class="bi bi-bar-chart"></i> Detaylı İstatistikler
+                    </a>
+                    {% else %}
+                    <p class="text-muted">İstatistik bilgisi yükleniyor...</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <!-- Abonelik Bilgileri Card -->
+                <div class="profile-card">
+                    <h3 class="mb-4">Abonelik Planım</h3>
+                    
+                    <div class="text-center mb-4">
+                        <span class="badge-plan {{ user.subscription_plan }}">
+                            {{ 'Premium' if user.subscription_plan == 'premium' else 'Ücretsiz' }}
+                        </span>
+                    </div>
+                    
+                    <!-- Aylık Kullanım Durumu (sadece free plan için) -->
+                    {% if user.subscription_plan == 'free' and stats %}
+                    <div class="mt-3 mb-3">
+                        <strong>Bu Ay:</strong>
+                        <div class="progress mt-2" style="height: 25px;">
+                            <div class="progress-bar" 
+                                 role="progressbar" 
+                                 style="width: {{ stats.limit_info.percentage }}%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);"
+                                 aria-valuenow="{{ stats.limit_info.used }}" 
+                                 aria-valuemin="0" 
+                                 aria-valuemax="{{ stats.limit_info.limit }}">
+                                {{ stats.limit_info.used }}/{{ stats.limit_info.limit }}
+                            </div>
+                        </div>
+                        <small class="text-muted">
+                            {% if stats.limit_info.remaining > 0 %}
+                                {{ stats.limit_info.remaining }} yükleme hakkı kaldı
+                            {% else %}
+                                Aylık limitiniz doldu
+                            {% endif %}
+                        </small>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="mb-3">
+                        <strong>Plan Özellikleri:</strong>
+                        <ul class="mt-2">
+                            {% if user.subscription_plan == 'free' %}
+                                <li>{{ config.SUBSCRIPTION_PLANS.free.features.monthly_upload_limit }} dosya/ay</li>
+                                <li>Tüm soru tipleri</li>
+                                <li>Özet ve flashcard</li>
+                                <li>{{ config.SUBSCRIPTION_PLANS.free.features.history_retention_days }} gün geçmiş</li>
+                            {% else %}
+                                <li>Sınırsız dosya yükleme</li>
+                                <li>Tüm özellikler</li>
+                                <li>Öncelikli destek</li>
+                                <li>Sınırsız geçmiş</li>
+                            {% endif %}
+                        </ul>
+                    </div>
+                    
+                    {% if user.subscription_plan == 'free' %}
+                    <a href="{{ url_for('pricing') }}" class="btn btn-warning w-100">
+                        <i class="bi bi-star"></i> Premium'a Geç
+                    </a>
+                    {% else %}
+                    <button class="btn btn-success w-100" disabled>
+                        <i class="bi bi-check-circle"></i> Premium Üyesiniz
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Ödeme Geçmişi Card -->
+            <div class="col-md-12">
+                <div class="profile-card">
+                    <h3 class="mb-4">Ödeme Geçmişi</h3>
+                    
+                    {% if payment_history and payment_history|length > 0 %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Tarih</th>
+                                    <th>Fatura No</th>
+                                    <th>Plan</th>
+                                    <th>Tutar</th>
+                                    <th>Durum</th>
+                                    <th>İşlem</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for payment in payment_history %}
+                                <tr>
+                                    <td>{{ payment.created_at.strftime('%d %B %Y') }}</td>
+                                    <td>
+                                        {% if payment.invoice_number %}
+                                            {{ payment.invoice_number }}
+                                        {% else %}
+                                            <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if payment.plan_type == 'premium' %}
+                                            <span class="badge bg-warning text-dark">Premium</span>
+                                        {% else %}
+                                            {{ payment.plan_type }}
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ format_currency(payment.amount, payment.currency) }}</td>
+                                    <td>
+                                        {% if payment.status == 'completed' %}
+                                            <span class="badge bg-success">Tamamlandı</span>
+                                        {% elif payment.status == 'pending' %}
+                                            <span class="badge bg-warning text-dark">İşleniyor</span>
+                                        {% elif payment.status == 'failed' %}
+                                            <span class="badge bg-danger">Başarısız</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">{{ payment.status }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if payment.invoice_pdf_path and payment.status == 'completed' %}
+                                            <a href="{{ url_for('download_invoice', payment_id=payment.id) }}" 
+                                               class="btn btn-sm btn-outline-primary" 
+                                               target="_blank">
+                                                <i class="bi bi-download"></i> Fatura İndir
+                                            </a>
+                                        {% else %}
+                                            <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="bi bi-receipt" style="font-size: 3rem; color: #ccc;"></i>
+                        <p class="text-muted mt-3">Henüz ödeme geçmişiniz bulunmuyor.</p>
+                        {% if user.subscription_plan == 'free' %}
+                        <a href="{{ url_for('pricing') }}" class="btn btn-warning mt-2">
+                            <i class="bi bi-star"></i> Premium'a Geçerek Sınırsız Özelliklerden Yararlanın
+                        </a>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
