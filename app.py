@@ -6,7 +6,8 @@ Flask Web Uygulaması
 import os
 import time
 import json
-from flask import Flask, render_template, request, redirect, url_for, flash
+from flask import Flask, render_template, request, redirect, url_for, flash, session
+from flask_socketio import SocketIO, emit
 from werkzeug.utils import secure_filename
 from config import Config
 from services.document_reader import DocumentReader
@@ -20,6 +21,9 @@ import markdown
 app = Flask(__name__)
 app.config.from_object(Config)
 
+# SocketIO'yu başlat
+socketio = SocketIO(app, cors_allowed_origins="*")
+
 # Database'i başlat
 db.init_app(app)
 
@@ -29,6 +33,15 @@ os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 # Database tablolarını oluştur
 with app.app_context():
     db.create_all()
+
+
+def emit_progress(progress, message):
+    """SocketIO ile ilerleme gönder"""
+    try:
+        socketio.emit('progress', {'progress': progress, 'message': message})
+        socketio.sleep(0.1)  # Socket'in göndermesi için kısa bekleme
+    except:
+        pass  # SocketIO hatalarını sessizce geç
 
 
 @app.route('/')
@@ -64,14 +77,20 @@ def process():
     user_type = request.form.get('user_type', 'student')
     
     try:
+        emit_progress(5, 'Dosya yükleniyor...')
+        
         # Dosyayı oku
         file_content = file.read()
         file_size = len(file_content)
         filename = secure_filename(file.filename)
         file_extension = filename.rsplit('.', 1)[1].lower()
         
+        emit_progress(15, 'Dosya kontrol ediliyor...')
+        
         # Dosya hash'ini hesapla
         file_hash = get_file_hash(file_content)
+        
+        emit_progress(20, 'Önbellek kontrol ediliyor...')
         
         # Cache kontrolü yap
         cached_result = check_cache(file_hash, user_level, user_type)
@@ -102,10 +121,14 @@ def process():
         # ❌ CACHE MISS - İlk defa işleniyor
         print(f"❌ Cache miss - İşleniyor: {filename}")
         
+        emit_progress(25, 'Dosya kaydediliyor...')
+        
         # Geçici dosyayı kaydet
         file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         with open(file_path, 'wb') as f:
             f.write(file_content)
+        
+        emit_progress(30, 'Metin çıkartılıyor...')
         
         # Dosyadan metin çıkar
         text, error = DocumentReader.extract_text_from_file(file_path, file_extension)
@@ -116,6 +139,8 @@ def process():
             flash(f'Dosya işleme hatası: {error}', 'error')
             return redirect(url_for('index'))
         
+        emit_progress(40, 'Metin hazırlanıyor...')
+        
         # Metni token limitine göre kısalt
         text = DocumentReader.truncate_text(text)
         estimated_tokens = estimate_tokens(text)
@@ -123,10 +148,16 @@ def process():
         # AI ile içerik üret
         try:
             Config.validate_config()
+            
+            emit_progress(50, 'Özet oluşturuluyor...')
             start_time = time.time()
             
             ai_generator = AIGenerator()
+            
+            emit_progress(60, 'Sorular üretiliyor...')
             results = ai_generator.generate_all_content(text, level=user_level, user_type=user_type)
+            
+            emit_progress(90, 'Sonuçlar hazırlanıyor...')
             
             processing_time = time.time() - start_time
             
@@ -192,6 +223,6 @@ def internal_error(e):
 
 
 if __name__ == '__main__':
-    # Geliştirme sunucusunu başlat
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    # Geliştirme sunucusunu başlat (SocketIO ile)
+    socketio.run(app, debug=True, host='0.0.0.0', port=5000, allow_unsafe_werkzeug=True)
 
