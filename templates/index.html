@@ -11,6 +11,9 @@
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    
     <style>
         body {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -335,6 +338,32 @@
             progressBar.style.width = '0%';
             progressBar.textContent = '0%';
             progressText.textContent = 'Başlıyor...';
+        });
+    </script>
+    
+    <!-- Loading ekranı -->
+    <div id="loading-overlay" class="loading-overlay d-none">
+        <div class="loading-content">
+            <img
+                src="{{ url_for('static', filename='img/studybuddy-owl.png') }}"
+                alt="StudyBuddy Owl"
+                class="loading-owl"
+            />
+            <div class="book-page"></div>
+        </div>
+        <p class="loading-text">Doküman işleniyor, StudyBuddy sayfaları çeviriyor...</p>
+    </div>
+    
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const form = document.getElementById("uploadForm");
+            const overlay = document.getElementById("loading-overlay");
+            
+            if (form && overlay) {
+                form.addEventListener("submit", function () {
+                    overlay.classList.remove("d-none");
+                });
+            }
         });
     </script>
 </body>
