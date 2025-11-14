@@ -13,13 +13,18 @@ class Document(db.Model):
     """Yuklenen dokumanlar"""
     __tablename__ = 'documents'
     
+    # Composite unique constraint: ayni dosya farkli level/type'da farkli sonuclar uretir
+    __table_args__ = (
+        db.UniqueConstraint('file_hash', 'user_level', 'user_type', name='uix_document_user'),
+    )
+    
     id = db.Column(db.Integer, primary_key=True)
-    file_hash = db.Column(db.String(32), unique=True, nullable=False, index=True)
+    file_hash = db.Column(db.String(32), nullable=False, index=True)  # unique=True KALDIRILDI
     original_filename = db.Column(db.String(255), nullable=False)
     file_type = db.Column(db.String(10), nullable=False)
     file_size = db.Column(db.Integer, nullable=False)
-    user_level = db.Column(db.String(20), nullable=False)  # elementary, middle_school, high_school, university
-    user_type = db.Column(db.String(20), nullable=False)   # student, teacher
+    user_level = db.Column(db.String(20), nullable=False, index=True)  # elementary, middle_school, high_school, university
+    user_type = db.Column(db.String(20), nullable=False, index=True)   # student, teacher
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     last_accessed = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
