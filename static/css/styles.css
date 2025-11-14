@@ -6,12 +6,13 @@
 .loading-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(255, 255, 255, 0.94);
+  background: rgba(255, 255, 255, 0.75);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  z-index: 2000;
+  z-index: 999;
+  backdrop-filter: blur(3px);
 }
 
 /* Baykuş + kitap konteyneri */
@@ -29,20 +30,7 @@
   animation: owl-bounce 1.2s ease-in-out infinite;
 }
 
-/* Kitap sayfası efekti (baykuşun önündeki sayfa) */
-.book-page {
-  position: absolute;
-  bottom: 38px;      /* baykuştaki kitabın hizasını göz kararı ayarlarsın */
-  left: 50%;
-  transform: translateX(-50%);
-  width: 70px;
-  height: 45px;
-  background: rgba(255, 255, 255, 0.85);
-  border-radius: 3px;
-  box-shadow: 0 0 6px rgba(0, 0, 0, 0.15);
-  transform-origin: left center;
-  animation: page-flip 0.9s ease-in-out infinite;
-}
+/* Kitap sayfası efekti - KALDIRILDI (baykuş animasyonu yeterli) */
 
 /* Yazı */
 .loading-text {
@@ -62,25 +50,5 @@
   }
 }
 
-/* Sayfa çevirme efekti */
-@keyframes page-flip {
-  0% {
-    transform: translateX(-50%) rotateY(0deg);
-    opacity: 0.0;
-  }
-  10% {
-    opacity: 1;
-  }
-  50% {
-    transform: translateX(-50%) rotateY(-70deg);
-    opacity: 1;
-  }
-  90% {
-    opacity: 1;
-  }
-  100% {
-    transform: translateX(-50%) rotateY(0deg);
-    opacity: 0.0;
-  }
-}
+/* Sayfa çevirme efekti - KALDIRILDI */
 
