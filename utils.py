@@ -71,16 +71,30 @@ def save_to_cache(file_hash, filename, file_type, file_size, user_level, user_ty
     Returns:
         Result object
     """
-    # Document kaydi olustur
-    document = Document(
+    # Önce bu kombinasyon var mı kontrol et
+    existing_document = Document.query.filter_by(
         file_hash=file_hash,
-        original_filename=filename,
-        file_type=file_type,
-        file_size=file_size,
         user_level=user_level,
         user_type=user_type
-    )
-    db.session.add(document)
+    ).first()
+    
+    if existing_document:
+        # Zaten var, eski sonuçları sil ve yenilerini ekle
+        if existing_document.results:
+            db.session.delete(existing_document.results)
+        document = existing_document
+    else:
+        # Yeni document oluştur
+        document = Document(
+            file_hash=file_hash,
+            original_filename=filename,
+            file_type=file_type,
+            file_size=file_size,
+            user_level=user_level,
+            user_type=user_type
+        )
+        db.session.add(document)
+    
     db.session.flush()  # ID'yi al
     
     # Result kaydi olustur

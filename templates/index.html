@@ -341,30 +341,6 @@
         });
     </script>
     
-    <!-- Loading ekranı -->
-    <div id="loading-overlay" class="loading-overlay d-none">
-        <div class="loading-content">
-            <img
-                src="{{ url_for('static', filename='img/studybuddy-owl.png') }}"
-                alt="StudyBuddy Owl"
-                class="loading-owl"
-            />
-        </div>
-        <p class="loading-text">Doküman işleniyor, lütfen bekleyin...</p>
-    </div>
-    
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            const form = document.getElementById("uploadForm");
-            const overlay = document.getElementById("loading-overlay");
-            
-            if (form && overlay) {
-                form.addEventListener("submit", function () {
-                    overlay.classList.remove("d-none");
-                });
-            }
-        });
-    </script>
 </body>
 </html>
 
