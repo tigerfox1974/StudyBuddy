@@ -83,51 +83,143 @@ class Config:
         'free': {
             'name': 'Ücretsiz Plan',
             'price': 0,
-            'currency': 'TRY',
+            'currency': 'TL',
             'billing_period': 'monthly',
             'stripe_price_id': None,  # Free plan için Stripe price ID yok
             'stripe_product_id': None,
             'features': {
-                'monthly_upload_limit': 5,  # Aylık maksimum dosya yükleme sayısı
-                'max_file_size_mb': 16,
+                'monthly_tokens': 3,  # Aylık 3 fiş (otomatik yenilenir)
+                'trial_tokens': 10,  # İlk 7 gün için 10 fiş
+                'trial_days': 7,  # 7 günlük deneme süresi
+                'max_file_size_mb': 10,
+                'max_questions_per_type': 5,  # Her soru türünde maksimum 5 soru
                 'supported_formats': ['pdf', 'docx', 'pptx', 'txt'],
                 'cache_enabled': True,
                 'priority_support': False,
-                'export_formats': ['web'],  # Gelecek için: pdf, docx export
+                'export_formats': ['web'],  # Export yok (sadece web görüntüleme)
+                'export_cost_tokens': 2,  # Export için 2 fiş gerektirir
                 'history_retention_days': 30
             },
             'description': 'Başlangıç için ideal',
             'highlights': [
-                '5 dosya/ay yükleme',
-                'Tüm soru tipleri',
+                'Aylık 3 fiş (otomatik yenilenir)',
+                '10 MB dosya boyutu limiti',
+                'Çoktan Seçmeli: 5 soru',
+                'Kısa Cevap: 5 soru',
+                'Boş Doldurma: 5 soru',
+                'Doğru-Yanlış: 5 soru',
                 'Özet ve flashcard',
-                '30 gün geçmiş'
+                '30 gün geçmiş',
+                'Export (Dışa Aktarım) yok'
+            ]
+        },
+        'standard': {
+            'name': 'Standart Plan',
+            'price': 24.99,
+            'currency': 'TL',
+            'billing_period': 'monthly',
+            'stripe_price_id': os.environ.get('STRIPE_STANDARD_PRICE_ID') or 'price_your_standard_price_id_here',
+            'stripe_product_id': os.environ.get('STRIPE_STANDARD_PRODUCT_ID'),
+            'features': {
+                'monthly_tokens': 25,  # Aylık 25 fiş (otomatik yenilenir)
+                'max_file_size_mb': 16,
+                'max_questions_per_type': 30,  # Her soru türünde maksimum 30 soru
+                'supported_formats': ['pdf', 'docx', 'pptx', 'txt'],
+                'cache_enabled': True,
+                'priority_support': False,
+                'export_formats': ['web'],  # Export var ama fiş gerektirir
+                'export_cost_tokens': 2,  # Export için 2 fiş gerektirir
+                'history_retention_days': 90
+            },
+            'description': 'Daha fazla içerik için ideal',
+            'highlights': [
+                'Aylık 25 fiş (otomatik yenilenir)',
+                '16 MB dosya boyutu limiti',
+                'Çoktan Seçmeli: 30 soru',
+                'Kısa Cevap: 30 soru',
+                'Boş Doldurma: 30 soru',
+                'Doğru-Yanlış: 30 soru',
+                'Özet ve flashcard',
+                '90 gün geçmiş',
+                'Export (Dışa Aktarım): 2 fiş'
             ]
         },
         'premium': {
             'name': 'Premium Plan',
-            'price': 49.99,  # Aylık fiyat (TRY)
-            'currency': 'TRY',
+            'price': 49.99,
+            'currency': 'TL',
             'billing_period': 'monthly',
             'stripe_price_id': os.environ.get('STRIPE_PREMIUM_PRICE_ID') or 'price_your_premium_price_id_here',
             'stripe_product_id': os.environ.get('STRIPE_PREMIUM_PRODUCT_ID'),
             'features': {
-                'monthly_upload_limit': None,  # None = sınırsız
-                'max_file_size_mb': 32,
+                'monthly_tokens': 60,  # Aylık 60 fiş (otomatik yenilenir)
+                'max_file_size_mb': 24,
+                'max_questions_per_type': None,  # None = sınırsız
                 'supported_formats': ['pdf', 'docx', 'pptx', 'txt'],
                 'cache_enabled': True,
                 'priority_support': True,
-                'export_formats': ['web', 'pdf', 'docx'],  # Gelecek için
+                'export_formats': ['web', 'pdf', 'docx'],  # Export ücretsiz
+                'export_cost_tokens': 0,  # Export ücretsiz (0 fiş)
                 'history_retention_days': None  # None = sınırsız
             },
-            'description': 'Sınırsız öğrenme deneyimi',
+            'description': 'Profesyonel öğrenme deneyimi',
             'highlights': [
-                'Sınırsız dosya yükleme',
-                'Öncelikli destek',
-                'Gelişmiş export seçenekleri',
-                'Sınırsız geçmiş'
+                'Aylık 60 fiş (otomatik yenilenir)',
+                '24 MB dosya boyutu limiti',
+                'Çoktan Seçmeli: Sınırsız',
+                'Kısa Cevap: Sınırsız',
+                'Boş Doldurma: Sınırsız',
+                'Doğru-Yanlış: Sınırsız',
+                'Özet ve flashcard',
+                'Export (Dışa Aktarım veya Soru Kağıdı Oluşturma): ÜCRETSİZ',
+                'Sınırsız geçmiş',
+                'Öncelikli destek'
             ]
         }
+    }
+    
+    # Fiş paketleri (Token packages)
+    TOKEN_PACKAGES = {
+        'small': {
+            'name': '10 Fiş Paketi',
+            'tokens': 10,
+            'price': 14.99,
+            'currency': 'TL',
+            'price_per_token': 1.50,
+            'discount_percent': 0
+        },
+        'medium': {
+            'name': '25 Fiş Paketi',
+            'tokens': 25,
+            'price': 29.99,
+            'currency': 'TL',
+            'price_per_token': 1.20,
+            'discount_percent': 20,
+            'popular': True
+        },
+        'large': {
+            'name': '50 Fiş Paketi',
+            'tokens': 50,
+            'price': 49.99,
+            'currency': 'TL',
+            'price_per_token': 1.00,
+            'discount_percent': 33
+        },
+        'xlarge': {
+            'name': '100 Fiş Paketi',
+            'tokens': 100,
+            'price': 89.99,
+            'currency': 'TL',
+            'price_per_token': 0.90,
+            'discount_percent': 40
+        }
+    }
+    
+    # Fiş harcama maliyetleri (Token costs)
+    TOKEN_COSTS = {
+        'base_processing': 1,  # Temel işleme (özet + flashcard): 1 fiş
+        'question_type': 0.5,  # Her soru türü için: 0.5 fiş
+        'export': 2  # Export için: 2 fiş (premium'da 0)
     }
     
     # Dosya yükleme ayarları
@@ -249,13 +341,19 @@ class Config:
         return plan['features'].get(feature_key)
     
     @staticmethod
+    def get_monthly_tokens(plan_type):
+        """Kısayol metod: Aylık fiş sayısını döndür"""
+        return Config.get_plan_limit(plan_type, 'monthly_tokens')
+    
+    @staticmethod
     def get_monthly_upload_limit(plan_type):
-        """Kısayol metod: Aylık yükleme limitini döndür"""
+        """Kısayol metod: Aylık yükleme limitini döndür (geriye uyumluluk için)"""
+        # Eski sistem için: monthly_upload_limit yoksa None döndür
         return Config.get_plan_limit(plan_type, 'monthly_upload_limit')
     
     @staticmethod
     def is_unlimited_plan(plan_type):
-        """Plan sınırsız mı kontrol et"""
+        """Plan sınırsız mı kontrol et (dosya yükleme açısından)"""
         return Config.get_monthly_upload_limit(plan_type) is None
     
     @staticmethod

@@ -33,9 +33,10 @@
         margin-bottom: 30px;
     }
     
-    .register-logo i {
-        font-size: 60px;
-        color: #667eea;
+    .register-logo img {
+        max-width: 200px;
+        height: auto;
+        margin-bottom: 10px;
     }
     
     .register-logo h2 {
@@ -93,7 +94,7 @@
 <div class="register-container">
     <div class="register-card">
         <div class="register-logo">
-            <i class="bi bi-book-half"></i>
+            <img src="{{ url_for('static', filename='img/studybuddy-owl.png') }}" alt="StudyBuddy Logo">
             <h2>StudyBuddy'ye Kayıt Ol</h2>
         </div>
         

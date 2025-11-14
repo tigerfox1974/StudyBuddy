@@ -36,9 +36,9 @@ def migrate_documents_table():
         # Veritabanı bağlantısını kontrol et
         try:
             db.engine.connect()
-            print("✓ Veritabanı bağlantısı başarılı")
+            print("[OK] Veritabani baglantisi basarili")
         except Exception as e:
-            print(f"✗ Veritabanı bağlantı hatası: {e}")
+            print(f"[ERROR] Veritabani baglanti hatasi: {e}")
             return False
         
         # user_id kolonunun varlığını kontrol et
@@ -46,35 +46,35 @@ def migrate_documents_table():
         columns = [col['name'] for col in inspector.get_columns('documents')]
         
         if 'user_id' in columns:
-            print("✓ user_id kolonu zaten mevcut")
+            print("[OK] user_id kolonu zaten mevcut")
             # Kolon nullable mı kontrol et
             user_id_col = next(col for col in inspector.get_columns('documents') if col['name'] == 'user_id')
             if user_id_col['nullable']:
-                print("⚠ user_id kolonu nullable, NOT NULL yapılıyor...")
+                print("[WARNING] user_id kolonu nullable, NOT NULL yapiliyor...")
                 # SQLite'da ALTER COLUMN sınırlı, bu yüzden yeni tablo oluşturup veri taşıma gerekebilir
                 # Basit yaklaşım: NULL değerleri doldur
                 null_count = db.session.query(Document).filter(Document.user_id.is_(None)).count()
                 if null_count > 0:
-                    print(f"⚠ {null_count} adet NULL user_id kaydı bulundu")
+                    print(f"[WARNING] {null_count} adet NULL user_id kaydi bulundu")
                     # İlk kullanıcıyı sistem kullanıcısı olarak kullan veya kayıtları sil
                     first_user = User.query.first()
                     if first_user:
-                        print(f"⚠ NULL kayıtlar {first_user.id} ID'li kullanıcıya atanıyor...")
+                        print(f"[WARNING] NULL kayitlar {first_user.id} ID'li kullaniciya ataniyor...")
                         db.session.query(Document).filter(Document.user_id.is_(None)).update(
                             {Document.user_id: first_user.id}, synchronize_session=False
                         )
                         db.session.commit()
-                        print("✓ NULL kayıtlar güncellendi")
+                        print("[OK] NULL kayitlar guncellendi")
                     else:
-                        print("✗ Hiç kullanıcı bulunamadı, NULL kayıtlar silinecek...")
+                        print("[ERROR] Hic kullanici bulunamadi, NULL kayitlar silinecek...")
                         db.session.query(Document).filter(Document.user_id.is_(None)).delete()
                         db.session.commit()
-                        print("✓ NULL kayıtlar silindi")
+                        print("[OK] NULL kayitlar silindi")
             else:
-                print("✓ user_id kolonu zaten NOT NULL")
+                print("[OK] user_id kolonu zaten NOT NULL")
             return True
         
-        print("→ user_id kolonu ekleniyor...")
+        print("-> user_id kolonu ekleniyor...")
         
         # SQLite'da ALTER TABLE ADD COLUMN kullan
         try:
@@ -84,39 +84,39 @@ def migrate_documents_table():
                 ADD COLUMN user_id INTEGER REFERENCES users(id)
             """))
             db.session.commit()
-            print("✓ user_id kolonu eklendi (nullable)")
+            print("[OK] user_id kolonu eklendi (nullable)")
             
             # Mevcut kayıtları kontrol et
             null_count = db.session.query(Document).filter(Document.user_id.is_(None)).count()
             total_count = db.session.query(Document).count()
             
-            print(f"→ Toplam {total_count} kayıt, {null_count} tanesi NULL user_id'ye sahip")
+            print(f"-> Toplam {total_count} kayit, {null_count} tanesi NULL user_id'ye sahip")
             
             if null_count > 0:
                 # İlk kullanıcıyı bul veya oluştur
                 first_user = User.query.first()
                 if first_user:
-                    print(f"→ NULL kayıtlar {first_user.id} ID'li kullanıcıya atanıyor...")
+                    print(f"-> NULL kayitlar {first_user.id} ID'li kullaniciya ataniyor...")
                     db.session.query(Document).filter(Document.user_id.is_(None)).update(
                         {Document.user_id: first_user.id}, synchronize_session=False
                     )
                     db.session.commit()
-                    print("✓ NULL kayıtlar güncellendi")
+                    print("[OK] NULL kayitlar guncellendi")
                 else:
-                    print("⚠ Hiç kullanıcı bulunamadı!")
-                    print("⚠ NULL kayıtlar silinecek...")
-                    response = input("Devam etmek istiyor musunuz? (evet/hayır): ")
+                    print("[WARNING] Hic kullanici bulunamadi!")
+                    print("[WARNING] NULL kayitlar silinecek...")
+                    response = input("Devam etmek istiyor musunuz? (evet/hayir): ")
                     if response.lower() in ['evet', 'e', 'yes', 'y']:
                         db.session.query(Document).filter(Document.user_id.is_(None)).delete()
                         db.session.commit()
-                        print("✓ NULL kayıtlar silindi")
+                        print("[OK] NULL kayitlar silindi")
                     else:
-                        print("✗ İşlem iptal edildi")
+                        print("[ERROR] Islem iptal edildi")
                         return False
             
             # Şimdi kolonu NOT NULL yapmak için yeni tablo oluşturup veri taşıma
             # SQLite'da ALTER COLUMN NOT NULL direkt desteklenmez
-            print("→ user_id kolonunu NOT NULL yapmak için tablo yeniden oluşturuluyor...")
+            print("-> user_id kolonunu NOT NULL yapmak icin tablo yeniden olusturuluyor...")
             
             # 1. Yeni tablo oluştur
             db.session.execute(text("""
@@ -134,11 +134,11 @@ def migrate_documents_table():
                 )
             """))
             
-            # 2. Index'leri oluştur
-            db.session.execute(text("CREATE INDEX ix_documents_file_hash ON documents_new(file_hash)"))
-            db.session.execute(text("CREATE INDEX ix_documents_user_level ON documents_new(user_level)"))
-            db.session.execute(text("CREATE INDEX ix_documents_user_type ON documents_new(user_type)"))
-            db.session.execute(text("CREATE INDEX ix_documents_user_id ON documents_new(user_id)"))
+            # 2. Index'leri oluştur (IF NOT EXISTS ile)
+            db.session.execute(text("CREATE INDEX IF NOT EXISTS ix_documents_file_hash ON documents_new(file_hash)"))
+            db.session.execute(text("CREATE INDEX IF NOT EXISTS ix_documents_user_level ON documents_new(user_level)"))
+            db.session.execute(text("CREATE INDEX IF NOT EXISTS ix_documents_user_type ON documents_new(user_type)"))
+            db.session.execute(text("CREATE INDEX IF NOT EXISTS ix_documents_user_id ON documents_new(user_id)"))
             
             # 3. Verileri kopyala
             db.session.execute(text("""
@@ -154,13 +154,13 @@ def migrate_documents_table():
             
             db.session.commit()
             
-            print("✓ user_id kolonu NOT NULL olarak ayarlandı")
-            print("✓ Migration tamamlandı!")
+            print("[OK] user_id kolonu NOT NULL olarak ayarlandi")
+            print("[OK] Migration tamamlandi!")
             
             return True
             
         except Exception as e:
-            print(f"✗ Migration hatası: {e}")
+            print(f"[ERROR] Migration hatasi: {e}")
             db.session.rollback()
             return False
 
@@ -171,13 +171,21 @@ if __name__ == '__main__':
     print("=" * 60)
     print()
     print("Bu script documents tablosuna user_id kolonunu ekler.")
-    print("⚠ ÖNEMLİ: Bu işlemi yapmadan önce veritabanınızın yedeğini alın!")
+    print("[WARNING] ONEMLI: Bu islemi yapmadan once veritabaninizin yedegini alin!")
     print()
     
-    response = input("Devam etmek istiyor musunuz? (evet/hayır): ")
-    if response.lower() not in ['evet', 'e', 'yes', 'y']:
-        print("İşlem iptal edildi.")
-        sys.exit(0)
+    # Non-interactive mod için komut satırı argümanı kontrol et
+    auto_yes = len(sys.argv) > 1 and sys.argv[1] in ['-y', '--yes', '--auto']
+    
+    if not auto_yes:
+        try:
+            response = input("Devam etmek istiyor musunuz? (evet/hayir): ")
+            if response.lower() not in ['evet', 'e', 'yes', 'y']:
+                print("Islem iptal edildi.")
+                sys.exit(0)
+        except EOFError:
+            # Non-interactive ortamda otomatik devam et
+            print("[INFO] Non-interactive mod: otomatik devam ediliyor...")
     
     print()
     success = migrate_documents_table()
@@ -185,13 +193,13 @@ if __name__ == '__main__':
     if success:
         print()
         print("=" * 60)
-        print("✓ Migration başarıyla tamamlandı!")
+        print("[OK] Migration basariyla tamamlandi!")
         print("=" * 60)
         sys.exit(0)
     else:
         print()
         print("=" * 60)
-        print("✗ Migration başarısız oldu!")
+        print("[ERROR] Migration basarisiz oldu!")
         print("=" * 60)
         sys.exit(1)
 

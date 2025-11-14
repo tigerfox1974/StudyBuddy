@@ -577,6 +577,16 @@
                 <div class="tab-pane fade quiz-mode-active" id="multiple-choice" role="tabpanel">
                     <div class="quiz-header">
                         <h3>Çoktan Seçmeli Sorular <span class="badge-custom">{{ results.multiple_choice | length }}</span></h3>
+                        {% if plan_limit_info and plan_limit_info.get('multiple_choice') %}
+                        <div class="alert alert-warning mt-3" role="alert">
+                            <i class="bi bi-exclamation-triangle-fill"></i> <strong>Paket Limit Bilgisi</strong><br>
+                            Bu bölümde {{ plan_limit_info.multiple_choice.generated }} soru oluşturuldu. 
+                            Paket {{ user_plan }} olduğu için sınırlı sayıda {{ plan_limit_info.multiple_choice.displayed }} adet gösteriliyor.
+                            <a href="{{ url_for('pricing') }}" class="btn btn-sm btn-primary ms-2">
+                                <i class="bi bi-arrow-up-circle"></i> Paket Yükselt
+                            </a>
+                        </div>
+                        {% endif %}
                         <div class="d-flex flex-wrap gap-2">
                             <button class="btn btn-primary" onclick="toggleQuizMode('multiple-choice')" id="quiz-toggle-multiple-choice">
                                 <i class="bi bi-eye"></i> <span id="quiz-status-multiple-choice">Quiz Modu: Açık</span>
@@ -627,6 +637,16 @@
                 <div class="tab-pane fade quiz-mode-active" id="short-answer" role="tabpanel">
                     <div class="quiz-header">
                         <h3>Kısa Cevap Soruları <span class="badge-custom">{{ results.short_answer | length }}</span></h3>
+                        {% if plan_limit_info and plan_limit_info.get('short_answer') %}
+                        <div class="alert alert-warning mt-3" role="alert">
+                            <i class="bi bi-exclamation-triangle-fill"></i> <strong>Paket Limit Bilgisi</strong><br>
+                            Bu bölümde {{ plan_limit_info.short_answer.generated }} soru oluşturuldu. 
+                            Paket {{ user_plan }} olduğu için sınırlı sayıda {{ plan_limit_info.short_answer.displayed }} adet gösteriliyor.
+                            <a href="{{ url_for('pricing') }}" class="btn btn-sm btn-primary ms-2">
+                                <i class="bi bi-arrow-up-circle"></i> Paket Yükselt
+                            </a>
+                        </div>
+                        {% endif %}
                         <div class="d-flex flex-wrap gap-2">
                             <button class="btn btn-primary" onclick="toggleQuizMode('short-answer')" id="quiz-toggle-short-answer">
                                 <i class="bi bi-eye"></i> <span id="quiz-status-short-answer">Quiz Modu: Açık</span>
@@ -677,6 +697,16 @@
                 <div class="tab-pane fade quiz-mode-active" id="fill-blank" role="tabpanel">
                     <div class="quiz-header">
                         <h3>Boş Doldurma Soruları <span class="badge-custom">{{ results.fill_blank | length }}</span></h3>
+                        {% if plan_limit_info and plan_limit_info.get('fill_blank') %}
+                        <div class="alert alert-warning mt-3" role="alert">
+                            <i class="bi bi-exclamation-triangle-fill"></i> <strong>Paket Limit Bilgisi</strong><br>
+                            Bu bölümde {{ plan_limit_info.fill_blank.generated }} soru oluşturuldu. 
+                            Paket {{ user_plan }} olduğu için sınırlı sayıda {{ plan_limit_info.fill_blank.displayed }} adet gösteriliyor.
+                            <a href="{{ url_for('pricing') }}" class="btn btn-sm btn-primary ms-2">
+                                <i class="bi bi-arrow-up-circle"></i> Paket Yükselt
+                            </a>
+                        </div>
+                        {% endif %}
                         <div class="d-flex flex-wrap gap-2">
                             <button class="btn btn-primary" onclick="toggleQuizMode('fill-blank')" id="quiz-toggle-fill-blank">
                                 <i class="bi bi-eye"></i> <span id="quiz-status-fill-blank">Quiz Modu: Açık</span>
@@ -723,6 +753,16 @@
                 <div class="tab-pane fade quiz-mode-active" id="true-false" role="tabpanel">
                     <div class="quiz-header">
                         <h3>Doğru-Yanlış Soruları <span class="badge-custom">{{ results.true_false | length }}</span></h3>
+                        {% if plan_limit_info and plan_limit_info.get('true_false') %}
+                        <div class="alert alert-warning mt-3" role="alert">
+                            <i class="bi bi-exclamation-triangle-fill"></i> <strong>Paket Limit Bilgisi</strong><br>
+                            Bu bölümde {{ plan_limit_info.true_false.generated }} soru oluşturuldu. 
+                            Paket {{ user_plan }} olduğu için sınırlı sayıda {{ plan_limit_info.true_false.displayed }} adet gösteriliyor.
+                            <a href="{{ url_for('pricing') }}" class="btn btn-sm btn-primary ms-2">
+                                <i class="bi bi-arrow-up-circle"></i> Paket Yükselt
+                            </a>
+                        </div>
+                        {% endif %}
                         <div class="d-flex flex-wrap gap-2">
                             <button class="btn btn-primary" onclick="toggleQuizMode('true-false')" id="quiz-toggle-true-false">
                                 <i class="bi bi-eye"></i> <span id="quiz-status-true-false">Quiz Modu: Açık</span>

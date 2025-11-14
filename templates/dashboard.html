@@ -162,7 +162,7 @@
                         <div class="progress-info">
                             <span>Kullanılan: {{ stats.limit_info.used }}</span>
                             {% if stats.limit_info.limit %}
-                                <span>Kalan: {{ stats.limit_info.remaining }}</span>
+                                <span>Kalan: {% if stats.limit_info.remaining is none %}Sınırsız{% else %}{{ stats.limit_info.remaining }}{% endif %}</span>
                             {% else %}
                                 <span>Sınırsız</span>
                             {% endif %}

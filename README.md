@@ -23,8 +23,10 @@
 - 🎨 **Modern Arayüz**: Bootstrap 5 ile responsive ve kullanıcı dostu tasarım
 - 🔄 **Interaktif Flashcard**: Tıklayarak çevrilebilen çalışma kartları
 - 🧪 **Demo Modu**: OpenAI API olmadan test edebilme (sahte verilerle)
-- ✅ **Abonelik Yönetimi:** Free ve Premium plan desteği
-- ✅ **Kullanım Limitleri:** Aylık dosya yükleme kotası
+- ✅ **Abonelik Yönetimi:** Free, Standart ve Premium plan desteği
+- ✅ **Token (Fiş) Sistemi:** Kullanım bazlı fiş sistemi ile esnek ödeme
+- ✅ **7 Günlük Deneme:** Yeni kullanıcılar için 10 fiş deneme süresi
+- ✅ **Kullanım Limitleri:** Plan bazlı dosya boyutu ve soru limitleri
 - ✅ **Kullanım İstatistikleri:** Detaylı dashboard ve raporlama
 - ✅ **Cache Sistemi:** Token tasarrufu ve hızlı erişim
 
@@ -164,12 +166,24 @@ Bu migration:
 - `payments` tablosunu oluşturur
 - `invoices/` klasörünü oluşturur
 
+Token sistemi için migration çalıştırın:
+
+```bash
+python migrations/add_token_system_columns.py -y
+```
+
+Bu migration:
+- `users` tablosuna `tokens_remaining`, `trial_ends_at`, `last_token_refresh` kolonlarını ekler
+- `token_purchases` tablosunu oluşturur
+- Mevcut kullanıcılar için varsayılan değerleri ayarlar
+
 ## Kullanım
 
 1. Tarayıcınızda http://localhost:5000 adresine gidin
 2. "Dosyanızı Yükleyin" alanına tıklayın ve ders notlarınızı içeren bir dosya seçin
    - Desteklenen formatlar: PDF, DOCX, PPTX, TXT
-   - Maksimum dosya boyutu: Plan bazlı (Ücretsiz: 16 MB, Premium: 32 MB)
+   - Maksimum dosya boyutu: Plan bazlı (Ücretsiz: 10 MB, Standart: 16 MB, Premium: 24 MB)
+   - Fiş sistemi: Her dosya işleme için fiş harcanır (temel işleme: 1 fiş, her soru türü: +0.5 fiş)
 3. "İçerik Üret" butonuna tıklayın
 4. İşlem tamamlandığında sonuç sayfasında aşağıdaki içerikler görüntülenecektir:
    - **Özet**: Dokümanın ana konularını içeren özet
@@ -514,13 +528,24 @@ StudyBuddy uses Stripe for secure payment processing.
 
 3. **Create Products and Prices**
    - Go to Stripe Dashboard > Products
-   - Create product: "StudyBuddy Premium"
-   - Add price: ₺49.99 TRY, recurring monthly
-   - Copy Price ID (price_xxxxx)
-   - Update `config.py` or add to `.env`:
-     ```
-     STRIPE_PREMIUM_PRICE_ID=price_xxxxx
-     ```
+   - **Standart Plan için:**
+     - Create product: "StudyBuddy Standart"
+     - Add price: ₺24.99 TRY, recurring monthly
+     - Copy Price ID (price_xxxxx) and Product ID (prod_xxxxx)
+     - Add to `.env`:
+       ```
+       STRIPE_STANDARD_PRICE_ID=price_xxxxx
+       STRIPE_STANDARD_PRODUCT_ID=prod_xxxxx
+       ```
+   - **Premium Plan için:**
+     - Create product: "StudyBuddy Premium"
+     - Add price: ₺49.99 TRY, recurring monthly
+     - Copy Price ID (price_xxxxx) and Product ID (prod_xxxxx)
+     - Add to `.env`:
+       ```
+       STRIPE_PREMIUM_PRICE_ID=price_xxxxx
+       STRIPE_PREMIUM_PRODUCT_ID=prod_xxxxx
+       ```
 
 4. **Set Up Webhook**
    - Go to Stripe Dashboard > Developers > Webhooks

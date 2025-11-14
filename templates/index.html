@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>StudyBuddy - Dokümandan Sınav Modu</title>
+    <title>StudyBuddy - Yapay Zeka Destekli Öğrenme Asistanı</title>
     
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -14,430 +14,436 @@
     <!-- Custom Styles -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
     
-    {# CSRF Token Macro - Tüm formlarda kullanılır #}
-    {% macro csrf_token_input() %}
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-    {% endmacro %}
-    
     <style>
         body {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            display: flex;
-            align-items: center;
-            padding: 20px;
         }
         
-        .main-container {
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
-            padding: 40px;
-            max-width: 700px;
-            width: 100%;
-            margin: 0 auto;
-        }
-        
-        .logo {
+        .hero-section {
+            padding: 80px 20px;
             text-align: center;
-            margin-bottom: 30px;
+            color: white;
         }
         
-        .logo i {
-            font-size: 60px;
+        .hero-section h1 {
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .hero-section .logo {
+            max-width: 200px;
+            height: auto;
+            margin-bottom: 30px;
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
+        }
+        
+        .hero-section p {
+            font-size: 1.3rem;
+            margin-bottom: 40px;
+            opacity: 0.95;
+        }
+        
+        .cta-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 60px;
+        }
+        
+        .btn-hero {
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            border-radius: 50px;
+            border: none;
+            transition: all 0.3s;
+        }
+        
+        .btn-hero-primary {
+            background: white;
             color: #667eea;
         }
         
-        .logo h1 {
-            color: #333;
-            margin-top: 15px;
-            font-weight: 700;
-        }
-        
-        .logo p {
-            color: #666;
-            margin-top: 10px;
-        }
-        
-        .upload-area {
-            border: 3px dashed #667eea;
-            border-radius: 15px;
-            padding: 40px;
-            text-align: center;
+        .btn-hero-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(255,255,255,0.3);
             background: #f8f9ff;
+        }
+        
+        .btn-hero-outline {
+            background: transparent;
+            color: white;
+            border: 2px solid white;
+        }
+        
+        .btn-hero-outline:hover {
+            background: white;
+            color: #667eea;
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(255,255,255,0.3);
+        }
+        
+        .features-section {
+            background: white;
+            padding: 80px 20px;
+        }
+        
+        .section-title {
+            text-align: center;
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 60px;
+        }
+        
+        .feature-card {
+            background: #f8f9ff;
+            border-radius: 20px;
+            padding: 40px 30px;
+            text-align: center;
+            height: 100%;
             transition: all 0.3s;
-            cursor: pointer;
+            border: 2px solid transparent;
         }
         
-        .upload-area:hover {
-            background: #eff1ff;
-            border-color: #764ba2;
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.2);
+            border-color: #667eea;
         }
         
-        .upload-area i {
-            font-size: 50px;
+        .feature-card i {
+            font-size: 4rem;
             color: #667eea;
             margin-bottom: 20px;
         }
         
-        .btn-upload {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border: none;
-            padding: 15px 40px;
-            font-size: 18px;
-            border-radius: 50px;
-            margin-top: 20px;
+        .feature-card h4 {
+            color: #333;
             font-weight: 600;
-        }
-        
-        .btn-upload:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
-        }
-        
-        .features {
-            margin-top: 30px;
-            padding-top: 30px;
-            border-top: 1px solid #e0e0e0;
-        }
-        
-        .feature-item {
-            display: flex;
-            align-items: center;
             margin-bottom: 15px;
-            color: #555;
         }
         
-        .feature-item i {
-            color: #667eea;
-            margin-right: 10px;
-            font-size: 20px;
+        .feature-card p {
+            color: #666;
+            line-height: 1.8;
         }
         
-        .file-info {
-            display: none;
-            margin-top: 20px;
-            padding: 15px;
-            background: #e8f5e9;
-            border-radius: 10px;
-            color: #2e7d32;
+        .how-it-works {
+            background: linear-gradient(135deg, #f8f9ff 0%, #e0e7ff 100%);
+            padding: 80px 20px;
         }
         
-        .file-info i {
-            color: #2e7d32;
-            margin-right: 8px;
-        }
-        
-        .spinner-border {
-            display: none;
-        }
-        
-        .loading .spinner-border {
-            display: inline-block;
-            margin-left: 10px;
-        }
-        
-        .progress-container {
-            display: none;
-            margin-top: 20px;
-            padding: 20px;
-            background: #f8f9ff;
-            border-radius: 10px;
-        }
-        
-        .progress-container.active {
-            display: block;
-        }
-        
-        .progress {
-            height: 30px;
+        .step-card {
+            background: white;
             border-radius: 15px;
-            background: #e0e0e0;
-            overflow: hidden;
+            padding: 30px;
+            text-align: center;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
         }
         
-        .progress-bar {
-            height: 100%;
+        .step-number {
+            width: 60px;
+            height: 60px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            transition: width 0.3s ease;
+            color: white;
+            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: white;
-            font-weight: 600;
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin: 0 auto 20px;
         }
         
-        .progress-text {
-            text-align: center;
-            margin-top: 10px;
-            color: #666;
-            font-weight: 500;
+        .pricing-preview {
+            background: white;
+            padding: 80px 20px;
         }
-        .user-navbar {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            z-index: 1000;
-        }
-        .user-navbar a {
-            color: white;
-            text-decoration: none;
-            margin-left: 15px;
-            font-weight: 500;
-        }
-        .user-navbar a:hover {
-            text-decoration: underline;
-        }
-        .welcome-badge {
-            background: rgba(255, 255, 255, 0.2);
-            padding: 8px 15px;
+        
+        .pricing-card {
+            background: #f8f9ff;
             border-radius: 20px;
+            padding: 40px 30px;
+            text-align: center;
+            height: 100%;
+            border: 2px solid #e0e7ff;
+            transition: all 0.3s;
+        }
+        
+        .pricing-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.2);
+            border-color: #667eea;
+        }
+        
+        .pricing-card.featured {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            font-size: 14px;
-            margin-bottom: 15px;
-            display: inline-block;
+            border-color: #667eea;
+        }
+        
+        .pricing-card.featured h3,
+        .pricing-card.featured .price {
+            color: white;
+        }
+        
+        .price {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #667eea;
+            margin: 20px 0;
+        }
+        
+        .price-featured {
+            color: white;
+        }
+        
+        .footer-section {
+            background: #1a1a2e;
+            color: white;
+            padding: 40px 20px;
+            text-align: center;
+        }
+        
+        @media (max-width: 768px) {
+            .hero-section h1 {
+                font-size: 2.5rem;
+            }
+            
+            .hero-section p {
+                font-size: 1.1rem;
+            }
+            
+            .cta-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .btn-hero {
+                width: 100%;
+                max-width: 300px;
+            }
         }
     </style>
 </head>
 <body>
-    <!-- Minimal Navbar -->
-    <div class="user-navbar">
-        {% if user and user.is_authenticated %}
-            <span style="color: white;">Merhaba, {{ user.username }}</span>
-            <a href="{{ url_for('profile') }}">Profil</a>
-            <a href="{{ url_for('history') }}">Geçmişim</a>
-            <a href="{{ url_for('logout') }}">Çıkış</a>
-        {% else %}
-            <a href="{{ url_for('login') }}">Giriş Yap</a>
-            <a href="{{ url_for('register') }}">Kayıt Ol</a>
-        {% endif %}
-    </div>
-    
-    <div class="main-container">
-        <div class="logo">
-            <i class="bi bi-book-half"></i>
-            <h1>StudyBuddy</h1>
-            <p>Dokümandan Sınav Modu</p>
-            {% if user and user.is_authenticated %}
-            <div class="welcome-badge">
-                <i class="bi bi-person-check"></i> Hoş geldiniz, {{ user.username }}!
-            </div>
-            {% endif %}
-        </div>
-        
-        <!-- Demo Modu Uyarısı -->
-        {% if config.DEMO_MODE %}
-        <div class="alert alert-warning alert-dismissible fade show" role="alert">
-            <i class="bi bi-info-circle-fill"></i> <strong>Demo Modu Aktif:</strong> 
-            OpenAI API olmadan çalışıyorsunuz. Sahte veriler gösterilecektir. 
-            Gerçek içerik için .env dosyasında DEMO_MODE=false yapın ve OpenAI API anahtarı ekleyin.
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-        {% endif %}
-        
-        <!-- Flash mesajları -->
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    <div class="alert alert-{{ 'danger' if category == 'error' else 'info' }} alert-dismissible fade show" role="alert">
-                        {{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    </div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
-        
-        <!-- Kullanım Limiti Bilgisi (sadece giriş yapmış kullanıcılar için) -->
-        {% if user and user.is_authenticated and limit_info %}
-        <div class="alert {% if limit_info.remaining and limit_info.remaining > 0 %}alert-info{% else %}alert-warning{% endif %} alert-dismissible fade show" role="alert">
-            <div class="d-flex align-items-center">
-                <i class="bi bi-info-circle-fill me-2"></i>
-                <div>
-                    {% if limit_info.limit %}
-                        <strong>{{ limit_info.plan|upper }} Plan:</strong> 
-                        Bu ay <strong>{{ limit_info.used }}/{{ limit_info.limit }}</strong> dosya yüklediniz.
-                        {% if limit_info.remaining > 0 %}
-                            <strong>{{ limit_info.remaining }}</strong> yükleme hakkınız kaldı.
-                        {% else %}
-                            <strong>Aylık limitiniz doldu.</strong> 
-                            <a href="{{ url_for('pricing') }}" class="alert-link">Premium'a geçin</a> ve sınırsız yükleme yapın.
-                        {% endif %}
-                    {% else %}
-                        <strong>PREMIUM Plan:</strong> Sınırsız dosya yükleme hakkınız var! 🎉
-                    {% endif %}
-                </div>
-            </div>
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-        {% endif %}
-        
-        <form id="uploadForm" action="{{ url_for('process') }}" method="POST" enctype="multipart/form-data">
-            {{ csrf_token_input() }}
-            <!-- Profil Seçimi -->
-            <div class="profile-selection mb-4">
-                <h5><i class="bi bi-person-circle"></i> Kimsiniz?</h5>
-                <div class="btn-group w-100" role="group">
-                    <input type="radio" class="btn-check" name="user_type" id="student" value="student" checked>
-                    <label class="btn btn-outline-primary" for="student">
-                        <i class="bi bi-mortarboard"></i> Öğrenci
-                    </label>
-                    
-                    <input type="radio" class="btn-check" name="user_type" id="teacher" value="teacher">
-                    <label class="btn btn-outline-primary" for="teacher">
-                        <i class="bi bi-person-workspace"></i> Öğretmen
-                    </label>
-                </div>
-            </div>
-            
-            <!-- Seviye Seçimi -->
-            <div class="level-selection mb-4">
-                <h5><i class="bi bi-bar-chart-steps"></i> Seviye</h5>
-                <select class="form-select form-select-lg" name="level" id="level" required>
-                    <option value="elementary">İlkokul (1-4. Sınıf) - 6-10 yaş</option>
-                    <option value="middle_school">Ortaokul (5-8. Sınıf) - 11-14 yaş</option>
-                    <option value="high_school" selected>Lise (9-12. Sınıf) - 15-18 yaş</option>
-                    <option value="university">Üniversite - 18+ yaş</option>
-                    <option value="exam_prep">Sınav Hazırlığı (YKS, KPSS, vb.) - 17+ yaş</option>
-                </select>
-            </div>
-            
-            <!-- Dosya Yükleme -->
-            <div class="upload-area" onclick="document.getElementById('fileInput').click()">
-                <i class="bi bi-cloud-upload"></i>
-                <h4>Dosyanızı Yükleyin</h4>
-                <p class="text-muted">PDF, Word, PowerPoint veya Metin dosyası seçin</p>
-                <input type="file" id="fileInput" name="file" accept=".pdf,.docx,.pptx,.txt" style="display: none;" required>
-            </div>
-            
-            <div id="fileInfo" class="file-info">
-                <i class="bi bi-check-circle-fill"></i>
-                <span id="fileName">Dosya seçildi</span>
-            </div>
-            
-            <div class="text-center">
-                {% if user and user.is_authenticated and limit_info and limit_info.remaining is not none and limit_info.remaining <= 0 %}
-                    <!-- Limit dolmuşsa butonu disable et -->
-                    <button type="button" class="btn btn-secondary btn-upload" disabled>
-                        <i class="bi bi-lock"></i> Aylık Limit Doldu
-                    </button>
-                    <div class="mt-2">
-                        <a href="{{ url_for('pricing') }}" class="btn btn-warning btn-sm">
-                            <i class="bi bi-star"></i> Premium'a Geç
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark" style="background: rgba(0,0,0,0.2);">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('index') }}" style="display: flex; align-items: center; gap: 10px;">
+                <img src="{{ url_for('static', filename='img/studybuddy-owl.png') }}" alt="StudyBuddy" style="height: 40px; width: auto;">
+                <span>StudyBuddy</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    {% if user and user.is_authenticated %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('upload') }}">
+                            <i class="bi bi-cloud-upload"></i> Dosya Yükle
                         </a>
-                    </div>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
+                            <i class="bi bi-person-circle"></i> {{ user.username }}
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="{{ url_for('profile') }}"><i class="bi bi-person"></i> Profilim</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('history') }}"><i class="bi bi-clock-history"></i> Geçmişim</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('dashboard') }}"><i class="bi bi-bar-chart"></i> Dashboard</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{{ url_for('logout') }}"><i class="bi bi-box-arrow-right"></i> Çıkış Yap</a></li>
+                        </ul>
+                    </li>
+                    {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('pricing') }}"><i class="bi bi-star"></i> Planlar</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('login') }}"><i class="bi bi-box-arrow-in-right"></i> Giriş Yap</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('register') }}"><i class="bi bi-person-plus"></i> Kayıt Ol</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="container">
+            <img src="{{ url_for('static', filename='img/studybuddy-owl.png') }}" alt="StudyBuddy Logo" class="logo">
+            <h1>StudyBuddy</h1>
+            <p>Ders notlarınızı yapay zeka ile özet, test soruları ve flashcard'lara dönüştürün!</p>
+            
+            <div class="cta-buttons">
+                {% if user and user.is_authenticated %}
+                <a href="{{ url_for('upload') }}" class="btn btn-hero btn-hero-primary">
+                    <i class="bi bi-cloud-upload"></i> Hemen Başla
+                </a>
+                <a href="{{ url_for('pricing') }}" class="btn btn-hero btn-hero-outline">
+                    <i class="bi bi-star"></i> Planları İncele
+                </a>
                 {% else %}
-                    <!-- Normal submit butonu -->
-                    <button type="submit" class="btn btn-primary btn-upload" id="submitBtn">
-                        <i class="bi bi-magic"></i> İçerik Üret
-                        <span class="spinner-border spinner-border-sm" role="status"></span>
-                    </button>
+                <a href="{{ url_for('register') }}" class="btn btn-hero btn-hero-primary">
+                    <i class="bi bi-person-plus"></i> Ücretsiz Başla
+                </a>
+                <a href="{{ url_for('login') }}" class="btn btn-hero btn-hero-outline">
+                    <i class="bi bi-box-arrow-in-right"></i> Giriş Yap
+                </a>
                 {% endif %}
             </div>
-            
-            <!-- Progress Bar -->
-            <div class="progress-container" id="progressContainer">
-                <div class="progress">
-                    <div class="progress-bar" id="progressBar" role="progressbar" style="width: 0%">0%</div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features-section">
+        <div class="container">
+            <h2 class="section-title">Neler Sunuyoruz?</h2>
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <i class="bi bi-file-earmark-text"></i>
+                        <h4>Çoklu Dosya Desteği</h4>
+                        <p>PDF, Word, PowerPoint ve metin dosyalarınızı yükleyin. Sistem otomatik olarak içeriği analiz eder.</p>
+                    </div>
                 </div>
-                <div class="progress-text" id="progressText">Dosya yükleniyor...</div>
-            </div>
-        </form>
-        
-        <div class="features">
-            <h5 class="mb-3"><strong>Neler Oluşturulacak:</strong></h5>
-            <div class="feature-item">
-                <i class="bi bi-journal-text"></i>
-                <span>Konu Özeti</span>
-            </div>
-            <div class="feature-item">
-                <i class="bi bi-card-list"></i>
-                <span>Çoktan Seçmeli Sorular</span>
-            </div>
-            <div class="feature-item">
-                <i class="bi bi-pencil-square"></i>
-                <span>Kısa Cevap Soruları</span>
-            </div>
-            <div class="feature-item">
-                <i class="bi bi-dash-square"></i>
-                <span>Boş Doldurma Soruları</span>
-            </div>
-            <div class="feature-item">
-                <i class="bi bi-check2-square"></i>
-                <span>Doğru-Yanlış Soruları</span>
-            </div>
-            <div class="feature-item">
-                <i class="bi bi-collection"></i>
-                <span>Flashcard Çalışma Kartları</span>
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <i class="bi bi-magic"></i>
+                        <h4>Otomatik İçerik Üretimi</h4>
+                        <p>Yapay zeka, dokümanınızdan konu özeti, çoktan seçmeli sorular, kısa cevap soruları ve flashcard'lar üretir.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <i class="bi bi-lightning-charge"></i>
+                        <h4>Hızlı ve Akıllı</h4>
+                        <p>Aynı dosyayı tekrar yüklediğinizde, sistem önbellekten hızlıca sonuçları gösterir. Zaman ve token tasarrufu!</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <i class="bi bi-graph-up"></i>
+                        <h4>İnteraktif Öğrenme</h4>
+                        <p>Quiz modu ile soruları çözebilir, skorunuzu görebilir ve flashcard'ları çevirerek çalışabilirsiniz.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <i class="bi bi-person-check"></i>
+                        <h4>Seviye Bazlı İçerik</h4>
+                        <p>İlkokuldan üniversiteye, sınav hazırlığına kadar her seviyeye uygun sorular ve içerikler üretilir.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <i class="bi bi-shield-check"></i>
+                        <h4>Güvenli ve Özel</h4>
+                        <p>Dosyalarınız güvenli bir şekilde işlenir ve sadece size özel içerikler üretilir.</p>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
-    
-    <!-- Socket.IO Client -->
-    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
-    
+    </section>
+
+    <!-- How It Works Section -->
+    <section class="how-it-works">
+        <div class="container">
+            <h2 class="section-title">Nasıl Çalışır?</h2>
+            <div class="row g-4">
+                <div class="col-md-3">
+                    <div class="step-card">
+                        <div class="step-number">1</div>
+                        <h4>Dosya Yükle</h4>
+                        <p>PDF, Word, PowerPoint veya metin dosyanızı yükleyin ve seviyenizi seçin.</p>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="step-card">
+                        <div class="step-number">2</div>
+                        <h4>Yapay Zeka İşlesin</h4>
+                        <p>Sistem dokümanınızı analiz eder ve içeriği çıkarır.</p>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="step-card">
+                        <div class="step-number">3</div>
+                        <h4>İçerik Üretilsin</h4>
+                        <p>Özet, sorular ve flashcard'lar otomatik olarak oluşturulur.</p>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="step-card">
+                        <div class="step-number">4</div>
+                        <h4>Çalışmaya Başla</h4>
+                        <p>Üretilen içeriklerle çalışın, quiz çözün ve öğrenin!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing Preview Section -->
+    <section class="pricing-preview">
+        <div class="container">
+            <h2 class="section-title">Planlarımız</h2>
+            <div class="row g-4 justify-content-center">
+                <div class="col-md-4">
+                    <div class="pricing-card">
+                        <h3>Ücretsiz</h3>
+                        <div class="price">0₺</div>
+                        <p class="text-muted">Aylık</p>
+                        <ul class="list-unstyled mt-4">
+                            <li class="mb-2"><i class="bi bi-check-circle text-success"></i> 3 dosya/ay</li>
+                            <li class="mb-2"><i class="bi bi-check-circle text-success"></i> Her soru türünden 5 soru</li>
+                            <li class="mb-2"><i class="bi bi-check-circle text-success"></i> 10 MB dosya boyutu</li>
+                            <li class="mb-2"><i class="bi bi-check-circle text-success"></i> 7 günlük deneme</li>
+                        </ul>
+                        <a href="{{ url_for('register') }}" class="btn btn-outline-primary w-100 mt-4">Başla</a>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="pricing-card featured">
+                        <h3>Premium</h3>
+                        <div class="price price-featured">99₺</div>
+                        <p>Aylık</p>
+                        <ul class="list-unstyled mt-4">
+                            <li class="mb-2"><i class="bi bi-check-circle"></i> Sınırsız dosya</li>
+                            <li class="mb-2"><i class="bi bi-check-circle"></i> Her soru türünden 30 soru</li>
+                            <li class="mb-2"><i class="bi bi-check-circle"></i> 24 MB dosya boyutu</li>
+                            <li class="mb-2"><i class="bi bi-check-circle"></i> Export özelliği</li>
+                        </ul>
+                        <a href="{{ url_for('pricing') }}" class="btn btn-light w-100 mt-4">Seç</a>
+                    </div>
+                </div>
+            </div>
+            <div class="text-center mt-5">
+                <a href="{{ url_for('pricing') }}" class="btn btn-outline-primary btn-lg">
+                    Tüm Planları İncele <i class="bi bi-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer-section">
+        <div class="container">
+            <p class="mb-0">&copy; 2024 StudyBuddy. Tüm hakları saklıdır.</p>
+        </div>
+    </footer>
+
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    
-    <script>
-        // Dosya seçildiğinde bilgi göster
-        document.getElementById('fileInput').addEventListener('change', function(e) {
-            const fileInfo = document.getElementById('fileInfo');
-            const fileName = document.getElementById('fileName');
-            
-            if (e.target.files.length > 0) {
-                fileName.textContent = e.target.files[0].name;
-                fileInfo.style.display = 'block';
-            } else {
-                fileInfo.style.display = 'none';
-            }
-        });
-        
-        // Form gönderilirken loading state ve progress bar
-        // SocketIO bağlantısı kur
-        const socket = io();
-        
-        // Gerçek zamanlı ilerleme güncellemeleri
-        socket.on('progress', function(data) {
-            const progressBar = document.getElementById('progressBar');
-            const progressText = document.getElementById('progressText');
-            
-            progressBar.style.width = data.progress + '%';
-            progressBar.textContent = data.progress + '%';
-            progressText.textContent = data.message;
-        });
-        
-        document.getElementById('uploadForm').addEventListener('submit', function(e) {
-            const submitBtn = document.getElementById('submitBtn');
-            const progressContainer = document.getElementById('progressContainer');
-            const progressBar = document.getElementById('progressBar');
-            const progressText = document.getElementById('progressText');
-            const uploadArea = document.querySelector('.upload-area');
-            const fileInfo = document.getElementById('fileInfo');
-            const profileSelection = document.querySelector('.profile-selection');
-            const levelSelection = document.querySelector('.level-selection');
-            const features = document.querySelector('.features');
-            
-            // Formu gizle
-            uploadArea.style.display = 'none';
-            fileInfo.style.display = 'none';
-            profileSelection.style.display = 'none';
-            levelSelection.style.display = 'none';
-            features.style.display = 'none';
-            
-            submitBtn.classList.add('loading');
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> İşleniyor... <span class="spinner-border spinner-border-sm" role="status"></span>';
-            
-            // Progress bar'ı göster
-            progressContainer.classList.add('active');
-            
-            // İlk durumu ayarla
-            progressBar.style.width = '0%';
-            progressBar.textContent = '0%';
-            progressText.textContent = 'Başlıyor...';
-        });
-    </script>
-    
 </body>
 </html>
-

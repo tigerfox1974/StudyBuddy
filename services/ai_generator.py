@@ -669,7 +669,7 @@ Lütfen sadece JSON formatında yanıt ver."""
                 "back": response
             }]
     
-    def generate_all_content(self, text: str, level: str = 'high_school', user_type: str = 'student') -> Dict[str, Any]:
+    def generate_all_content(self, text: str, level: str = 'high_school', user_type: str = 'student', user_plan: str = 'free') -> Dict[str, Any]:
         """
         Tüm içerikleri seviyeye göre tek seferde üretir
         
@@ -677,6 +677,7 @@ Lütfen sadece JSON formatında yanıt ver."""
             text: İçerik üretilecek metin
             level: Kullanıcı seviyesi (elementary, middle_school, high_school, university, exam_prep)
             user_type: Kullanıcı tipi (student, teacher)
+            user_plan: Kullanıcı planı (free, standard, premium) - Not: Soru limitleri app.py'de uygulanır
             
         Returns:
             Tüm içerikleri içeren dict

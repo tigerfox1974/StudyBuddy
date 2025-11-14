@@ -46,6 +46,11 @@
         color: white;
     }
     
+    .badge-plan.standard {
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        color: white;
+    }
+    
     .badge-plan.premium {
         background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
         color: #333;
@@ -162,15 +167,41 @@
                     <h3 class="mb-4">Abonelik Planım</h3>
                     
                     <div class="text-center mb-4">
-                        <span class="badge-plan {{ user.subscription_plan }}">
-                            {{ 'Premium' if user.subscription_plan == 'premium' else 'Ücretsiz' }}
+                        <span class="badge-plan {{ user.subscription_plan or 'free' }}">
+                            {{ plan_config.name if plan_config else 'Ücretsiz Plan' }}
                         </span>
+                        {% if token_info and token_info.trial_active %}
+                        <div class="mt-2">
+                            <small class="badge bg-info text-white">
+                                <i class="bi bi-clock"></i> 7 Günlük Deneme Aktif
+                            </small>
+                        </div>
+                        {% endif %}
                     </div>
                     
-                    <!-- Aylık Kullanım Durumu (sadece free plan için) -->
-                    {% if user.subscription_plan == 'free' and stats %}
+                    <!-- Fiş Bilgileri -->
+                    {% if token_info %}
+                    <div class="mb-3 p-3 bg-light rounded">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span><i class="bi bi-coin text-primary"></i> Kalan Fiş:</span>
+                            <strong class="text-primary" style="font-size: 1.2rem;">{{ token_info.tokens_remaining }} fiş</strong>
+                        </div>
+                        {% if token_info.trial_active %}
+                        <small class="text-muted">
+                            <i class="bi bi-info-circle"></i> Deneme süreniz: {{ token_info.trial_ends_at[:10] }} tarihine kadar
+                        </small>
+                        {% else %}
+                        <small class="text-muted">
+                            <i class="bi bi-arrow-repeat"></i> Aylık {{ token_info.monthly_tokens }} fiş (otomatik yenilenir)
+                        </small>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Aylık Kullanım Durumu (sadece limit varsa) -->
+                    {% if stats and stats.limit_info and stats.limit_info.limit %}
                     <div class="mt-3 mb-3">
-                        <strong>Bu Ay:</strong>
+                        <strong>Bu Ay Dosya Yükleme:</strong>
                         <div class="progress mt-2" style="height: 25px;">
                             <div class="progress-bar" 
                                  role="progressbar" 
@@ -182,7 +213,9 @@
                             </div>
                         </div>
                         <small class="text-muted">
-                            {% if stats.limit_info.remaining > 0 %}
+                            {% if stats.limit_info.remaining is none %}
+                                Sınırsız yükleme hakkı
+                            {% elif stats.limit_info.remaining > 0 %}
                                 {{ stats.limit_info.remaining }} yükleme hakkı kaldı
                             {% else %}
                                 Aylık limitiniz doldu
@@ -193,25 +226,35 @@
                     
                     <div class="mb-3">
                         <strong>Plan Özellikleri:</strong>
-                        <ul class="mt-2">
-                            {% if user.subscription_plan == 'free' %}
-                                <li>{{ config.SUBSCRIPTION_PLANS.free.features.monthly_upload_limit }} dosya/ay</li>
-                                <li>Tüm soru tipleri</li>
-                                <li>Özet ve flashcard</li>
-                                <li>{{ config.SUBSCRIPTION_PLANS.free.features.history_retention_days }} gün geçmiş</li>
+                        <ul class="mt-2" style="list-style: none; padding-left: 0;">
+                            {% if plan_config and plan_config.highlights %}
+                                {% for highlight in plan_config.highlights %}
+                                <li class="mb-1">
+                                    {% if 'yok' in highlight.lower() or '✗' in highlight %}
+                                        <i class="bi bi-x-circle text-danger"></i> 
+                                    {% else %}
+                                        <i class="bi bi-check-circle text-success"></i>
+                                    {% endif %}
+                                    {{ highlight }}
+                                </li>
+                                {% endfor %}
                             {% else %}
-                                <li>Sınırsız dosya yükleme</li>
-                                <li>Tüm özellikler</li>
-                                <li>Öncelikli destek</li>
-                                <li>Sınırsız geçmiş</li>
+                                <li class="text-muted">Plan bilgileri yükleniyor...</li>
                             {% endif %}
                         </ul>
                     </div>
                     
                     {% if user.subscription_plan == 'free' %}
-                    <a href="{{ url_for('pricing') }}" class="btn btn-warning w-100">
+                    <a href="{{ url_for('pricing') }}" class="btn btn-warning w-100 mb-2">
+                        <i class="bi bi-arrow-up-circle"></i> Paket Yükselt
+                    </a>
+                    {% elif user.subscription_plan == 'standard' %}
+                    <a href="{{ url_for('pricing') }}" class="btn btn-warning w-100 mb-2">
                         <i class="bi bi-star"></i> Premium'a Geç
                     </a>
+                    <button class="btn btn-success w-100" disabled>
+                        <i class="bi bi-check-circle"></i> Standart Üyesiniz
+                    </button>
                     {% else %}
                     <button class="btn btn-success w-100" disabled>
                         <i class="bi bi-check-circle"></i> Premium Üyesiniz
@@ -252,8 +295,12 @@
                                     <td>
                                         {% if payment.plan_type == 'premium' %}
                                             <span class="badge bg-warning text-dark">Premium</span>
+                                        {% elif payment.plan_type == 'standard' %}
+                                            <span class="badge bg-success">Standart</span>
+                                        {% elif payment.plan_type == 'free' %}
+                                            <span class="badge bg-primary">Ücretsiz</span>
                                         {% else %}
-                                            {{ payment.plan_type }}
+                                            <span class="badge bg-secondary">{{ payment.plan_type }}</span>
                                         {% endif %}
                                     </td>
                                     <td>{{ format_currency(payment.amount, payment.currency) }}</td>

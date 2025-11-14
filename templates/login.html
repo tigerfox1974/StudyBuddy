@@ -33,9 +33,10 @@
         margin-bottom: 30px;
     }
     
-    .login-logo i {
-        font-size: 60px;
-        color: #667eea;
+    .login-logo img {
+        max-width: 200px;
+        height: auto;
+        margin-bottom: 10px;
     }
     
     .login-logo h2 {
@@ -84,7 +85,7 @@
 <div class="login-container">
     <div class="login-card">
         <div class="login-logo">
-            <i class="bi bi-book-half"></i>
+            <img src="{{ url_for('static', filename='img/studybuddy-owl.png') }}" alt="StudyBuddy Logo">
             <h2>StudyBuddy'ye Giriş Yap</h2>
         </div>
         

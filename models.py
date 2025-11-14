@@ -71,6 +71,10 @@ class User(UserMixin, db.Model):
     last_login = db.Column(db.DateTime, nullable=True)
     reset_token = db.Column(db.String(100), nullable=True)
     reset_token_expiry = db.Column(db.DateTime, nullable=True)
+    # Token sistemi için yeni kolonlar
+    tokens_remaining = db.Column(db.Integer, default=0, nullable=False)  # Kalan fiş sayısı
+    trial_ends_at = db.Column(db.DateTime, nullable=True)  # 7 günlük deneme bitiş tarihi
+    last_token_refresh = db.Column(db.DateTime, nullable=True)  # Son fiş yenileme tarihi
     
     # Relationships
     documents = db.relationship('Document', backref='user', lazy='dynamic', cascade='all, delete-orphan')
@@ -322,3 +326,24 @@ class Payment(db.Model):
     
     def __repr__(self):
         return f'<Payment {self.invoice_number or self.id} - {self.status}>'
+
+
+class TokenPurchase(db.Model):
+    """Fiş satın alma geçmişi"""
+    __tablename__ = 'token_purchases'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False, index=True)
+    package_type = db.Column(db.String(20), nullable=False)  # 'small', 'medium', 'large', 'xlarge'
+    tokens = db.Column(db.Integer, nullable=False)  # Satın alınan fiş sayısı
+    price = db.Column(db.Numeric(10, 2), nullable=False)  # Ödenen tutar
+    currency = db.Column(db.String(3), default='TL', nullable=False)
+    payment_id = db.Column(db.Integer, db.ForeignKey('payments.id'), nullable=True)  # İlgili ödeme kaydı
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    
+    # Relationships
+    user = db.relationship('User', backref='token_purchases')
+    payment = db.relationship('Payment', backref='token_purchases')
+    
+    def __repr__(self):
+        return f'<TokenPurchase {self.tokens} tokens for User {self.user_id}>'

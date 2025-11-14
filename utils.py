@@ -10,11 +10,9 @@ import io
 import zipfile
 import os
 from typing import Tuple, Optional
-from email_validator import validate_email, EmailNotValidError
 from datetime import datetime
 from models import Document, Result, UsageStats, User, UserUsageStats, Subscription, Payment, db
 from config import Config
-from flask_mail import Message
 from flask import render_template, url_for
 
 
@@ -253,9 +251,10 @@ def validate_email_address(email):
         return None
     
     try:
+        from email_validator import validate_email, EmailNotValidError  # type: ignore
         validated = validate_email(email)
         return validated.email.lower().strip()
-    except EmailNotValidError:
+    except (EmailNotValidError, ImportError):
         return None
 
 
@@ -484,6 +483,14 @@ def get_user_stats_summary(user_id):
     if limit_info and limit_info['limit']:
         percentage = (limit_info['used'] / limit_info['limit']) * 100
     
+    # remaining değeri None olabilir (sınırsız planlar için)
+    remaining = limit_info.get('remaining') if limit_info else None
+    if remaining is None:
+        # Sınırsız plan veya limit_info yok
+        remaining = None
+    else:
+        remaining = int(remaining)
+    
     return {
         'current_month': {
             'uploads': stats.documents_processed,
@@ -494,7 +501,7 @@ def get_user_stats_summary(user_id):
             'plan': limit_info['plan'] if limit_info else 'free',
             'limit': limit_info['limit'] if limit_info else 5,
             'used': limit_info['used'] if limit_info else 0,
-            'remaining': limit_info['remaining'] if limit_info else 5,
+            'remaining': remaining,
             'percentage': percentage
         },
         'total_documents': total_documents
@@ -513,12 +520,15 @@ def generate_invoice_pdf(payment, user, subscription_plan):
     Returns:
         str: Oluşturulan PDF dosyasının yolu
     """
-    from reportlab.lib.pagesizes import A4
-    from reportlab.lib import colors
-    from reportlab.lib.units import cm
-    from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
-    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-    from reportlab.lib.enums import TA_CENTER, TA_RIGHT, TA_LEFT
+    try:
+        from reportlab.lib.pagesizes import A4  # type: ignore
+        from reportlab.lib import colors  # type: ignore
+        from reportlab.lib.units import cm  # type: ignore
+        from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer  # type: ignore
+        from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle  # type: ignore
+        from reportlab.lib.enums import TA_CENTER, TA_RIGHT, TA_LEFT  # type: ignore
+    except ImportError:
+        raise ImportError("reportlab paketi yüklü değil. Lütfen 'pip install reportlab' komutu ile yükleyin.")
     
     # Invoice storage klasörünü oluştur
     invoice_dir = Config.INVOICE_STORAGE_PATH
@@ -694,12 +704,13 @@ def send_payment_confirmation_email(user_email, payment, invoice_pdf_path):
     Returns:
         bool: Başarılı ise True
     """
-    from app import mail, app
-    
     try:
+        from app import mail, app
+        from flask_mail import Message  # type: ignore
         user = User.query.get(payment.user_id)
         plan = Config.SUBSCRIPTION_PLANS.get(payment.plan_type, {})
         dashboard_link = url_for('dashboard', _external=True)
+        logo_url = url_for('static', filename='img/studybuddy-owl.png', _external=True)
         
         msg = Message(
             subject='StudyBuddy - Ödeme Onayı ve Fatura',
@@ -713,7 +724,8 @@ def send_payment_confirmation_email(user_email, payment, invoice_pdf_path):
                                user=user, 
                                payment=payment, 
                                plan=plan,
-                               dashboard_link=dashboard_link)
+                               dashboard_link=dashboard_link,
+                               logo_url=logo_url)
         )
         
         # PDF'i ekle
@@ -818,5 +830,226 @@ def format_currency(amount, currency='TRY'):
         return f"₺{float(amount):.2f}"
     else:
         return f"{currency} {float(amount):.2f}"
+
+
+# ============================================================================
+# TOKEN (FİŞ) SİSTEMİ FONKSİYONLARI
+# ============================================================================
+
+def initialize_user_tokens(user):
+    """
+    Yeni kullanıcı için fiş sistemini başlat
+    - 7 günlük deneme süresi başlat
+    - Deneme fişlerini ver
+    
+    Args:
+        user: User object
+        
+    Returns:
+        None (user object güncellenir, commit yapılmaz)
+    """
+    from datetime import timedelta
+    
+    plan_config = Config.SUBSCRIPTION_PLANS.get('free', {})
+    features = plan_config.get('features', {})
+    
+    # 7 günlük deneme başlat
+    if user.trial_ends_at is None:
+        user.trial_ends_at = datetime.utcnow() + timedelta(days=features.get('trial_days', 7))
+    
+    # Deneme fişlerini ver
+    if user.tokens_remaining == 0:
+        user.tokens_remaining = features.get('trial_tokens', 10)
+
+
+def is_trial_active(user):
+    """
+    Kullanıcının deneme süresi aktif mi kontrol et
+    
+    Args:
+        user: User object
+        
+    Returns:
+        bool: Deneme aktifse True
+    """
+    if not user.trial_ends_at:
+        return False
+    return datetime.utcnow() < user.trial_ends_at
+
+
+def refresh_monthly_tokens(user):
+    """
+    Aylık fişleri yenile (abonelik planına göre)
+    
+    Args:
+        user: User object
+        
+    Returns:
+        None (user object güncellenir, commit yapılmaz)
+    """
+    from datetime import timedelta
+    
+    plan_config = Config.SUBSCRIPTION_PLANS.get(user.subscription_plan or 'free', {})
+    features = plan_config.get('features', {})
+    monthly_tokens = features.get('monthly_tokens', 3)
+    
+    # Son yenileme tarihini kontrol et
+    now = datetime.utcnow()
+    
+    # İlk kez mi yoksa aylık yenileme zamanı mı?
+    if user.last_token_refresh is None:
+        # İlk kez - fişleri ver
+        user.tokens_remaining = monthly_tokens
+        user.last_token_refresh = now
+    else:
+        # Son yenilemeden 30 gün geçmiş mi?
+        days_since_refresh = (now - user.last_token_refresh).days
+        if days_since_refresh >= 30:
+            # Aylık yenileme
+            user.tokens_remaining = monthly_tokens
+            user.last_token_refresh = now
+
+
+def calculate_token_cost(question_types=None, include_export=False, user_plan='free'):
+    """
+    İşlem için gereken fiş maliyetini hesapla
+    
+    Args:
+        question_types: List of question types to generate (None = all)
+        include_export: Export yapılacak mı?
+        user_plan: Kullanıcının planı
+        
+    Returns:
+        float: Toplam fiş maliyeti
+    """
+    costs = Config.TOKEN_COSTS
+    
+    # Temel işleme (özet + flashcard)
+    total = costs['base_processing']
+    
+    # Soru türleri için maliyet
+    if question_types is None:
+        # Tüm soru türleri
+        question_types = ['multiple_choice', 'short_answer', 'fill_blank', 'true_false']
+    
+    total += len(question_types) * costs['question_type']
+    
+    # Export maliyeti
+    if include_export:
+        plan_config = Config.SUBSCRIPTION_PLANS.get(user_plan, {})
+        features = plan_config.get('features', {})
+        export_cost = features.get('export_cost_tokens', 2)
+        total += export_cost
+    
+    return total
+
+
+def check_user_tokens(user, required_tokens):
+    """
+    Kullanıcının yeterli fişi var mı kontrol et
+    
+    Args:
+        user: User object
+        required_tokens: Gereken fiş sayısı
+        
+    Returns:
+        Tuple[bool, Optional[str], int]: (yeterli_mi, hata_mesajı, kalan_fiş)
+    """
+    # Önce aylık yenilemeyi kontrol et
+    refresh_monthly_tokens(user)
+    
+    # Deneme süresi aktifse, deneme fişlerini kullan
+    if is_trial_active(user):
+        # Deneme süresinde - deneme fişleri kullanılabilir
+        available_tokens = user.tokens_remaining
+    else:
+        # Deneme bitti - normal fişler
+        available_tokens = user.tokens_remaining
+    
+    if available_tokens < required_tokens:
+        error_msg = f"Yeterli fişiniz yok. Gereken: {required_tokens}, Mevcut: {available_tokens}. Lütfen fiş satın alın veya paket yükseltin."
+        return False, error_msg, available_tokens
+    
+    return True, None, available_tokens
+
+
+def deduct_tokens(user, amount):
+    """
+    Kullanıcıdan fiş düş
+    
+    Args:
+        user: User object
+        amount: Düşülecek fiş miktarı
+        
+    Returns:
+        None (user object güncellenir, commit yapılmaz)
+    """
+    user.tokens_remaining = max(0, user.tokens_remaining - amount)
+
+
+def add_tokens(user, amount):
+    """
+    Kullanıcıya fiş ekle (fiş satın alma için)
+    
+    Args:
+        user: User object
+        amount: Eklenecek fiş miktarı
+        
+    Returns:
+        None (user object güncellenir, commit yapılmaz)
+    """
+    user.tokens_remaining += amount
+
+
+def can_user_export(user):
+    """
+    Kullanıcı export yapabilir mi kontrol et
+    
+    Args:
+        user: User object
+        
+    Returns:
+        Tuple[bool, Optional[str], int]: (yapabilir_mi, hata_mesajı, gereken_fiş)
+    """
+    plan_config = Config.SUBSCRIPTION_PLANS.get(user.subscription_plan or 'free', {})
+    features = plan_config.get('features', {})
+    export_cost = features.get('export_cost_tokens', 2)
+    
+    # Premium plan'da export ücretsiz
+    if export_cost == 0:
+        return True, None, 0
+    
+    # Diğer planlarda fiş kontrolü
+    can_afford, error_msg, available = check_user_tokens(user, export_cost)
+    return can_afford, error_msg, export_cost
+
+
+def get_user_token_info(user):
+    """
+    Kullanıcının fiş bilgilerini getir
+    
+    Args:
+        user: User object
+        
+    Returns:
+        dict: Fiş bilgileri
+    """
+    # Önce aylık yenilemeyi kontrol et
+    refresh_monthly_tokens(user)
+    
+    plan_config = Config.SUBSCRIPTION_PLANS.get(user.subscription_plan or 'free', {})
+    features = plan_config.get('features', {})
+    monthly_tokens = features.get('monthly_tokens', 3)
+    
+    trial_active = is_trial_active(user)
+    
+    return {
+        'tokens_remaining': user.tokens_remaining,
+        'monthly_tokens': monthly_tokens,
+        'trial_active': trial_active,
+        'trial_ends_at': user.trial_ends_at.isoformat() if user.trial_ends_at else None,
+        'last_refresh': user.last_token_refresh.isoformat() if user.last_token_refresh else None,
+        'plan': user.subscription_plan or 'free'
+    }
 
 

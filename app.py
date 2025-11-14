@@ -24,7 +24,9 @@ from utils import (
     get_user_documents, validate_email_address, validate_file_signature, 
     check_user_upload_limit, increment_user_upload, increment_user_cache_hit, get_user_stats_summary,
     generate_invoice_pdf, send_payment_confirmation_email, activate_user_subscription, 
-    get_user_payment_history, format_currency
+    get_user_payment_history, format_currency,
+    initialize_user_tokens, is_trial_active, calculate_token_cost, check_user_tokens, 
+    deduct_tokens, can_user_export, get_user_token_info
 )
 import markdown
 import stripe
@@ -114,12 +116,13 @@ def send_reset_email(to_email, reset_link):
     """Şifre sıfırlama email'i gönder"""
     try:
         expiry_hours = Config.RESET_TOKEN_EXPIRY_HOURS
+        logo_url = url_for('static', filename='img/studybuddy-owl.png', _external=True)
         
         msg = Message(
             subject='StudyBuddy - Şifre Sıfırlama',
             recipients=[to_email],
             body=render_template('email/reset_password.txt', reset_link=reset_link, expiry_hours=expiry_hours),
-            html=render_template('email/reset_password.html', reset_link=reset_link, expiry_hours=expiry_hours)
+            html=render_template('email/reset_password.html', reset_link=reset_link, expiry_hours=expiry_hours, logo_url=logo_url)
         )
         mail.send(msg)
         return True
@@ -130,22 +133,33 @@ def send_reset_email(to_email, reset_link):
 
 @app.route('/')
 def index():
-    """Ana sayfa - dosya yükleme formu"""
-    limit_info = None
-    if current_user.is_authenticated:
-        _, _, limit_info = check_user_upload_limit(current_user.id)
-    
+    """Ana sayfa - Landing page (herkes için)"""
     return render_template('index.html', 
                           user=current_user, 
+                          config=Config)
+
+
+@app.route('/upload')
+@login_required
+def upload():
+    """Dosya yükleme sayfası - sadece giriş yapmış kullanıcılar için"""
+    limit_info = None
+    token_info = None
+    _, _, limit_info = check_user_upload_limit(current_user.id)
+    token_info = get_user_token_info(current_user)
+    
+    return render_template('upload.html', 
+                          user=current_user, 
                           config=Config,
-                          limit_info=limit_info)
+                          limit_info=limit_info,
+                          token_info=token_info)
 
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     """Kullanıcı kayıt sayfası"""
     if current_user.is_authenticated:
-        return redirect(url_for('index'))
+        return redirect(url_for('upload'))
     
     if request.method == 'POST':
         email = request.form.get('email', '').strip().lower()
@@ -198,12 +212,17 @@ def register():
             user = User(email=email, username=username)
             user.set_password(password)
             db.session.add(user)
+            db.session.flush()  # ID'yi almak için
+            
+            # Yeni kullanıcı için fiş sistemini başlat
+            initialize_user_tokens(user)
+            
             db.session.commit()
             
             # Auto login
             login_user(user)
-            flash('Hesabınız başarıyla oluşturuldu!', 'success')
-            return redirect(url_for('index'))
+            flash('Hesabınız başarıyla oluşturuldu! 7 günlük deneme süreniz başladı!', 'success')
+            return redirect(url_for('upload'))
         except Exception as e:
             db.session.rollback()
             flash(f'Kayıt sırasında bir hata oluştu: {str(e)}', 'error')
@@ -216,7 +235,7 @@ def register():
 def login():
     """Kullanıcı giriş sayfası"""
     if current_user.is_authenticated:
-        return redirect(url_for('index'))
+        return redirect(url_for('upload'))
     
     if request.method == 'POST':
         email = request.form.get('email', '').strip().lower()
@@ -244,14 +263,14 @@ def login():
         
         flash(f'Hoş geldiniz, {user.username}!', 'success')
         
-        # Redirect to next page or index
+        # Redirect to next page or upload
         next_page = request.args.get('next')
         if next_page:
             # Security check: prevent open redirect
             parsed_url = urlparse(next_page)
             if parsed_url.netloc == '':
                 return redirect(next_page)
-        return redirect(url_for('index'))
+        return redirect(url_for('upload'))
     
     return render_template('login.html')
 
@@ -294,7 +313,7 @@ def forgot_password():
 def reset_password(token):
     """Şifre sıfırlama sayfası"""
     if current_user.is_authenticated:
-        return redirect(url_for('index'))
+        return redirect(url_for('upload'))
     
     user = User.query.filter_by(reset_token=token).first()
     
@@ -335,12 +354,19 @@ def profile():
     """Kullanıcı profil sayfası"""
     stats_summary = get_user_stats_summary(current_user.id)
     payment_history = get_user_payment_history(current_user.id, limit=5)
+    token_info = get_user_token_info(current_user)
+    plan_type = current_user.subscription_plan or 'free'
+    plan_config = Config.SUBSCRIPTION_PLANS.get(plan_type, {})
+    
     return render_template('profile.html', 
                           user=current_user, 
                           stats=stats_summary,
                           payment_history=payment_history,
                           config=Config,
-                          format_currency=format_currency)
+                          format_currency=format_currency,
+                          token_info=token_info,
+                          plan_config=plan_config,
+                          plan_type=plan_type)
 
 
 @app.route('/pricing')
@@ -381,19 +407,19 @@ def process():
     # Dosya kontrolü
     if 'file' not in request.files:
         flash('Dosya seçilmedi', 'error')
-        return redirect(url_for('index'))
+        return redirect(url_for('upload'))
     
     file = request.files['file']
     
     # Dosya adı kontrolü
     if file.filename == '':
         flash('Dosya seçilmedi', 'error')
-        return redirect(url_for('index'))
+        return redirect(url_for('upload'))
     
     # Dosya uzantısı kontrolü
     if not Config.allowed_file(file.filename):
         flash(f'Desteklenmeyen dosya formatı. Lütfen şu formatlardan birini kullanın: {", ".join(Config.ALLOWED_EXTENSIONS)}', 'error')
-        return redirect(url_for('index'))
+        return redirect(url_for('upload'))
     
     # Profil ve seviye bilgilerini al
     user_level = request.form.get('level', 'high_school')
@@ -417,7 +443,7 @@ def process():
             is_valid, error_msg = validate_file_signature(file_content, file_extension)
             if not is_valid:
                 flash(error_msg, 'error')
-                return redirect(url_for('index'))
+                return redirect(url_for('upload'))
         
         # Dosya hash'ini hesapla
         file_hash = get_file_hash(file_content)
@@ -458,22 +484,34 @@ def process():
         # CACHE MISS - Ilk defa isleniyor
         print(f"[CACHE MISS] Isleniyor: {filename}")
         
-        # CACHE MISS durumunda kullanıcının aylık limitini kontrol et
-        can_upload, error_msg, limit_info = check_user_upload_limit(current_user.id)
-        
-        if not can_upload:
-            flash(error_msg, 'error')
-            return redirect(url_for('index'))
+        # Plan bilgilerini al
+        plan_type = current_user.subscription_plan or 'free'
+        plan_config = Config.SUBSCRIPTION_PLANS.get(plan_type, {})
+        plan_features = plan_config.get('features', {})
         
         # Plan-bazlı dosya boyutu kontrolü
-        plan_type = current_user.subscription_plan or 'free'
-        max_file_size_mb = Config.get_plan_limit(plan_type, 'max_file_size_mb')
+        max_file_size_mb = plan_features.get('max_file_size_mb', 10)
         max_file_size_bytes = max_file_size_mb * 1024 * 1024 if max_file_size_mb else None
         
         if max_file_size_bytes and file_size > max_file_size_bytes:
-            error_msg = f'Dosya çok büyük! {plan_type.upper()} planı için maksimum {max_file_size_mb} MB dosya yükleyebilirsiniz.'
+            error_msg = f'Dosya çok büyük! {plan_config.get("name", plan_type.upper())} için maksimum {max_file_size_mb} MB dosya yükleyebilirsiniz.'
             flash(error_msg, 'error')
-            return redirect(url_for('index'))
+            return redirect(url_for('upload'))
+        
+        # Fiş kontrolü - İşlem için gereken fiş miktarını hesapla
+        # Tüm soru türleri için işlem yapılacak
+        required_tokens = calculate_token_cost(
+            question_types=None,  # Tüm soru türleri
+            include_export=False,  # Export yapılmayacak
+            user_plan=plan_type
+        )
+        
+        # Kullanıcının yeterli fişi var mı kontrol et
+        can_afford, token_error_msg, available_tokens = check_user_tokens(current_user, required_tokens)
+        
+        if not can_afford:
+            flash(token_error_msg, 'error')
+            return redirect(url_for('pricing'))
         
         emit_progress(25, 'Dosya kaydediliyor...')
         
@@ -491,7 +529,7 @@ def process():
             if os.path.exists(file_path):
                 os.remove(file_path)
             flash(f'Dosya işleme hatası: {error}', 'error')
-            return redirect(url_for('index'))
+            return redirect(url_for('upload'))
         
         emit_progress(40, 'Metin hazırlanıyor...')
         
@@ -509,11 +547,44 @@ def process():
             ai_generator = AIGenerator()
             
             emit_progress(60, 'Sorular üretiliyor...')
-            results = ai_generator.generate_all_content(text, level=user_level, user_type=user_type)
+            results = ai_generator.generate_all_content(text, level=user_level, user_type=user_type, user_plan=plan_type)
             
             emit_progress(90, 'Sonuçlar hazırlanıyor...')
             
             processing_time = time.time() - start_time
+            
+            # Plan bazlı soru limitlerini uygula
+            max_questions_per_type = plan_features.get('max_questions_per_type')
+            original_counts = {}
+            plan_limit_info = {}
+            
+            if max_questions_per_type is not None:
+                # Her soru türü için limit uygula
+                question_types = {
+                    'multiple_choice': 'Çoktan Seçmeli',
+                    'short_answer': 'Kısa Cevap',
+                    'fill_blank': 'Boş Doldurma',
+                    'true_false': 'Doğru-Yanlış'
+                }
+                
+                for q_type, q_name in question_types.items():
+                    if q_type in results:
+                        original_count = len(results[q_type])
+                        original_counts[q_type] = original_count
+                        
+                        if original_count > max_questions_per_type:
+                            # Limit uygula - sadece ilk N soruyu göster
+                            results[q_type] = results[q_type][:max_questions_per_type]
+                            plan_limit_info[q_type] = {
+                                'name': q_name,
+                                'generated': original_count,
+                                'displayed': max_questions_per_type,
+                                'limit': max_questions_per_type
+                            }
+            
+            # Fiş düş
+            deduct_tokens(current_user, required_tokens)
+            db.session.commit()  # Fiş düşümünü kaydet
             
             # Geçici dosyayı temizle
             if os.path.exists(file_path):
@@ -540,6 +611,9 @@ def process():
             # Özeti markdown'dan HTML'e çevir
             results['summary_html'] = markdown.markdown(results['summary'])
             
+            # Token bilgilerini al
+            token_info = get_user_token_info(current_user)
+            
             # Sonuçları göster
             return render_template('result.html',
                                    filename=filename,
@@ -549,23 +623,28 @@ def process():
                                    user_type=user_type,
                                    processing_time=processing_time,
                                    short_answer_max_words=short_answer_max_words,
-                                   user=current_user)
+                                   user=current_user,
+                                   user_plan=plan_type,
+                                   plan_config=plan_config,
+                                   original_counts=original_counts,
+                                   plan_limit_info=plan_limit_info,
+                                   token_info=token_info)
         
         except ValueError as e:
             if os.path.exists(file_path):
                 os.remove(file_path)
             flash(str(e), 'error')
-            return redirect(url_for('index'))
+            return redirect(url_for('upload'))
         
         except Exception as e:
             if os.path.exists(file_path):
                 os.remove(file_path)
             flash(f'İçerik üretimi sırasında hata oluştu: {str(e)}', 'error')
-            return redirect(url_for('index'))
+            return redirect(url_for('upload'))
     
     except Exception as e:
         flash(f'Bir hata oluştu: {str(e)}', 'error')
-        return redirect(url_for('index'))
+        return redirect(url_for('upload'))
 
 
 @app.route('/history')
@@ -950,6 +1029,8 @@ def handle_csrf_error(e):
 def ratelimit_handler(e):
     """Rate limit aşıldı hatası"""
     flash(Config.UPLOAD_RATE_LIMIT_MESSAGE, 'error')
+    if current_user.is_authenticated:
+        return redirect(url_for('upload'))
     return redirect(url_for('index'))
 
 
@@ -966,6 +1047,8 @@ def too_large(e):
         max_file_size_mb = Config.get_plan_limit('free', 'max_file_size_mb')
         error_msg = f'Dosya çok büyük! Maksimum {max_file_size_mb} MB dosya yükleyebilirsiniz.'
     flash(error_msg, 'error')
+    if current_user.is_authenticated:
+        return redirect(url_for('upload'))
     return redirect(url_for('index'))
 
 
@@ -973,6 +1056,8 @@ def too_large(e):
 def internal_error(e):
     """Sunucu hatası"""
     flash('Sunucu hatası oluştu. Lütfen tekrar deneyin.', 'error')
+    if current_user.is_authenticated:
+        return redirect(url_for('upload'))
     return redirect(url_for('index'))
 
 
