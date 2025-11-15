@@ -2,240 +2,121 @@
 
 {% block title %}Giriş Yap - StudyBuddy{% endblock %}
 
-{% block extra_head %}
-<style>
-    body {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        min-height: 100vh;
-        display: flex;
-        flex-direction: column;
-    }
-    
-    .login-container {
-        flex: 1;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 40px 20px;
-    }
-    
-    .login-card {
-        background: white;
-        border-radius: 20px;
-        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
-        padding: 40px;
-        max-width: 450px;
-        width: 100%;
-    }
-    
-    .login-logo {
-        text-align: center;
-        margin-bottom: 30px;
-    }
-    
-    .login-logo img {
-        max-width: 200px;
-        height: auto;
-        margin-bottom: 10px;
-    }
-    
-    .login-logo h2 {
-        color: #333;
-        margin-top: 15px;
-        font-weight: 700;
-    }
-    
-    .form {
-        display: flex;
-        flex-direction: column;
-        gap: 25px;
-    }
-    
-    /* Floating Label Input Field */
-    .input-field {
-        position: relative;
-    }
-    
-    .input-field input {
-        padding: 12px 50px 12px 15px;
-        font-size: 1rem;
-        border-radius: 8px;
-        border: solid 1px #8d8d8d;
-        letter-spacing: 0.5px;
-        width: 100%;
-        transition: all 0.3s ease;
-        background-color: #fff;
-    }
-    
-    .input-field input:focus,
-    .input-field input:valid {
-        outline: none;
-        border: solid 2px #667eea;
-        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.15);
-    }
-    
-    .input-field label {
-        position: absolute;
-        color: #8d8d8d;
-        pointer-events: none;
-        background-color: transparent;
-        left: 15px;
-        top: 50%;
-        transform: translateY(-50%);
-        transition: all 0.3s ease;
-        font-size: 1rem;
-    }
-    
-    .input-field input:focus ~ label,
-    .input-field input:valid ~ label {
-        transform: translateY(-32px) translateX(-10px) scale(0.85);
-        background-color: #fff;
-        padding: 0px 8px;
-        color: #667eea;
-        font-weight: 600;
-        letter-spacing: 0.5px;
-    }
-    
-    /* Password Toggle Icon - Büyük, Hover, Bounce Animasyon */
-    .password-toggle-icon {
-        position: absolute;
-        right: 15px;
-        top: 50%;
-        transform: translateY(-50%);
-        cursor: pointer;
-        color: #667eea;
-        font-size: 1.5rem;
-        transition: all 0.3s ease;
-        z-index: 10;
-        padding: 5px;
-        border-radius: 50%;
-        background: rgba(102, 126, 234, 0.1);
-    }
-    
-    .password-toggle-icon:hover {
-        color: #764ba2;
-        background: rgba(118, 75, 162, 0.15);
-        transform: translateY(-50%) scale(1.1);
-    }
-    
-    .password-toggle-icon.bounce {
-        animation: bounceIcon 0.5s ease;
-    }
-    
-    @keyframes bounceIcon {
-        0%, 100% {
-            transform: translateY(-50%) scale(1);
-        }
-        25% {
-            transform: translateY(-50%) scale(1.3);
-        }
-        50% {
-            transform: translateY(-50%) scale(0.9);
-        }
-        75% {
-            transform: translateY(-50%) scale(1.1);
-        }
-    }
-    
-    .btn-login {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        border: none;
-        padding: 12px;
-        font-size: 18px;
-        border-radius: 50px;
-        font-weight: 600;
-        width: 100%;
-        transition: all 0.3s;
-        color: white;
-        margin-top: 10px;
-    }
-    
-    .btn-login:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
-        color: white;
-    }
-    
-    .form-check-label {
-        color: #333;
-    }
-    
-    .text-decoration-none {
-        color: #667eea;
-    }
-    
-    .text-decoration-none:hover {
-        color: #764ba2;
-    }
-    
-    hr {
-        border-color: #e0e0e0;
-    }
-</style>
+{% block content %}
+<section class="page-gradient-bg">
+    <div class="auth-page">
+        <div class="auth-card">
+            <div class="auth-logo">
+                <img src="{{ url_for('static', filename='img/studybuddy-owl.png') }}" alt="StudyBuddy Logo">
+                <h2>StudyBuddy'ye Giriş Yap</h2>
+            </div>
+
+            <form method="POST" action="{{ url_for('login') }}" class="auth-form" novalidate>
+                {{ csrf_token_input() }}
+
+                <div class="floating-field">
+                    <div class="floating-input-wrapper">
+                        <input 
+                            type="email" 
+                            id="email" 
+                            name="email" 
+                            class="floating-input" 
+                            required 
+                            autocomplete="email" 
+                            autofocus
+                            value="{{ request.form.get('email', '') }}">
+                        <label for="email" class="floating-label">Email Adresi</label>
+                    </div>
+                    <small class="input-feedback" id="emailFeedback" role="alert" aria-live="polite"></small>
+                </div>
+
+                <div class="floating-field">
+                    <div class="floating-input-wrapper">
+                        <input 
+                            type="password" 
+                            id="password" 
+                            name="password" 
+                            class="floating-input" 
+                            required 
+                            autocomplete="current-password">
+                        <label for="password" class="floating-label">Şifre</label>
+                        <button 
+                            type="button" 
+                            class="password-toggle-btn" 
+                            aria-label="Şifreyi göster" 
+                            aria-pressed="false" 
+                            data-target="password">
+                            <i class="bi bi-eye-fill"></i>
+                        </button>
+                    </div>
+                    <small class="input-feedback" id="passwordFeedback" role="alert" aria-live="polite"></small>
+                </div>
+
+                <div class="auth-meta">
+                    <div class="form-check mb-0">
+                        <input type="checkbox" class="form-check-input" id="remember_me" name="remember_me">
+                        <label class="form-check-label" for="remember_me">Beni hatırla</label>
+                    </div>
+                    <a href="{{ url_for('forgot_password') }}" class="text-decoration-none">Şifremi unuttum</a>
+                </div>
+
+                <button type="submit" class="btn-primary-custom w-100">
+                    <i class="bi bi-box-arrow-in-right"></i> Giriş Yap
+                </button>
+
+                <div class="auth-footer">
+                    <p class="mb-0">Hesabınız yok mu? <a href="{{ url_for('register') }}">Kayıt olun</a></p>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
 {% endblock %}
 
-{% block content %}
-<div class="login-container">
-    <div class="login-card">
-        <div class="login-logo">
-            <img src="{{ url_for('static', filename='img/studybuddy-owl.png') }}" alt="StudyBuddy Logo">
-            <h2>StudyBuddy'ye Giriş Yap</h2>
-        </div>
-        
-        <form method="POST" action="{{ url_for('login') }}" class="form">
-            {{ csrf_token_input() }}
-            
-            <div class="input-field">
-                <input type="email" id="email" name="email" required autocomplete="off" autofocus>
-                <label for="email">Email Adresi</label>
-            </div>
-            
-            <div class="input-field">
-                <input type="password" id="password" name="password" required autocomplete="off">
-                <label for="password">Şifre</label>
-                <i class="bi bi-eye-fill password-toggle-icon" id="togglePassword"></i>
-            </div>
-            
-            <div class="form-check">
-                <input type="checkbox" class="form-check-input" id="remember_me" name="remember_me">
-                <label class="form-check-label" for="remember_me">Beni hatırla</label>
-            </div>
-            
-            <button type="submit" class="btn btn-primary btn-login">
-                <i class="bi bi-box-arrow-in-right"></i> Giriş Yap
-            </button>
-            
-            <div class="text-center mt-2">
-                <a href="{{ url_for('forgot_password') }}" class="text-decoration-none">Şifremi unuttum</a>
-            </div>
-            
-            <hr class="my-4">
-            
-            <div class="text-center">
-                <p class="mb-0">Hesabınız yok mu? <a href="{{ url_for('register') }}" class="text-decoration-none fw-bold">Kayıt olun</a></p>
-            </div>
-        </form>
-    </div>
-</div>
-
+{% block extra_scripts %}
 <script>
-    // Password toggle with bounce animation
-    const togglePassword = document.getElementById('togglePassword');
-    const password = document.getElementById('password');
-    
-    togglePassword.addEventListener('click', function() {
-        const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
-        password.setAttribute('type', type);
-        
-        // Icon değiştir
-        this.classList.toggle('bi-eye-fill');
-        this.classList.toggle('bi-eye-slash-fill');
-        
-        // Bounce animasyonu ekle
-        this.classList.add('bounce');
-        setTimeout(() => {
-            this.classList.remove('bounce');
-        }, 500);
+    document.addEventListener('DOMContentLoaded', () => {
+        const updateFloatingState = (input) => {
+            const field = input.closest('.floating-field');
+            if (!field) return;
+            const hasValue = input.value && input.value.trim() !== '';
+            field.classList.toggle('has-value', hasValue);
+        };
+
+        const inputs = document.querySelectorAll('.floating-input');
+
+        const refreshFloatingStates = () => {
+            inputs.forEach((input) => updateFloatingState(input));
+        };
+
+        inputs.forEach((input) => {
+            input.addEventListener('input', () => updateFloatingState(input));
+            input.addEventListener('change', () => updateFloatingState(input));
+            updateFloatingState(input);
+        });
+
+        // Delay checks for browser autofill (Chrome/Safari)
+        setTimeout(refreshFloatingStates, 100);
+        setTimeout(refreshFloatingStates, 400);
+        window.addEventListener('pageshow', refreshFloatingStates);
+
+        document.querySelectorAll('.password-toggle-btn').forEach((button) => {
+            button.addEventListener('click', () => {
+                const target = document.getElementById(button.dataset.target);
+                if (!target) return;
+
+                const isHidden = target.getAttribute('type') === 'password';
+                target.setAttribute('type', isHidden ? 'text' : 'password');
+                button.setAttribute('aria-pressed', String(isHidden));
+
+                const icon = button.querySelector('i');
+                icon.classList.toggle('bi-eye-fill', !isHidden);
+                icon.classList.toggle('bi-eye-slash-fill', isHidden);
+
+                button.classList.add('bounce');
+                setTimeout(() => button.classList.remove('bounce'), 450);
+            });
+        });
     });
 </script>
 {% endblock %}

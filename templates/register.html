@@ -2,463 +2,252 @@
 
 {% block title %}Kayıt Ol - StudyBuddy{% endblock %}
 
-{% block extra_head %}
-<style>
-    body {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        min-height: 100vh;
-        display: flex;
-        flex-direction: column;
-    }
-    
-    .register-container {
-        flex: 1;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 40px 20px;
-    }
-    
-    .register-card {
-        background: white;
-        border-radius: 20px;
-        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
-        padding: 40px;
-        max-width: 500px;
-        width: 100%;
-    }
-    
-    .register-logo {
-        text-align: center;
-        margin-bottom: 30px;
-    }
-    
-    .register-logo img {
-        max-width: 200px;
-        height: auto;
-        margin-bottom: 10px;
-    }
-    
-    .register-logo h2 {
-        color: #333;
-        margin-top: 15px;
-        font-weight: 700;
-    }
-    
-    .form {
-        display: flex;
-        flex-direction: column;
-        gap: 25px;
-    }
-    
-    /* Floating Label Input Field */
-    .input-field {
-        position: relative;
-    }
-    
-    .input-field input {
-        padding: 12px 50px 12px 15px;
-        font-size: 1rem;
-        border-radius: 8px;
-        border: solid 1px #8d8d8d;
-        letter-spacing: 0.5px;
-        width: 100%;
-        transition: all 0.3s ease;
-        background-color: #fff;
-    }
-    
-    .input-field input:focus,
-    .input-field input:valid {
-        outline: none;
-        border: solid 2px #667eea;
-        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.15);
-    }
-    
-    .input-field label {
-        position: absolute;
-        color: #8d8d8d;
-        pointer-events: none;
-        background-color: transparent;
-        left: 15px;
-        top: 50%;
-        transform: translateY(-50%);
-        transition: all 0.3s ease;
-        font-size: 1rem;
-    }
-    
-    .input-field input:focus ~ label,
-    .input-field input:valid ~ label {
-        transform: translateY(-32px) translateX(-10px) scale(0.85);
-        background-color: #fff;
-        padding: 0px 8px;
-        color: #667eea;
-        font-weight: 600;
-        letter-spacing: 0.5px;
-    }
-    
-    /* Password Toggle Icon - Büyük, Hover, Bounce Animasyon */
-    .password-toggle-icon {
-        position: absolute;
-        right: 15px;
-        top: 50%;
-        transform: translateY(-50%);
-        cursor: pointer;
-        color: #667eea;
-        font-size: 1.5rem;
-        transition: all 0.3s ease;
-        z-index: 10;
-        padding: 5px;
-        border-radius: 50%;
-        background: rgba(102, 126, 234, 0.1);
-    }
-    
-    .password-toggle-icon:hover {
-        color: #764ba2;
-        background: rgba(118, 75, 162, 0.15);
-        transform: translateY(-50%) scale(1.1);
-    }
-    
-    .password-toggle-icon.bounce {
-        animation: bounceIcon 0.5s ease;
-    }
-    
-    @keyframes bounceIcon {
-        0%, 100% {
-            transform: translateY(-50%) scale(1);
-        }
-        25% {
-            transform: translateY(-50%) scale(1.3);
-        }
-        50% {
-            transform: translateY(-50%) scale(0.9);
-        }
-        75% {
-            transform: translateY(-50%) scale(1.1);
-        }
-    }
-    
-    /* Password Requirements - Dinamik Yeşil Tik */
-    .password-requirements {
-        margin-top: 10px;
-        font-size: 0.9rem;
-    }
-    
-    .password-requirements-title {
-        color: #666;
-        font-weight: 600;
-        margin-bottom: 8px;
-    }
-    
-    .password-requirements ul {
-        list-style: none;
-        padding: 0;
-        margin: 0;
-    }
-    
-    .password-requirements li {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        padding: 5px 0;
-        color: #666;
-        transition: all 0.3s ease;
-    }
-    
-    .password-requirements li.valid {
-        color: #28a745;
-        font-weight: 500;
-    }
-    
-    .password-requirements li .requirement-icon {
-        font-size: 1.1rem;
-        width: 20px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-    }
-    
-    .password-requirements li .requirement-icon.invalid {
-        color: #dc3545;
-    }
-    
-    .password-requirements li .requirement-icon.valid {
-        color: #28a745;
-        animation: checkmarkPop 0.3s ease;
-    }
-    
-    @keyframes checkmarkPop {
-        0% {
-            transform: scale(0);
-        }
-        50% {
-            transform: scale(1.3);
-        }
-        100% {
-            transform: scale(1);
-        }
-    }
-    
-    .password-strength {
-        height: 5px;
-        border-radius: 3px;
-        margin-top: 8px;
-        transition: all 0.3s;
-    }
-    
-    .password-strength.weak { background: #dc3545; width: 33%; }
-    .password-strength.medium { background: #ffc107; width: 66%; }
-    .password-strength.strong { background: #28a745; width: 100%; }
-    
-    .btn-register {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        border: none;
-        padding: 12px;
-        font-size: 18px;
-        border-radius: 50px;
-        font-weight: 600;
-        width: 100%;
-        transition: all 0.3s;
-        color: white;
-        margin-top: 10px;
-    }
-    
-    .btn-register:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
-        color: white;
-    }
-    
-    .form-check-label {
-        color: #333;
-    }
-    
-    .text-decoration-none {
-        color: #667eea;
-    }
-    
-    .text-decoration-none:hover {
-        color: #764ba2;
-    }
-    
-    hr {
-        border-color: #e0e0e0;
-    }
-    
-    .text-danger {
-        color: #dc3545;
-        font-size: 0.875rem;
-        margin-top: 5px;
-        display: block;
-    }
-</style>
+{% block content %}
+<section class="page-gradient-bg">
+    <div class="auth-page">
+        <div class="auth-card">
+            <div class="auth-logo">
+                <img src="{{ url_for('static', filename='img/studybuddy-owl.png') }}" alt="StudyBuddy Logo">
+                <h2>StudyBuddy'ye Kayıt Ol</h2>
+            </div>
+
+            <form method="POST" action="{{ url_for('register') }}" id="registerForm" class="auth-form" novalidate>
+                {{ csrf_token_input() }}
+
+                <div class="floating-field">
+                    <div class="floating-input-wrapper">
+                        <input 
+                            type="text" 
+                            id="username" 
+                            name="username" 
+                            class="floating-input" 
+                            required 
+                            minlength="3" 
+                            maxlength="80" 
+                            autocomplete="username"
+                            value="{{ request.form.get('username', '') }}">
+                        <label for="username" class="floating-label">Kullanıcı Adı</label>
+                    </div>
+                    <small class="input-feedback" id="usernameFeedback" role="alert" aria-live="polite"></small>
+                </div>
+
+                <div class="floating-field">
+                    <div class="floating-input-wrapper">
+                        <input 
+                            type="email" 
+                            id="email" 
+                            name="email" 
+                            class="floating-input" 
+                            required 
+                            autocomplete="email"
+                            value="{{ request.form.get('email', '') }}">
+                        <label for="email" class="floating-label">Email Adresi</label>
+                    </div>
+                    <small class="input-feedback" id="emailFeedback" role="alert" aria-live="polite"></small>
+                </div>
+
+                <div class="floating-field">
+                    <div class="floating-input-wrapper">
+                        <input 
+                            type="password" 
+                            id="password" 
+                            name="password" 
+                            class="floating-input" 
+                            required 
+                            minlength="8" 
+                            autocomplete="new-password">
+                        <label for="password" class="floating-label">Şifre</label>
+                        <button 
+                            type="button" 
+                            class="password-toggle-btn" 
+                            aria-label="Şifreyi göster" 
+                            aria-pressed="false" 
+                            data-target="password">
+                            <i class="bi bi-eye-fill"></i>
+                        </button>
+                    </div>
+                    <div class="password-strength-bar">
+                        <span id="passwordStrengthMeter"></span>
+                    </div>
+                    <div class="password-requirements">
+                        <div class="password-requirements-title">Şifre gereksinimleri</div>
+                        <ul>
+                            <li data-rule="length">
+                                <span class="requirement-icon invalid"><i class="bi bi-x-circle"></i></span>
+                                <span>En az 8 karakter</span>
+                            </li>
+                            <li data-rule="uppercase">
+                                <span class="requirement-icon invalid"><i class="bi bi-x-circle"></i></span>
+                                <span>En az bir büyük harf</span>
+                            </li>
+                            <li data-rule="lowercase">
+                                <span class="requirement-icon invalid"><i class="bi bi-x-circle"></i></span>
+                                <span>En az bir küçük harf</span>
+                            </li>
+                            <li data-rule="number">
+                                <span class="requirement-icon invalid"><i class="bi bi-x-circle"></i></span>
+                                <span>En az bir rakam</span>
+                            </li>
+                            <li data-rule="symbol">
+                                <span class="requirement-icon invalid"><i class="bi bi-x-circle"></i></span>
+                                <span>En az bir özel karakter</span>
+                            </li>
+                        </ul>
+                    </div>
+                    <small class="input-feedback" id="passwordFeedback" role="alert" aria-live="polite"></small>
+                </div>
+
+                <div class="floating-field">
+                    <div class="floating-input-wrapper">
+                        <input 
+                            type="password" 
+                            id="password_confirm" 
+                            name="password_confirm" 
+                            class="floating-input" 
+                            required 
+                            autocomplete="new-password">
+                        <label for="password_confirm" class="floating-label">Şifre Tekrar</label>
+                        <button 
+                            type="button" 
+                            class="password-toggle-btn" 
+                            aria-label="Şifre tekrarını göster" 
+                            aria-pressed="false" 
+                            data-target="password_confirm">
+                            <i class="bi bi-eye-fill"></i>
+                        </button>
+                    </div>
+                    <small class="input-feedback" id="passwordMatchFeedback" role="alert" aria-live="polite"></small>
+                </div>
+
+                <div class="form-check">
+                    <input type="checkbox" class="form-check-input" id="terms" required>
+                    <label class="form-check-label" for="terms">Kullanım şartlarını kabul ediyorum</label>
+                </div>
+
+                <button type="submit" class="btn-primary-custom w-100">
+                    <i class="bi bi-person-plus"></i> Kayıt Ol
+                </button>
+
+                <div class="auth-footer">
+                    <p class="mb-0">Zaten hesabınız var mı? <a href="{{ url_for('login') }}">Giriş yapın</a></p>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
 {% endblock %}
 
-{% block content %}
-<div class="register-container">
-    <div class="register-card">
-        <div class="register-logo">
-            <img src="{{ url_for('static', filename='img/studybuddy-owl.png') }}" alt="StudyBuddy Logo">
-            <h2>StudyBuddy'ye Kayıt Ol</h2>
-        </div>
-        
-        <form method="POST" action="{{ url_for('register') }}" id="registerForm" class="form">
-            {{ csrf_token_input() }}
-            
-            <div class="input-field">
-                <input type="text" id="username" name="username" required autocomplete="off" minlength="3" maxlength="80">
-                <label for="username">Kullanıcı Adı</label>
-            </div>
-            
-            <div class="input-field">
-                <input type="email" id="email" name="email" required autocomplete="off">
-                <label for="email">Email Adresi</label>
-            </div>
-            
-            <div class="input-field">
-                <input type="password" id="password" name="password" required autocomplete="off" minlength="8">
-                <label for="password">Şifre</label>
-                <i class="bi bi-eye-fill password-toggle-icon" id="togglePassword"></i>
-                <div class="password-strength" id="passwordStrength"></div>
-                <div class="password-requirements">
-                    <div class="password-requirements-title">Şifre gereksinimleri:</div>
-                    <ul>
-                        <li id="req-length">
-                            <span class="requirement-icon invalid"><i class="bi bi-x-circle"></i></span>
-                            <span>En az 8 karakter</span>
-                        </li>
-                        <li id="req-uppercase">
-                            <span class="requirement-icon invalid"><i class="bi bi-x-circle"></i></span>
-                            <span>En az bir büyük harf</span>
-                        </li>
-                        <li id="req-lowercase">
-                            <span class="requirement-icon invalid"><i class="bi bi-x-circle"></i></span>
-                            <span>En az bir küçük harf</span>
-                        </li>
-                        <li id="req-number">
-                            <span class="requirement-icon invalid"><i class="bi bi-x-circle"></i></span>
-                            <span>En az bir rakam</span>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-            
-            <div class="input-field">
-                <input type="password" id="password_confirm" name="password_confirm" required autocomplete="off">
-                <label for="password_confirm">Şifre Tekrar</label>
-                <i class="bi bi-eye-fill password-toggle-icon" id="togglePasswordConfirm"></i>
-                <small class="text-danger" id="passwordMatch" style="display: none;">Şifreler eşleşmiyor</small>
-            </div>
-            
-            <div class="form-check">
-                <input type="checkbox" class="form-check-input" id="terms" required>
-                <label class="form-check-label" for="terms">Kullanım şartlarını kabul ediyorum</label>
-            </div>
-            
-            <button type="submit" class="btn btn-primary btn-register">
-                <i class="bi bi-person-plus"></i> Kayıt Ol
-            </button>
-            
-            <hr class="my-4">
-            
-            <div class="text-center">
-                <p class="mb-0">Zaten hesabınız var mı? <a href="{{ url_for('login') }}" class="text-decoration-none fw-bold">Giriş yapın</a></p>
-            </div>
-        </form>
-    </div>
-</div>
-
+{% block extra_scripts %}
 <script>
-    // Password toggle with bounce animation - Password field
-    const togglePassword = document.getElementById('togglePassword');
-    const password = document.getElementById('password');
-    
-    togglePassword.addEventListener('click', function() {
-        const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
-        password.setAttribute('type', type);
-        
-        this.classList.toggle('bi-eye-fill');
-        this.classList.toggle('bi-eye-slash-fill');
-        
-        this.classList.add('bounce');
-        setTimeout(() => {
-            this.classList.remove('bounce');
-        }, 500);
+    document.addEventListener('DOMContentLoaded', () => {
+        const floatingInputs = document.querySelectorAll('.floating-input');
+        const passwordField = document.getElementById('password');
+        const confirmField = document.getElementById('password_confirm');
+        const strengthMeter = document.getElementById('passwordStrengthMeter');
+        const requirements = document.querySelectorAll('.password-requirements li');
+        const passwordMatchFeedback = document.getElementById('passwordMatchFeedback');
+
+        const updateFloatingState = (input) => {
+            const field = input.closest('.floating-field');
+            if (!field) return;
+            field.classList.toggle('has-value', input.value.trim() !== '');
+        };
+
+        const refreshFloatingStates = () => {
+            floatingInputs.forEach((input) => updateFloatingState(input));
+        };
+
+        floatingInputs.forEach((input) => {
+            input.addEventListener('input', () => updateFloatingState(input));
+            input.addEventListener('change', () => updateFloatingState(input));
+            updateFloatingState(input);
+        });
+
+        setTimeout(refreshFloatingStates, 100);
+        setTimeout(refreshFloatingStates, 400);
+        window.addEventListener('pageshow', refreshFloatingStates);
+
+        document.querySelectorAll('.password-toggle-btn').forEach((button) => {
+            button.addEventListener('click', () => {
+                const target = document.getElementById(button.dataset.target);
+                if (!target) return;
+
+                const isHidden = target.getAttribute('type') === 'password';
+                target.setAttribute('type', isHidden ? 'text' : 'password');
+                button.setAttribute('aria-pressed', String(isHidden));
+
+                const icon = button.querySelector('i');
+                icon.classList.toggle('bi-eye-fill', !isHidden);
+                icon.classList.toggle('bi-eye-slash-fill', isHidden);
+
+                button.classList.add('bounce');
+                setTimeout(() => button.classList.remove('bounce'), 450);
+            });
+        });
+
+        const ruleChecks = {
+            length: (val) => val.length >= 8,
+            uppercase: (val) => /[A-ZÇĞİÖŞÜ]/.test(val),
+            lowercase: (val) => /[a-zçğıöşü]/.test(val),
+            number: (val) => /\d/.test(val),
+            symbol: (val) => /[!@#$%^&*(),.?":{}|<>]/.test(val),
+        };
+
+        const updateRequirements = () => {
+            const value = passwordField.value;
+            let passed = 0;
+
+            requirements.forEach((item) => {
+                const rule = item.dataset.rule;
+                const icon = item.querySelector('.requirement-icon');
+                const isValid = ruleChecks[rule] ? ruleChecks[rule](value) : false;
+
+                item.classList.toggle('valid', isValid);
+                icon.classList.toggle('valid', isValid);
+                icon.classList.toggle('invalid', !isValid);
+                icon.innerHTML = isValid 
+                    ? '<i class="bi bi-check-circle-fill" aria-hidden="true"></i>'
+                    : '<i class="bi bi-x-circle" aria-hidden="true"></i>';
+
+                if (isValid) passed += 1;
+            });
+
+            strengthMeter.className = '';
+            if (value.length === 0) {
+                strengthMeter.style.width = '0%';
+                return;
+            }
+
+            if (passed <= 2) {
+                strengthMeter.classList.add('weak');
+            } else if (passed <= 4) {
+                strengthMeter.classList.add('medium');
+            } else {
+                strengthMeter.classList.add('strong');
+            }
+        };
+
+        const checkPasswordMatch = () => {
+            if (!confirmField.value) {
+                passwordMatchFeedback.textContent = '';
+                confirmField.setCustomValidity('');
+                return;
+            }
+
+            if (confirmField.value !== passwordField.value) {
+                passwordMatchFeedback.textContent = 'Şifreler eşleşmiyor';
+                confirmField.setCustomValidity('Şifreler eşleşmiyor');
+            } else {
+                passwordMatchFeedback.textContent = '';
+                confirmField.setCustomValidity('');
+            }
+        };
+
+        passwordField.addEventListener('input', () => {
+            updateRequirements();
+            checkPasswordMatch();
+        });
+        confirmField.addEventListener('input', checkPasswordMatch);
     });
-    
-    // Password toggle with bounce animation - Password Confirm field
-    const togglePasswordConfirm = document.getElementById('togglePasswordConfirm');
-    const passwordConfirm = document.getElementById('password_confirm');
-    
-    togglePasswordConfirm.addEventListener('click', function() {
-        const type = passwordConfirm.getAttribute('type') === 'password' ? 'text' : 'password';
-        passwordConfirm.setAttribute('type', type);
-        
-        this.classList.toggle('bi-eye-fill');
-        this.classList.toggle('bi-eye-slash-fill');
-        
-        this.classList.add('bounce');
-        setTimeout(() => {
-            this.classList.remove('bounce');
-        }, 500);
-    });
-    
-    // Password match checker
-    function checkPasswordMatch() {
-        if (passwordConfirm.value && password.value !== passwordConfirm.value) {
-            document.getElementById('passwordMatch').style.display = 'block';
-            passwordConfirm.setCustomValidity('Şifreler eşleşmiyor');
-        } else {
-            document.getElementById('passwordMatch').style.display = 'none';
-            passwordConfirm.setCustomValidity('');
-        }
-    }
-    
-    password.addEventListener('input', checkPasswordMatch);
-    passwordConfirm.addEventListener('input', checkPasswordMatch);
-    
-    // Password requirements checker with green checkmarks
-    function checkPasswordRequirements() {
-        const pwd = password.value;
-        
-        // En az 8 karakter
-        const reqLength = document.getElementById('req-length');
-        const reqLengthIcon = reqLength.querySelector('.requirement-icon');
-        if (pwd.length >= 8) {
-            reqLength.classList.add('valid');
-            reqLengthIcon.classList.remove('invalid');
-            reqLengthIcon.classList.add('valid');
-            reqLengthIcon.innerHTML = '<i class="bi bi-check-circle-fill"></i>';
-        } else {
-            reqLength.classList.remove('valid');
-            reqLengthIcon.classList.remove('valid');
-            reqLengthIcon.classList.add('invalid');
-            reqLengthIcon.innerHTML = '<i class="bi bi-x-circle"></i>';
-        }
-        
-        // En az bir büyük harf
-        const reqUppercase = document.getElementById('req-uppercase');
-        const reqUppercaseIcon = reqUppercase.querySelector('.requirement-icon');
-        if (/[A-Z]/.test(pwd)) {
-            reqUppercase.classList.add('valid');
-            reqUppercaseIcon.classList.remove('invalid');
-            reqUppercaseIcon.classList.add('valid');
-            reqUppercaseIcon.innerHTML = '<i class="bi bi-check-circle-fill"></i>';
-        } else {
-            reqUppercase.classList.remove('valid');
-            reqUppercaseIcon.classList.remove('valid');
-            reqUppercaseIcon.classList.add('invalid');
-            reqUppercaseIcon.innerHTML = '<i class="bi bi-x-circle"></i>';
-        }
-        
-        // En az bir küçük harf
-        const reqLowercase = document.getElementById('req-lowercase');
-        const reqLowercaseIcon = reqLowercase.querySelector('.requirement-icon');
-        if (/[a-z]/.test(pwd)) {
-            reqLowercase.classList.add('valid');
-            reqLowercaseIcon.classList.remove('invalid');
-            reqLowercaseIcon.classList.add('valid');
-            reqLowercaseIcon.innerHTML = '<i class="bi bi-check-circle-fill"></i>';
-        } else {
-            reqLowercase.classList.remove('valid');
-            reqLowercaseIcon.classList.remove('valid');
-            reqLowercaseIcon.classList.add('invalid');
-            reqLowercaseIcon.innerHTML = '<i class="bi bi-x-circle"></i>';
-        }
-        
-        // En az bir rakam
-        const reqNumber = document.getElementById('req-number');
-        const reqNumberIcon = reqNumber.querySelector('.requirement-icon');
-        if (/\d/.test(pwd)) {
-            reqNumber.classList.add('valid');
-            reqNumberIcon.classList.remove('invalid');
-            reqNumberIcon.classList.add('valid');
-            reqNumberIcon.innerHTML = '<i class="bi bi-check-circle-fill"></i>';
-        } else {
-            reqNumber.classList.remove('valid');
-            reqNumberIcon.classList.remove('valid');
-            reqNumberIcon.classList.add('invalid');
-            reqNumberIcon.innerHTML = '<i class="bi bi-x-circle"></i>';
-        }
-        
-        // Password strength indicator
-        const passwordStrength = document.getElementById('passwordStrength');
-        let strength = 0;
-        if (pwd.length >= 8) strength++;
-        if (/[A-Z]/.test(pwd)) strength++;
-        if (/[a-z]/.test(pwd)) strength++;
-        if (/\d/.test(pwd)) strength++;
-        if (/[!@#$%^&*(),.?":{}|<>]/.test(pwd)) strength++;
-        
-        passwordStrength.className = 'password-strength';
-        if (strength <= 2) {
-            passwordStrength.classList.add('weak');
-        } else if (strength <= 4) {
-            passwordStrength.classList.add('medium');
-        } else {
-            passwordStrength.classList.add('strong');
-        }
-    }
-    
-    password.addEventListener('input', checkPasswordRequirements);
 </script>
 {% endblock %}
