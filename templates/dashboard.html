@@ -132,6 +132,14 @@
 {% block content %}
 <div class="dashboard-container">
     <div class="container">
+        <!-- Breadcrumb -->
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb" style="background: rgba(102, 126, 234, 0.1); padding: 12px 20px; border-radius: 10px;">
+                <li class="breadcrumb-item"><a href="{{ url_for('index') }}" style="text-decoration: none; color: #667eea; font-weight: 500;"><i class="bi bi-house"></i> Ana Sayfa</a></li>
+                <li class="breadcrumb-item active" aria-current="page" style="color: #333; font-weight: 600;"><i class="bi bi-bar-chart"></i> Dashboard</li>
+            </ol>
+        </nav>
+        
         <div class="dashboard-header">
             <h1>Dashboard</h1>
             <p>Hoş geldiniz, {{ user.username }}! Kullanım istatistikleriniz aşağıda görüntülenmektedir.</p>

@@ -538,14 +538,14 @@ StudyBuddy uses Stripe for secure payment processing.
        STRIPE_STANDARD_PRODUCT_ID=prod_xxxxx
        ```
    - **Premium Plan için:**
-     - Create product: "StudyBuddy Premium"
-     - Add price: ₺49.99 TRY, recurring monthly
+   - Create product: "StudyBuddy Premium"
+   - Add price: ₺49.99 TRY, recurring monthly
      - Copy Price ID (price_xxxxx) and Product ID (prod_xxxxx)
      - Add to `.env`:
-       ```
-       STRIPE_PREMIUM_PRICE_ID=price_xxxxx
+     ```
+     STRIPE_PREMIUM_PRICE_ID=price_xxxxx
        STRIPE_PREMIUM_PRODUCT_ID=prod_xxxxx
-       ```
+     ```
 
 4. **Set Up Webhook**
    - Go to Stripe Dashboard > Developers > Webhooks

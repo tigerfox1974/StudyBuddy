@@ -1,2 +1,766 @@
-/* Baykuş animasyonu kaldırıldı - sadece progress bar kullanılıyor */
+/* ==========================================
+   StudyBuddy - Ortak CSS Stilleri
+   ========================================== */
 
+/* ==========================================
+   1. GENEL STILLER
+   ========================================== */
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.6;
+}
+
+/* Gradient Background - Tüm sayfalar için */
+.page-gradient-bg {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+}
+
+/* Container Stilleri */
+.content-wrapper {
+    padding: 20px;
+}
+
+/* ==========================================
+   1.1. BREADCRUMB STİLLERİ
+   ========================================== */
+
+/* Breadcrumb - Gradient arka plan için (WCAG AA uyumlu) */
+.breadcrumb-gradient {
+    background: rgba(0, 0, 0, 0.3) !important;
+    padding: 12px 20px;
+    border-radius: 10px;
+    backdrop-filter: blur(10px);
+}
+
+.breadcrumb-gradient .breadcrumb-item a {
+    color: #ffffff !important;
+    text-decoration: none;
+    font-weight: 500;
+    transition: opacity 0.2s;
+}
+
+.breadcrumb-gradient .breadcrumb-item a:hover {
+    opacity: 0.8;
+}
+
+.breadcrumb-gradient .breadcrumb-item.active {
+    color: #ffffff !important;
+    font-weight: 600;
+}
+
+/* Breadcrumb - Açık arka plan için */
+.breadcrumb-light {
+    background: rgba(102, 126, 234, 0.1) !important;
+    padding: 12px 20px;
+    border-radius: 10px;
+}
+
+.breadcrumb-light .breadcrumb-item a {
+    color: #667eea !important;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s;
+}
+
+.breadcrumb-light .breadcrumb-item a:hover {
+    color: #764ba2 !important;
+}
+
+.breadcrumb-light .breadcrumb-item.active {
+    color: #333 !important;
+    font-weight: 600;
+}
+
+/* ==========================================
+   2. BUTON STİLLERİ
+   ========================================== */
+
+/* Primary Gradient Button - Ana CTA butonlar için */
+.btn-primary-custom {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    color: white;
+    padding: 12px 30px;
+    border-radius: 50px;
+    font-weight: 600;
+    transition: all 0.3s;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.btn-primary-custom:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+    color: white;
+}
+
+/* Secondary Outline Button */
+.btn-outline-custom {
+    background: white;
+    color: #667eea;
+    border: 2px solid #667eea;
+    padding: 12px 30px;
+    border-radius: 50px;
+    font-weight: 600;
+    transition: all 0.3s;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.btn-outline-custom:hover {
+    background: #f8f9fa;
+    color: #667eea;
+    transform: translateY(-2px);
+}
+
+/* Small Button Variant */
+.btn-sm-custom {
+    padding: 8px 20px;
+    font-size: 0.9rem;
+}
+
+/* Large Button Variant */
+.btn-lg-custom {
+    padding: 15px 40px;
+    font-size: 1.2rem;
+}
+
+/* Hero Buttons (Landing Page) */
+.btn-hero {
+    padding: 15px 40px;
+    font-size: 1.2rem;
+    font-weight: 600;
+    border-radius: 50px;
+    border: none;
+    transition: all 0.3s;
+}
+
+.btn-hero-primary {
+    background: white;
+    color: #667eea;
+}
+
+.btn-hero-primary:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 30px rgba(255,255,255,0.3);
+    background: #f8f9ff;
+}
+
+.btn-hero-outline {
+    background: transparent;
+    color: white;
+    border: 2px solid white;
+}
+
+.btn-hero-outline:hover {
+    background: white;
+    color: #667eea;
+    transform: translateY(-3px);
+    box-shadow: 0 10px 30px rgba(255,255,255,0.3);
+}
+
+/* ==========================================
+   3. KART STİLLERİ
+   ========================================== */
+
+/* Standard Card */
+.card-custom {
+    background: white;
+    border-radius: 15px;
+    padding: 30px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
+
+.card-custom-header {
+    border-bottom: 2px solid #667eea;
+    padding-bottom: 15px;
+    margin-bottom: 20px;
+}
+
+.card-custom-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #333;
+    margin: 0;
+}
+
+/* Feature Card (Landing Page) */
+.feature-card {
+    background: #f8f9ff;
+    border-radius: 20px;
+    padding: 40px 30px;
+    text-align: center;
+    height: 100%;
+    transition: all 0.3s;
+    border: 2px solid transparent;
+}
+
+.feature-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 15px 40px rgba(102, 126, 234, 0.2);
+    border-color: #667eea;
+}
+
+.feature-card i {
+    font-size: 4rem;
+    color: #667eea;
+    margin-bottom: 20px;
+}
+
+.feature-card h4 {
+    color: #333;
+    font-weight: 600;
+    margin-bottom: 15px;
+}
+
+.feature-card p {
+    color: #666;
+    line-height: 1.8;
+}
+
+/* Pricing Card */
+.pricing-card {
+    background: #f8f9ff;
+    border-radius: 20px;
+    padding: 40px 30px;
+    text-align: center;
+    height: 100%;
+    border: 2px solid #e0e7ff;
+    transition: all 0.3s;
+    position: relative;
+}
+
+.pricing-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.2);
+    border-color: #667eea;
+}
+
+.pricing-card.featured {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-color: #667eea;
+}
+
+.pricing-card.featured h3,
+.pricing-card.featured .price {
+    color: white;
+}
+
+.pricing-card h3 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 15px;
+}
+
+.price {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #667eea;
+    margin: 20px 0;
+}
+
+.price-featured {
+    color: white;
+}
+
+/* Question Card (Result Page) */
+.question-card {
+    background: #f8f9ff;
+    border-left: 4px solid #667eea;
+    padding: 20px;
+    margin-bottom: 20px;
+    border-radius: 10px;
+}
+
+/* ==========================================
+   4. BADGE & LABEL STİLLERİ
+   ========================================== */
+
+.badge-custom {
+    background: #667eea;
+    color: white;
+    padding: 8px 15px;
+    border-radius: 20px;
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+
+.badge-plan {
+    padding: 6px 15px;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+}
+
+.badge-plan.free {
+    background: #6c757d;
+    color: white;
+}
+
+.badge-plan.standard {
+    background: #0dcaf0;
+    color: white;
+}
+
+.badge-plan.premium {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.true-badge {
+    background: #4caf50;
+    color: white;
+    padding: 5px 15px;
+    border-radius: 20px;
+    font-weight: 600;
+}
+
+.false-badge {
+    background: #f44336;
+    color: white;
+    padding: 5px 15px;
+    border-radius: 20px;
+    font-weight: 600;
+}
+
+/* ==========================================
+   5. ALERT & MESSAGE STİLLERİ
+   ========================================== */
+
+.alert-custom {
+    border-radius: 10px;
+    padding: 15px 20px;
+    margin-bottom: 20px;
+}
+
+.alert-info-custom {
+    background: #d1ecf1;
+    border: 1px solid #bee5eb;
+    color: #0c5460;
+}
+
+.alert-success-custom {
+    background: #d4edda;
+    border: 1px solid #c3e6cb;
+    color: #155724;
+}
+
+.alert-warning-custom {
+    background: #fff3cd;
+    border: 1px solid #ffeeba;
+    color: #856404;
+}
+
+.alert-danger-custom {
+    background: #f8d7da;
+    border: 1px solid #f5c6cb;
+    color: #721c24;
+}
+
+/* ==========================================
+   6. FORM STİLLERİ
+   ========================================== */
+
+.form-custom {
+    background: white;
+    border-radius: 15px;
+    padding: 30px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+}
+
+.form-control-custom {
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 12px 15px;
+    transition: all 0.3s;
+}
+
+.form-control-custom:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+    outline: none;
+}
+
+.form-label-custom {
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 8px;
+    display: block;
+}
+
+/* ==========================================
+   7. QUIZ & INTERACTIVE STİLLERİ
+   ========================================== */
+
+.question-number {
+    background: #667eea;
+    color: white;
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    margin-right: 10px;
+}
+
+.option {
+    background: white;
+    padding: 12px 15px;
+    margin: 8px 0;
+    border-radius: 8px;
+    border: 2px solid #e0e0e0;
+    transition: all 0.3s;
+}
+
+.option:hover {
+    border-color: #667eea;
+    background: #f8f9ff;
+}
+
+.quiz-mode-active .quiz-option {
+    cursor: pointer;
+}
+
+.quiz-mode-active .quiz-option:hover {
+    transform: translateX(5px);
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+.correct-answer {
+    background: #e8f5e9;
+    border-color: #4caf50;
+    font-weight: 500;
+}
+
+/* Kullanıcı seçimi */
+.user-selected {
+    background: #fff3cd !important;
+    border-color: #ffc107 !important;
+    border-width: 3px !important;
+}
+
+.user-selected-correct {
+    background: #e8f5e9 !important;
+    border-color: #4caf50 !important;
+    border-width: 3px !important;
+}
+
+.user-selected-wrong {
+    background: #ffebee !important;
+    border-color: #f44336 !important;
+    border-width: 3px !important;
+}
+
+.show-correct-answer {
+    background: #e8f5e9 !important;
+    border-color: #4caf50 !important;
+    border-width: 3px !important;
+}
+
+.no-answer-given {
+    background: #cfe2ff !important;
+    border-color: #0d6efd !important;
+    border-width: 3px !important;
+}
+
+/* Flashcards */
+.flashcard {
+    perspective: 1000px;
+    margin-bottom: 20px;
+    height: 250px;
+}
+
+.flashcard-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    transition: transform 0.6s;
+    transform-style: preserve-3d;
+    cursor: pointer;
+}
+
+.flashcard.flipped .flashcard-inner {
+    transform: rotateY(180deg);
+}
+
+.flashcard-front, .flashcard-back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.flashcard-front {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.flashcard-back {
+    background: white;
+    color: #333;
+    transform: rotateY(180deg);
+    border: 2px solid #667eea;
+}
+
+/* Quiz Stats */
+.quiz-stats {
+    background: #f8f9ff;
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+}
+
+.quiz-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+/* ==========================================
+   8. LANDING PAGE STİLLERİ
+   ========================================== */
+
+.hero-section {
+    padding: 80px 20px;
+    text-align: center;
+    color: white;
+}
+
+.hero-section h1 {
+    font-size: 3.5rem;
+    font-weight: 700;
+    margin-bottom: 20px;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+}
+
+.hero-section .logo {
+    max-width: 200px;
+    height: auto;
+    margin-bottom: 30px;
+    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
+}
+
+.hero-section p {
+    font-size: 1.3rem;
+    margin-bottom: 40px;
+    opacity: 0.95;
+}
+
+.cta-buttons {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 60px;
+}
+
+.features-section {
+    background: white;
+    padding: 80px 20px;
+}
+
+.section-title {
+    text-align: center;
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 60px;
+}
+
+.how-it-works {
+    background: linear-gradient(135deg, #f8f9ff 0%, #e0e7ff 100%);
+    padding: 80px 20px;
+}
+
+.step-card {
+    background: white;
+    border-radius: 15px;
+    padding: 30px;
+    text-align: center;
+    margin-bottom: 30px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+}
+
+.step-number {
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 0 auto 20px;
+}
+
+.pricing-preview {
+    background: white;
+    padding: 80px 20px;
+}
+
+/* ==========================================
+   9. UTILITY STİLLERİ
+   ========================================== */
+
+.text-gradient {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.shadow-custom {
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+}
+
+.shadow-hover-custom {
+    transition: box-shadow 0.3s;
+}
+
+.shadow-hover-custom:hover {
+    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+}
+
+.rounded-custom {
+    border-radius: 15px;
+}
+
+.summary-box {
+    background: #f8f9ff;
+    padding: 25px;
+    border-radius: 10px;
+    border-left: 4px solid #667eea;
+    line-height: 1.8;
+}
+
+/* ==========================================
+   10. RESPONSIVE STİLLERİ
+   ========================================== */
+
+@media (max-width: 768px) {
+    .hero-section h1 {
+        font-size: 2.5rem;
+    }
+    
+    .hero-section p {
+        font-size: 1.1rem;
+    }
+    
+    .cta-buttons {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .btn-hero {
+        width: 100%;
+        max-width: 300px;
+    }
+    
+    .quiz-header {
+        flex-direction: column;
+        gap: 15px;
+        align-items: flex-start;
+    }
+    
+    .card-custom {
+        padding: 20px;
+    }
+    
+    .section-title {
+        font-size: 2rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .hero-section h1 {
+        font-size: 2rem;
+    }
+    
+    .section-title {
+        font-size: 1.8rem;
+    }
+    
+    .feature-card {
+        padding: 30px 20px;
+    }
+    
+    .pricing-card {
+        padding: 30px 20px;
+    }
+}
+
+/* ==========================================
+   11. ANİMASYONLAR
+   ========================================== */
+
+@keyframes fadeIn {
+    from { 
+        opacity: 0; 
+        transform: translateY(10px);
+    }
+    to { 
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.fade-in {
+    animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(-20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+.slide-in {
+    animation: slideIn 0.3s ease-out;
+}
+
+/* ==========================================
+   12. PRINT STİLLERİ
+   ========================================== */
+
+@media print {
+    .navbar,
+    .btn-home,
+    .quiz-mode-toggle,
+    .quiz-header button,
+    footer {
+        display: none !important;
+    }
+    
+    body {
+        background: white !important;
+    }
+    
+    .content-container,
+    .card-custom {
+        box-shadow: none !important;
+        border: 1px solid #ddd;
+    }
+}

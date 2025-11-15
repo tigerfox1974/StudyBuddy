@@ -145,7 +145,7 @@ def upload():
     """Dosya yükleme sayfası - sadece giriş yapmış kullanıcılar için"""
     limit_info = None
     token_info = None
-    _, _, limit_info = check_user_upload_limit(current_user.id)
+        _, _, limit_info = check_user_upload_limit(current_user.id)
     token_info = get_user_token_info(current_user)
     
     return render_template('upload.html', 
@@ -940,7 +940,7 @@ def stripe_webhook():
             
             # Onay email'i gönder (commit sonrası, hata olsa bile rollback edilmez)
             try:
-                send_payment_confirmation_email(user.email, payment, invoice_pdf_path)
+            send_payment_confirmation_email(user.email, payment, invoice_pdf_path)
             except Exception as e:
                 print(f"Error sending confirmation email: {str(e)}")
                 # Email hatası transaction'ı etkilemez
@@ -1063,11 +1063,11 @@ def internal_error(e):
 
 # Stripe error handler - sadece Stripe aktifse ekle
 if app.config.get('STRIPE_ENABLED', True):
-    @app.errorhandler(stripe.error.StripeError)
-    def handle_stripe_error(e):
-        """Stripe hatalarını yakala"""
-        flash(f'Ödeme hatası: {str(e)}', 'error')
-        return redirect(url_for('pricing'))
+@app.errorhandler(stripe.error.StripeError)
+def handle_stripe_error(e):
+    """Stripe hatalarını yakala"""
+    flash(f'Ödeme hatası: {str(e)}', 'error')
+    return redirect(url_for('pricing'))
 
 
 if __name__ == '__main__':
