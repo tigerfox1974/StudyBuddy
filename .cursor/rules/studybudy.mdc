@@ -27,16 +27,26 @@ alwaysApply: true
   - **Test çerçevesi**ni,
   - Basit bir **DevOps / deployment** stratejisini
   seçmek için temel oluşturur.
-- Her zaman şu varsayımlarla hareket et:
-  - Kullanıcı acemi ve Windows ağırlıklı çalışıyor.
-  - Basit, az sürtünmeli çözümler; ama kurumsal düşünülmüş, büyümeye açık bir yapı tercih edilmeli.
-  - Gereksiz karmaşadan ve moda teknolojilerden kaçın; **stabil ve dokümantasyonu bol** araçları seç.
+
+- Ancak, **tek gerçek kaynak her zaman mevcut repository ve dosya yapısıdır**:
+  - Mevcut klasörler, dosyalar ve kod blokları ile çelişen öneriler sadece “öneri” olarak sunulmalı,
+  - Mevcut yapıyı yok sayan, sıfırdan bambaşka proje yapısı kuran veya her şeyi yeniden icat eden çözümler üretilmemelidir.
+
+- Ajan aşağıdaki ilkelere uymalıdır:
+  - **Önce oku, sonra dokun**: Önce mevcut dosya yapısını ve kodu analiz et, sonra değişiklik öner.
+  - **Küçük, güvenli adımlar**: Büyük, kırıcı refactor yerine öncelik küçük ve anlaşılır değişikliklerdir.
+  - **Açıkça belirt**: Yeni dosya, klasör, bağımlılık veya yapı öneriyorsan:
+    - “Öneri” olduğunu açıkça yaz,
+    - Tam yolunu ve sorumluluğunu 1–2 cümle ile açıkla.
+  - Kullanıcı acemi olduğundan:
+    - “Genel anlatım” yerine,
+    - Dosya bazlı ve komut bazlı net adımlar verilmelidir (hangi dosyaya ne yapıştırılacağı, hangi komutun nerede çalıştırılacağı gibi).
 
 ---
 
-## Technology Stack (Bu proje için seçilen)
+## Technology Stack (Bu proje için SEÇİLMİŞ ve SABİT)
 
-Bu proje özelinde teknoloji yığını şudur:
+Bu proje özelinde teknoloji yığını şudur ve ajan bu stack’ten keyfine göre sapmamalıdır:
 
 - Backend:
   - **Python 3 + Flask** tabanlı web uygulaması.
@@ -57,6 +67,13 @@ Bu proje özelinde teknoloji yığını şudur:
   - Geliştirme ortamı: Windows, VS Code.
   - Deployment için ileride basit bir Linux sunucu veya PaaS (Render, Railway, Azure Web App vb.) hedeflenebilir.
 
+Ajan:
+- Bu stack dışında yeni framework, dil veya büyük teknoloji değişikliği ÖNERMEK isterse, bunu sadece:
+  - “Alternatif öneri” olarak,
+  - Gerekçe ile ve
+  - “Uygulamadım, sadece öneriyorum” notu ile sunmalıdır.
+- Varsayılan davranış: **mevcut stack üzerinde, mevcut kodu bozmadan ilerlemek** olmalıdır.
+
 ---
 
 ## Architecture & Folder Structure (StudyBuddy için)
@@ -64,7 +81,7 @@ Bu proje özelinde teknoloji yığını şudur:
 - Varsayılan yaklaşım:
   - **Basit, modüler monolith** Flask uygulaması.
 
-- Önerilen klasör yapısı:
+- Önerilen klasör yapısı (yeni bir proje başlatılıyorsa veya mevcut yapı buna yakınsa):
 
   - Proje kök dizini:
     - `app.py` → Flask giriş noktası, route tanımları
@@ -79,15 +96,157 @@ Bu proje özelinde teknoloji yığını şudur:
     - `static/`
       - `css/` (gerekirse özel stiller)
       - `js/` (gerekirse küçük JS fonksiyonları)
-    - `uploads/` → Yüklenen dokümanların geçici tutulduğu klasör (gerekirse .gitignore’a alınacak)
+    - `uploads/` → Yüklenen dokümanların geçici tutulduğu klasör (gerekirse `.gitignore`’a alınacak)
 
-- Yeni dosya/klasör eklerken:
-  - Tam yolu belirtilmeli,
-  - Sorumluluğu 1–2 cümleyle özetlenmelidir.
+- Ajan için kurallar:
+  - Yeni dosya/klasör eklerken:
+    - Tam yolu belirtilmeli,
+    - Sorumluluğu 1–2 cümleyle özetlenmelidir.
+  - Mevcut repo yapısı bu ideal yapıdan farklıysa:
+    - Öncelik mevcut yapıya uyum sağlamak,
+    - “Tüm yapıyı baştan bu şemaya göre kurdum” dememek,
+    - Gerekirse bu yapıyı sadece “gelecek refactor önerisi” olarak sunmaktır.
 
 ---
 
-## Database & Data Model (Bu proje için yaklaşım)
+## UX & UI Principles (Görsel Şölen + Kullanılabilirlik)
+
+Ajan, StudyBuddy arayüzüyle ilgili çalışırken şu kurallara uymalıdır:
+
+- **Genel yaklaşım**
+  - Arayüz: sade, modern, güven veren, “öğrenci dostu” görünmelidir.
+  - Öncelik: **kullanılabilirlik > estetik**, ancak estetik de ihmal edilmemelidir.
+
+- **Ana akış (happy path)**
+  1. Dosya yükle (PDF/DOCX/PPTX/TXT)
+  2. İşleme süreci (yükleniyor / analiz ediliyor göstergeleri)
+  3. Sonuç ekranı:
+     - Özet
+     - Çoktan seçmeli sorular
+     - Kısa cevap soruları
+     - Flashcard’lar
+  4. Tek tıkla:
+     - Soruları kopyala/indir,
+     - Yeni doküman yüklemeye dön.
+
+- **Ekran tasarımı**
+  - Her sayfada **tek ana amaç** olmalı (ör. “Doküman yükle” ekranında sadece yükleme ve ayarlar).
+  - Bölümleri kartlar halinde grupla:
+    - “Doküman Özeti”
+    - “Çoktan Seçmeli Sorular”
+    - “Kısa Cevap Soruları”
+    - “Flashcard Seti”
+  - Tutarlı spacing (4/8/12/16/24 px) kullan.
+  - Form elemanları hizalı ve etiketleri net olmalı.
+
+- **Tipografi ve renk**
+  - Az sayıda tipografik seviye:
+    - Sayfa başlığı
+    - Bölüm başlığı
+    - Gövde metin
+    - Yardımcı/hata metni
+  - Renk paleti:
+    - Primary (marka rengi),
+    - Secondary,
+    - Success/Warning/Danger,
+    - Açık arka plan.
+  - Koyu yazı + açık arka plan ile kontrast korunmalı.
+
+- **Komponent davranışı**
+  - Butonlar:
+    - Primary (en önemli aksiyon): belirgin renk,
+    - Secondary (iptal, geri): daha sakin stil,
+    - Hover / active / disabled halleri net.
+  - Tablo/listeler:
+    - Başlık satırı belirgin,
+    - Satırlar arası yeterli boşluk,
+    - Küçük ek açıklamalar için tooltip veya alt metin kullanılabilir.
+
+- **Feedback & Mikro Animasyonlar**
+  - İşlem sürerken:
+    - Loading spinner + ilerleme mesajı (ör. “Sorular oluşturuluyor, bu birkaç saniye sürebilir…”)
+  - Sonuç yüklenirken:
+    - Skeleton ekran veya boş placeholders kullanılabilir.
+  - Animasyonlar:
+    - Hafif fade-in / slide animasyonları kart girişlerinde,
+    - Hover’da hafif gölge veya büyüme,
+    - Gösterişli, dikkat dağıtıcı efektlerden kaçınılmalıdır.
+
+- **Boş durumlar & hata ekranları**
+  - Hiç doküman yüklenmemişse:
+    - Basit bir illüstrasyon (veya ikon) + kısa açıklama + çağrı (CTA) butonu.
+  - Hata durumlarında:
+    - Net başlık (örn. “İşlem sırasında bir sorun oluştu”),
+    - Kısa açıklama,
+    - Kullanıcının ne yapabileceğini söyleyen aksiyon (tekrar dene, farklı dosya yükle vb.).
+
+---
+
+## AI Behavior & Prompting Strategy (Özet, Soru, Flashcard)
+
+Ajan, OpenAI ile çalışırken aşağıdaki davranış kurallarına uymalıdır:
+
+- **Kaynak metne sadakat**
+  - Üretilen özet, sorular ve flashcard’lar **YALNIZCA** kullanıcının sağladığı doküman içeriğine dayanmalıdır.
+  - Dokümanda olmayan bilgi:
+    - Eklenmemeli,
+    - “Genel bilgi” gibi sunulmamalı,
+    - Gerekirse “Bu kısım dokümanda yok, genel bilgi olarak ekliyorum” diye açıkça belirtilmelidir (tercihen hiç eklenmemeli).
+
+- **Context yönetimi**
+  - Uzun dokümanlarda:
+    - Metin anlamlı parçalara (chunk’lara) bölünmeli,
+    - Özetler parça parça alınmalı, sonra birleştirilmelidir.
+  - Aynı anda çok büyük metin göndermekten kaçınılmalı (token optimizasyonu).
+
+- **Özet oluşturma**
+  - Özetler:
+    - Kısa, net, madde madde olmalı,
+    - Konu başlıklarını ve kritik kavramları vurgulamalıdır.
+  - İstenen seviye:
+    - Lise/üniversite öğrencisinin anlayacağı düzey,
+    - Gereksiz akademik jargon yok.
+
+- **Soru üretimi – Çoktan seçmeli**
+  - Her soru:
+    - Tek, net bir doğru cevaba sahip olmalı,
+    - 4 seçenek (A–D) içermeli,
+    - Seçenekler makul ve birbirine yakın zorlukta olmalı (biri çok saçma olmamalı).
+  - Zorluk karışımı:
+    - Kolay (tanım, doğrudan bilgi),
+    - Orta (yorum, ilişkilendirme),
+    - Zor (uygulama, kavramı yeni senaryoya taşıma).
+  - Çıktı formatı:
+    - Soru numarası,
+    - Soru metni,
+    - Şıklar,
+    - Doğru cevabı gösteren answer key (örn. ayrı listede).
+
+- **Soru üretimi – Kısa cevap**
+  - “1–3 cümlelik” cevabı olan sorular üret.
+  - Öğrenciyi:
+    - Tanım yapmaya,
+    - Karşılaştırma yapmaya,
+    - Örnek vermeye zorlayan sorular tercih edilmelidir.
+
+- **Flashcard üretimi**
+  - Biçim:
+    - `Ön yüz (Soru / Kavram)` – `Arka yüz (Cevap / Açıklama)`.
+  - Kapsam:
+    - Temel kavramlar,
+    - Formüller,
+    - Önemli tarih/olay/kişiler (ilgili ise),
+    - Sık karıştırılan noktalar.
+
+- **Dil & seviye**
+  - Varsayılan dil: **Türkçe**.
+  - Metin karmaşıksa, önce basitleştirilmiş versiyon (öğrenci dostu dil) önerilebilir.
+  - İleride çok dillilik için:
+    - Soru/flashcard çıktılarının dil parametresi ile üretilebileceği göz önünde bulundurulmalı.
+
+---
+
+## Database & Data Model (Yaklaşım)
 
 - MVP:
   - Kullanıcı girişi / hesap sistemi yoksa:
@@ -103,6 +262,34 @@ Bu proje özelinde teknoloji yığını şudur:
   - ORM:
     - Tercihen **SQLAlchemy** kullanılacak,
     - Migration yönetimi için basit bir araç (ör. Alembic) değerlendirilebilir, ancak kullanıcı seviyesine göre adım adım açıklanacaktır.
+
+---
+
+## Quality, Error Handling & Logging
+
+- **Hata yönetimi**
+  - Kullanıcıya gösterilen hata mesajları:
+    - Kısa, sade ve Türkçe olmalı,
+    - İç detayları (stack trace vb.) içermemelidir.
+  - Backend’te:
+    - Hatalar log’lanmalı (dosya veya konsol),
+    - Hata türü, endpoint, zaman damgası kaydedilmelidir.
+
+- **Beklenen hata tipleri**
+  - Desteklenmeyen dosya türü,
+  - Aşırı büyük dosya,
+  - Bozuk PDF/DOCX/PPTX,
+  - OpenAI API hataları (rate limit, ağ hatası vb.).
+
+- **Retry stratejisi (AI çağrıları için)**
+  - API hatalarında:
+    - 1–2 kez otomatik retry (küçük gecikme ile),
+    - Sonrasında kullanıcıya düzgün hata mesajı.
+
+- **Performans**
+  - Gereksiz yere tüm dokümanı tekrar tekrar OpenAI’ye göndermekten kaçınılmalı.
+  - Özet ve soru üretiminde:
+    - Mümkünse aynı context’i yeniden kullanma (chunk bazlı yaklaşım).
 
 ---
 
@@ -157,12 +344,36 @@ Bu proje özelinde teknoloji yığını şudur:
 
 ---
 
+## Security & Privacy
+
+- **Doküman güvenliği**
+  - Kullanıcı dokümanları:
+    - Gereksiz yere disk üzerinde uzun süre tutulmamalı,
+    - Mümkünse işlem sonrası silinmelidir.
+  - Yalnızca:
+    - Dokümandan çıkarılan metin,
+    - Özet ve soru üretimi için gereken minimum context
+    OpenAI API’ye gönderilmelidir.
+
+- **Gizli anahtarlar**
+  - `OPENAI_API_KEY`:
+    - Asla front-end’e sızmamalı,
+    - Commit’lenmemeli,
+    - Ortam değişkeni veya güvenli config dosyası ile yönetilmelidir.
+
+- **Kullanıcı verisi**
+  - E-posta, isim vb. kişisel bilgiler işlenecekse:
+    - Minimum veri tutma ilkesi,
+    - Basit veri silme mekanizması (hesap silme ile bağlantılı) planlanmalıdır.
+
+---
+
 ## Documentation
 
 - README içermesi gerekenler:
   - Proje özeti (StudyBuddy’nin ne yaptığı),
   - Teknoloji yığını (Python + Flask + OpenAI + belge okuma kütüphaneleri),
-  - Kurulum adımları (sanat ortam, bağımlılıklar, ortam değişkenleri),
+  - Kurulum adımları (sanal ortam, bağımlılıklar, ortam değişkenleri),
   - Çalıştırma komutları,
   - Temel kullanım senaryosu (dosya yükle → sonuçları gör).
 
@@ -188,3 +399,61 @@ Bu proje özelinde teknoloji yığını şudur:
     - Hangi komutun terminalde çalıştırılacağı,
     açık ve doğrudan belirtilmelidir.
 
+---
+
+## Hata, Varsayım ve Halüsinasyon Politikası (Çok Önemli)
+
+Bu proje için ajan aşağıdaki KESİN kurallara uymalıdır:
+
+1. Mevcut Kod ve Dosyalar Tek Gerçek Kaynak
+   - Sadece gerçekten var olan:
+     - Dosyalar,
+     - Klasörler,
+     - Fonksiyonlar,
+     - Değişkenler
+     üzerinden işlem yapılmalıdır.
+   - Var olmayan dosya, endpoint, sınıf veya fonksiyon “varmış gibi” kullanılmamalıdır.
+   - Eğer bir şeyden emin değilse:
+     - “Bu dosya sizde yoksa oluşturmanız gerekir” gibi açık uyarı yazmalı,
+     - Uyduruyormuş gibi davranmamalıdır.
+
+2. Yeni Dosya / Klasör / Library Eklerken
+   - Ajan, doğrudan “ekledim” demek yerine:
+     - “Şu dosyayı oluşturmanızı öneriyorum: `services/xyz.py` – sorumluluğu şudur: …”
+     - “`requirements.txt` içine şu satırı eklemenizi öneriyorum: `paket_adı==versiyon`”
+       şeklinde net talimat vermelidir.
+   - Kullanıcının izni veya talebi olmadan:
+     - Stack’i değiştiren,
+     - Bambaşka mimariye geçen,
+     - Çok sayıda yeni bağımlılık ekleyen çözümler üretmemelidir.
+
+3. Tahmini Hareket / Varsayım Sınırları
+   - Ajan aşağıdaki üç alanda “makul varsayım” yapabilir:
+     1. UI/UX metinleri (buton ismi, etiket vb.)  
+     2. Küçük yardımcı fonksiyon isimleri (ör. `format_text`, `clean_content` gibi)  
+     3. Dosya içi kod düzeni (aynı dosya içinde fonksiyon sırasını değiştirmek gibi)
+
+   - Bunun DIŞINDA:
+     - İş kuralları,
+     - API sözleşmeleri,
+     - Veritabanı şeması,
+     - Ödeme / abonelik akışı  
+     konusunda **varsayım yapmamalı**, sadece:
+       - “Şu şekilde olabilir, kesin değil” diye açık şekilde belirsizliği belirtmeli
+       - Ya da kullanıcıdan onay / netleştirme istemelidir.
+
+4. Küçük, Güvenli Adımlar Kuralı
+   - Öncelik:
+     - Bir ekranı / fonksiyonu küçük adımlarla düzeltmek,
+     - Mevcut yapıyı anlamak,
+     - Sonra sınırlı bir alanı iyileştirmektir.
+   - “Tüm projeyi baştan yazalım” tarzı cevaplar bu proje için **kabul edilemez**.
+
+5. Çıktı Biçimi
+   - Kod verirken:
+     - Tam, çalışabilir, kopyala-yapıştır formatında olmalıdır.
+     - “...” ile kesilmiş pseudo-kod verilmemelidir.
+   - Ne değiştiğini anlatırken:
+     - Kısa bir “Neler değişti ve neden?” maddeli listesi eklenmelidir.
+   - Hata ihtimali olan noktalarda:
+     - “Şu kısımda hata alırsanız, muhtemel sebep X olur” gibi yönlendirici notlar yazmalıdır.

@@ -176,28 +176,127 @@ a:focus-visible {
    1.1. NAVBAR STİLLERİ
    ========================================== */
 
+/* Navbar - Fixed, Modern, Professional */
 .navbar-custom {
     background: var(--color-primary-gradient);
-    box-shadow: var(--shadow-md);
+    box-shadow: var(--shadow-xl);
+    position: fixed !important;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1030;
+    padding: 0.75rem 0;
+    backdrop-filter: blur(10px);
+}
+
+/* Body padding to prevent content from going under navbar */
+body {
+    padding-top: 76px !important;
 }
 
 .navbar-brand-custom {
     display: flex;
     align-items: center;
     gap: var(--spacing-sm);
-    font-weight: var(--font-weight-semibold);
-    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-bold);
+    font-size: var(--font-size-xl);
+    color: var(--color-text-inverse) !important;
+    transition: all var(--transition-fast);
+}
+
+.navbar-brand-custom:hover {
+    transform: translateY(-2px);
     color: var(--color-text-inverse) !important;
 }
 
 .navbar-brand-custom img {
-    height: 40px;
+    height: 45px;
     width: auto;
+    transition: transform var(--transition-fast);
 }
 
-.navbar-brand-custom:hover {
-    opacity: 0.9;
-    text-decoration: none;
+.navbar-brand-custom:hover img {
+    transform: scale(1.05) rotate(5deg);
+}
+
+/* Navbar Links - Modern & Professional */
+.navbar-custom .nav-link {
+    color: var(--color-text-inverse) !important;
+    font-weight: var(--font-weight-medium);
+    padding: 0.5rem 1rem !important;
+    border-radius: var(--radius-full);
+    transition: all var(--transition-fast);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+}
+
+.navbar-custom .nav-link:hover {
+    background: rgba(255, 255, 255, 0.15);
+    transform: translateY(-2px);
+}
+
+.navbar-custom .nav-link i {
+    font-size: 1.1rem;
+}
+
+/* Dropdown Menu */
+.navbar-custom .dropdown-menu {
+    background: var(--color-bg-primary);
+    border: none;
+    box-shadow: var(--shadow-xl);
+    border-radius: var(--radius-lg);
+    margin-top: var(--spacing-xs);
+    animation: fadeInDown 0.3s ease;
+}
+
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.navbar-custom .dropdown-item {
+    color: var(--color-text-primary);
+    padding: 0.75rem 1.25rem;
+    transition: all var(--transition-fast);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.navbar-custom .dropdown-item:hover {
+    background: var(--color-bg-secondary);
+    color: var(--color-primary);
+    transform: translateX(5px);
+}
+
+.navbar-custom .dropdown-item i {
+    font-size: 1.1rem;
+    width: 20px;
+}
+
+.navbar-custom .dropdown-divider {
+    border-color: var(--color-border-light);
+}
+
+/* Mobile Toggle Button */
+.navbar-toggler {
+    border: 2px solid rgba(255, 255, 255, 0.5);
+    padding: 0.5rem;
+}
+
+.navbar-toggler:focus {
+    box-shadow: 0 0 0 0.25rem rgba(255, 255, 255, 0.25);
+}
+
+.navbar-toggler-icon {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28255, 255, 255, 1%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
 }
 
 .navbar-brand-custom:focus-visible {
@@ -336,6 +435,11 @@ a:focus-visible {
     background: var(--color-primary-gradient);
     color: var(--color-text-inverse);
     border: none;
+    text-decoration: none !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-xs);
 }
 
 .btn-primary-custom:hover {
@@ -343,6 +447,7 @@ a:focus-visible {
     transform: translateY(-2px);
     box-shadow: var(--shadow-lg);
     color: var(--color-text-inverse);
+    text-decoration: none !important;
 }
 
 .btn-primary-custom:active {
@@ -355,6 +460,11 @@ a:focus-visible {
     background: var(--color-bg-primary);
     color: var(--color-primary);
     border: 2px solid var(--color-primary);
+    text-decoration: none !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-xs);
 }
 
 .btn-outline-custom:hover {
@@ -363,6 +473,7 @@ a:focus-visible {
     border-color: var(--color-primary-dark);
     transform: translateY(-2px);
     box-shadow: var(--shadow-md);
+    text-decoration: none !important;
 }
 
 .btn-outline-custom:active {
@@ -733,8 +844,8 @@ a:focus-visible {
 /* 6.1. AUTH FORM BLUEPRINT */
 
 .auth-page {
-    min-height: calc(100vh - 140px);
-    padding: clamp(30px, 5vw, 60px) 20px;
+    min-height: calc(100vh - 76px);
+    padding: var(--spacing-xl) var(--spacing-lg);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1386,7 +1497,7 @@ a:focus-visible {
 /* Upload Page Container */
 .upload-page {
     background: var(--color-primary-gradient);
-    min-height: 100vh;
+    min-height: calc(100vh - 76px);
     display: flex;
     align-items: center;
     padding: var(--spacing-lg);
@@ -1704,7 +1815,7 @@ a:focus-visible {
 /* Profile Container */
 .profile-page {
     background: var(--color-bg-light);
-    min-height: 100vh;
+    min-height: calc(100vh - 76px);
     padding: var(--spacing-xl) var(--spacing-lg);
 }
 
@@ -1905,7 +2016,7 @@ a:focus-visible {
 /* Dashboard Container */
 .dashboard-page {
     background: var(--color-bg-light);
-    min-height: 100vh;
+    min-height: calc(100vh - 76px);
     padding: var(--spacing-xl) var(--spacing-lg);
 }
 
@@ -2052,7 +2163,7 @@ a:focus-visible {
 /* History Page Container */
 .history-page {
     background: var(--color-primary-gradient);
-    min-height: 100vh;
+    min-height: calc(100vh - 76px);
     padding: var(--spacing-xl) var(--spacing-lg);
 }
 
