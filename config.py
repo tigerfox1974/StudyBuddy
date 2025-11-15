@@ -53,7 +53,11 @@ class Config:
     DEFAULT_LANGUAGE = 'tr'
     
     # SQLite Database
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'sqlite:///studybuddy.db'
+    # Flask SQLAlchemy instance klasöründe veritabanı oluşturur
+    # instance klasörünün varlığını kontrol et ve oluştur
+    instance_path = os.path.join(os.path.dirname(__file__), 'instance')
+    os.makedirs(instance_path, exist_ok=True)
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or f'sqlite:///{os.path.join(instance_path, "studybuddy.db")}'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     
     # Alembic Migration Ayarları

@@ -1,4 +1,4 @@
-"""add_user_id_column
+"""initial_schema
 
 Revision ID: 20241115_0001
 Revises: 
@@ -19,20 +19,35 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
-    # documents tablosuna user_id kolonu ekleme
-    # Her doküman bir kullanıcıya ait olmalıdır
-    # SQLite'da ALTER COLUMN NOT NULL direkt desteklenmediği için
-    # tablo yeniden oluşturma pattern'i kullanılıyor (legacy script ile aynı)
+    # İlk migration: Temel tabloları oluştur
+    # users, documents (user_id OLMADAN), results, usage_stats tablolarını oluşturur
+    # user_id kolonu 20241115_0002 migration'ında eklenecek
     
-    # NOT: Bu migration çalıştığında documents tablosunda user_id kolonu yoktur.
-    # Bu nedenle direkt tablo yeniden oluşturma pattern'ini kullanıyoruz.
-    
-    # 1. SQLite'da NOT NULL kolon eklemek için tablo yeniden oluşturma pattern'i
-    # Legacy script'teki yaklaşımı Alembic migration'a uyarlıyoruz
-    
-    # 1.1. Yeni tablo oluştur (user_id NOT NULL ile)
+    # 1. users tablosunu oluştur (temel kolonlar, token kolonları sonra eklenecek)
     op.create_table(
-        'documents_new',
+        'users',
+        sa.Column('id', sa.Integer(), nullable=False),
+        sa.Column('email', sa.String(length=120), nullable=False),
+        sa.Column('username', sa.String(length=80), nullable=False),
+        sa.Column('password_hash', sa.String(length=255), nullable=False),
+        sa.Column('is_active', sa.Boolean(), nullable=False, server_default='1'),
+        sa.Column('is_verified', sa.Boolean(), nullable=False, server_default='0'),
+        sa.Column('subscription_plan', sa.String(length=20), nullable=False, server_default='free'),
+        sa.Column('created_at', sa.DateTime(), nullable=False),
+        sa.Column('last_login', sa.DateTime(), nullable=True),
+        sa.Column('reset_token', sa.String(length=100), nullable=True),
+        sa.Column('reset_token_expiry', sa.DateTime(), nullable=True),
+        sa.PrimaryKeyConstraint('id'),
+        sa.UniqueConstraint('email'),
+        sa.UniqueConstraint('username')
+    )
+    
+    # users için index'ler
+    op.create_index('ix_users_email', 'users', ['email'], unique=True)
+    
+    # 2. documents tablosunu oluştur (user_id OLMADAN - sonra eklenecek)
+    op.create_table(
+        'documents',
         sa.Column('id', sa.Integer(), nullable=False),
         sa.Column('file_hash', sa.String(length=32), nullable=False),
         sa.Column('original_filename', sa.String(length=255), nullable=False),
@@ -40,99 +55,61 @@ def upgrade() -> None:
         sa.Column('file_size', sa.Integer(), nullable=False),
         sa.Column('user_level', sa.String(length=20), nullable=False),
         sa.Column('user_type', sa.String(length=20), nullable=False),
-        sa.Column('user_id', sa.Integer(), nullable=False),
         sa.Column('created_at', sa.DateTime(), nullable=True),
         sa.Column('last_accessed', sa.DateTime(), nullable=True),
-        sa.ForeignKeyConstraint(['user_id'], ['users.id'], ondelete='CASCADE'),
         sa.PrimaryKeyConstraint('id')
     )
     
-    # 1.2. Index'leri oluştur
-    op.create_index('ix_documents_new_file_hash', 'documents_new', ['file_hash'], unique=False)
-    op.create_index('ix_documents_new_user_level', 'documents_new', ['user_level'], unique=False)
-    op.create_index('ix_documents_new_user_type', 'documents_new', ['user_type'], unique=False)
-    op.create_index('ix_documents_new_user_id', 'documents_new', ['user_id'], unique=False)
-    
-    # 1.3. Verileri kopyala (user_id için ilk kullanıcıyı kullan)
-    # Eğer kullanıcı yoksa, kayıtlar kopyalanmayacak (NOT NULL constraint nedeniyle)
-    op.execute("""
-        INSERT INTO documents_new (id, file_hash, original_filename, file_type, file_size, 
-                                  user_level, user_type, user_id, created_at, last_accessed)
-        SELECT id, file_hash, original_filename, file_type, file_size, 
-               user_level, user_type, 
-               (SELECT id FROM users LIMIT 1) as user_id,
-               created_at, last_accessed
-        FROM documents
-        WHERE EXISTS (SELECT 1 FROM users)
-    """)
-    
-    # 1.4. Kullanıcı yoksa ve kayıt varsa, kayıtları sil (NOT NULL constraint için gerekli)
-    # Bu durumda kayıtlar zaten kopyalanmamış olacak, ama eski tablodaki kayıtları da silelim
-    op.execute("""
-        DELETE FROM documents 
-        WHERE NOT EXISTS (SELECT 1 FROM users)
-    """)
-    
-    # 1.5. Eski tabloyu sil
-    op.drop_table('documents')
-    
-    # 1.6. Yeni tabloyu yeniden adlandır
-    op.rename_table('documents_new', 'documents')
-    
-    # 1.7. Index'leri documents tablosuna yeniden adlandır (Alembic otomatik yapmaz)
-    # Not: Index'ler tablo ile birlikte taşınır, ancak isimler düzeltilmeli
-    op.execute("DROP INDEX IF EXISTS ix_documents_new_file_hash")
-    op.execute("DROP INDEX IF EXISTS ix_documents_new_user_level")
-    op.execute("DROP INDEX IF EXISTS ix_documents_new_user_type")
-    op.execute("DROP INDEX IF EXISTS ix_documents_new_user_id")
-    
+    # documents için index'ler
     op.create_index('ix_documents_file_hash', 'documents', ['file_hash'], unique=False)
     op.create_index('ix_documents_user_level', 'documents', ['user_level'], unique=False)
     op.create_index('ix_documents_user_type', 'documents', ['user_type'], unique=False)
-    op.create_index('ix_documents_user_id', 'documents', ['user_id'], unique=False)
+    
+    # 3. results tablosunu oluştur
+    op.create_table(
+        'results',
+        sa.Column('id', sa.Integer(), nullable=False),
+        sa.Column('document_id', sa.Integer(), nullable=False),
+        sa.Column('summary', sa.Text(), nullable=False),
+        sa.Column('multiple_choice', sa.Text(), nullable=False),
+        sa.Column('short_answer', sa.Text(), nullable=False),
+        sa.Column('fill_blank', sa.Text(), nullable=False),
+        sa.Column('true_false', sa.Text(), nullable=False),
+        sa.Column('flashcards', sa.Text(), nullable=False),
+        sa.Column('ai_model', sa.String(length=50), nullable=False),
+        sa.Column('token_used', sa.Integer(), nullable=True, server_default='0'),
+        sa.Column('processing_time', sa.Float(), nullable=True, server_default='0.0'),
+        sa.Column('created_at', sa.DateTime(), nullable=True),
+        sa.ForeignKeyConstraint(['document_id'], ['documents.id'], ),
+        sa.PrimaryKeyConstraint('id')
+    )
+    
+    # 4. usage_stats tablosunu oluştur
+    op.create_table(
+        'usage_stats',
+        sa.Column('id', sa.Integer(), nullable=False),
+        sa.Column('total_documents', sa.Integer(), nullable=True, server_default='0'),
+        sa.Column('cache_hits', sa.Integer(), nullable=True, server_default='0'),
+        sa.Column('cache_misses', sa.Integer(), nullable=True, server_default='0'),
+        sa.Column('total_tokens_saved', sa.Integer(), nullable=True, server_default='0'),
+        sa.Column('last_updated', sa.DateTime(), nullable=True),
+        sa.PrimaryKeyConstraint('id')
+    )
+
+
+def upgrade_old() -> None:
+    # Eski kod - artık kullanılmıyor, sadece referans için
+    pass
 
 
 def downgrade() -> None:
-    # Geri alma işlemleri
-    # NOT: Downgrade için de tablo yeniden oluşturma pattern'i kullanılmalı
-    # Ancak basit yaklaşım: user_id kolonunu nullable yaparak bırakmak
-    # Tam geri alma için tablo yeniden oluşturulabilir ama bu karmaşık olabilir
-    
-    # Basit yaklaşım: user_id kolonunu kaldırmak için tablo yeniden oluştur
-    # Önce mevcut tabloyu yedekle (veri kaybını önlemek için)
-    
-    # Yeni tablo oluştur (user_id olmadan)
-    op.create_table(
-        'documents_old',
-        sa.Column('id', sa.Integer(), nullable=False),
-        sa.Column('file_hash', sa.String(length=32), nullable=False),
-        sa.Column('original_filename', sa.String(length=255), nullable=False),
-        sa.Column('file_type', sa.String(length=10), nullable=False),
-        sa.Column('file_size', sa.Integer(), nullable=False),
-        sa.Column('user_level', sa.String(length=20), nullable=False),
-        sa.Column('user_type', sa.String(length=20), nullable=False),
-        sa.Column('created_at', sa.DateTime(), nullable=True),
-        sa.Column('last_accessed', sa.DateTime(), nullable=True),
-        sa.PrimaryKeyConstraint('id')
-    )
-    
-    # Verileri kopyala (user_id hariç)
-    op.execute("""
-        INSERT INTO documents_old (id, file_hash, original_filename, file_type, file_size, 
-                                  user_level, user_type, created_at, last_accessed)
-        SELECT id, file_hash, original_filename, file_type, file_size, 
-               user_level, user_type, created_at, last_accessed
-        FROM documents
-    """)
-    
-    # Eski tabloyu sil
+    # Geri alma: Tüm temel tabloları sil
+    op.drop_table('usage_stats')
+    op.drop_table('results')
+    op.drop_index('ix_documents_user_type', table_name='documents')
+    op.drop_index('ix_documents_user_level', table_name='documents')
+    op.drop_index('ix_documents_file_hash', table_name='documents')
     op.drop_table('documents')
-    
-    # Yeni tabloyu yeniden adlandır
-    op.rename_table('documents_old', 'documents')
-    
-    # Index'leri yeniden oluştur
-    op.create_index('ix_documents_file_hash', 'documents', ['file_hash'], unique=False)
-    op.create_index('ix_documents_user_level', 'documents', ['user_level'], unique=False)
-    op.create_index('ix_documents_user_type', 'documents', ['user_type'], unique=False)
+    op.drop_index('ix_users_email', table_name='users')
+    op.drop_table('users')
 
