@@ -109,7 +109,7 @@ Ajan:
 
 ---
 
-## UX & UI Principles (Görsel Şölen + Kullanılabilirlik)
+## UX & UI Principles (Genel)
 
 Ajan, StudyBuddy arayüzüyle ilgili çalışırken şu kurallara uymalıdır:
 
@@ -139,46 +139,411 @@ Ajan, StudyBuddy arayüzüyle ilgili çalışırken şu kurallara uymalıdır:
   - Tutarlı spacing (4/8/12/16/24 px) kullan.
   - Form elemanları hizalı ve etiketleri net olmalı.
 
-- **Tipografi ve renk**
-  - Az sayıda tipografik seviye:
-    - Sayfa başlığı
-    - Bölüm başlığı
-    - Gövde metin
-    - Yardımcı/hata metni
-  - Renk paleti:
-    - Primary (marka rengi),
-    - Secondary,
-    - Success/Warning/Danger,
-    - Açık arka plan.
-  - Koyu yazı + açık arka plan ile kontrast korunmalı.
+---
 
-- **Komponent davranışı**
-  - Butonlar:
-    - Primary (en önemli aksiyon): belirgin renk,
-    - Secondary (iptal, geri): daha sakin stil,
-    - Hover / active / disabled halleri net.
-  - Tablo/listeler:
-    - Başlık satırı belirgin,
-    - Satırlar arası yeterli boşluk,
-    - Küçük ek açıklamalar için tooltip veya alt metin kullanılabilir.
+## StudyBuddy – UI Design System & Visual Guidelines
 
-- **Feedback & Mikro Animasyonlar**
-  - İşlem sürerken:
-    - Loading spinner + ilerleme mesajı (ör. “Sorular oluşturuluyor, bu birkaç saniye sürebilir…”)
-  - Sonuç yüklenirken:
-    - Skeleton ekran veya boş placeholders kullanılabilir.
-  - Animasyonlar:
-    - Hafif fade-in / slide animasyonları kart girişlerinde,
-    - Hover’da hafif gölge veya büyüme,
-    - Gösterişli, dikkat dağıtıcı efektlerden kaçınılmalıdır.
+You must treat this section as the **single source of truth** for branding, colors, typography, spacing, and core UI components of the StudyBuddy product.
 
-- **Boş durumlar & hata ekranları**
-  - Hiç doküman yüklenmemişse:
-    - Basit bir illüstrasyon (veya ikon) + kısa açıklama + çağrı (CTA) butonu.
-  - Hata durumlarında:
-    - Net başlık (örn. “İşlem sırasında bir sorun oluştu”),
-    - Kısa açıklama,
-    - Kullanıcının ne yapabileceğini söyleyen aksiyon (tekrar dene, farklı dosya yükle vb.).
+StudyBuddy is:
+- A serious yet friendly study assistant,
+- Targeting teenagers, university students and exam candidates,
+- Educational, calm, trustworthy, not childish.
+
+All visual decisions MUST respect the rules below.
+
+### 1. Branding & Logo
+
+**Brand name:** StudyBuddy  
+**Default tagline (optional):** “Notlarını sınava dönüştür.” (Turkish) / “Turn your notes into exams.” (English)
+
+#### 1.1 Logo concept
+
+- The logo consists of:
+  - A simple **icon** + the **wordmark “StudyBuddy”**.
+- Icon concept (do NOT overcomplicate):
+  - A rounded square or circle with:
+    - A stylized open book or a minimal “SB” monogram,
+    - Background: Primary color `#2563EB`,
+    - Foreground (icon or SB letters): white `#FFFFFF`.
+- Wordmark:
+  - Font: same as UI headings (see Typography),
+  - Weight: semi-bold,
+  - Color: `#0F172A` on light backgrounds, `#FFFFFF` on primary-colored navbars.
+
+#### 1.2 Logo usage rules
+
+- Clear space:
+  - Keep at least **0.5× logo height** empty space around the logo (no other elements inside this zone).
+- Minimum size:
+  - Screen: do not render the logo smaller than **24 px height**.
+- Light background usage:
+  - Icon: primary background `#2563EB`, icon/letters white.
+  - Wordmark: `#0F172A`.
+- Dark / primary background usage (e.g. navbar):
+  - Icon: white background with primary-colored icon/letters or keep primary icon but add subtle white outline.
+  - Wordmark: white `#FFFFFF`.
+- Do NOT:
+  - Add gradients or random colors,
+  - Add heavy shadows or glows,
+  - Stretch, distort, or rotate the logo.
+
+---
+
+### 2. Color System
+
+Use the following color tokens for all UI design and implementation.
+
+#### 2.1 Core colors
+
+- `--sb-color-primary:   #2563EB;`  // main brand blue (trust, focus)
+- `--sb-color-secondary: #22C55E;`  // success / learning / “done”
+- `--sb-color-accent:    #FACC15;`  // highlight / “new” / attention
+
+#### 2.2 Neutrals
+
+- `--sb-color-bg:          #F9FAFB;` // main app background
+- `--sb-color-surface:     #FFFFFF;` // cards, panels, modals
+- `--sb-color-border:      #E5E7EB;` // dividers, card borders
+- `--sb-color-text-main:   #0F172A;` // main dark text
+- `--sb-color-text-muted:  #6B7280;` // secondary text, hints
+
+#### 2.3 Semantic states
+
+- `--sb-color-success: #22C55E;`
+- `--sb-color-warning: #F97316;`
+- `--sb-color-error:   #EF4444;`
+- `--sb-color-info:    #38BDF8;`
+
+Rules:
+- Use **primary** for main actions and key highlights.
+- Use **secondary** mainly for success messages, completion badges and positive states.
+- Use **accent** for small attention grabbers (badges, “new” labels), not as full background.
+- Keep backgrounds light and minimal; avoid dark mode unless explicitly required by the user.
+
+---
+
+### 3. Typography
+
+Use a clean sans-serif font family:
+
+- Primary font: `Inter`, `Roboto` or `Nunito` (or system equivalent).
+- Fallback: `system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif`.
+
+Text styles (web scale):
+
+- `Display / Page Title`  
+  - Size: 32 px  
+  - Weight: 700  
+  - Color: `#0F172A`
+- `Section Title`  
+  - Size: 24 px  
+  - Weight: 600  
+  - Color: `#0F172A`
+- `Card Title / Subheading`  
+  - Size: 18–20 px  
+  - Weight: 600  
+  - Color: `#0F172A`
+- `Body Text`  
+  - Size: 14–16 px  
+  - Weight: 400  
+  - Color: `#0F172A`
+- `Muted / Helper Text`  
+  - Size: 12–14 px  
+  - Weight: 400  
+  - Color: `#6B7280`
+- `Caption / Small Label`  
+  - Size: 12 px  
+  - Weight: 500  
+  - Color: `#6B7280`
+
+Rules:
+- Keep **page title** at the top of each main view.
+- Use **Section Titles** to separate “Doküman Özeti”, “Çoktan Seçmeli Sorular”, “Kısa Cevap Soruları”, “Flashcard Seti”.
+- Do not use more than 3–4 different font sizes on a single screen.
+
+---
+
+### 4. Spacing, Radius & Shadows
+
+#### 4.1 Spacing scale
+
+Use a simple 4 px spacing grid:
+
+- `4, 8, 12, 16, 24, 32 px`
+
+Examples:
+- Card padding: `16–24 px`
+- Vertical spacing between sections: `24–32 px`
+- Spacing between label and input: `4–8 px`
+- Spacing between form fields: `12–16 px`
+
+#### 4.2 Corners
+
+- Default border radius for cards, inputs, buttons: **8–12 px**.
+- Modals and big surfaces may use **12–16 px** for a softer feel.
+- Avoid sharp 0 px corners except for very small UI elements.
+
+#### 4.3 Shadows
+
+- Use subtle shadows to give depth without looking noisy:
+  - Example: `0 1px 2px rgba(15, 23, 42, 0.06)` for small elements,
+  - Example: `0 4px 12px rgba(15, 23, 42, 0.08)` for modals/large cards.
+- Do not stack multiple heavy shadows.
+
+---
+
+### 5. Layout & Page Structure
+
+General rules for StudyBuddy screens:
+
+- App background: `--sb-color-bg` (`#F9FAFB`).
+- Content container:
+  - Max width: ~`1100–1200 px`,
+  - Centered with horizontal padding (`16–24 px`).
+- Main layout blocks:
+  1. Top navigation bar,
+  2. Page title + optional breadcrumbs,
+  3. Main content cards (upload form, results, etc).
+
+Use a **single primary flow** per page:
+- Upload page: focus on “Dosya Yükle + Ayarları Seç + İşleme Başlat”.
+- Results page: focus on “Üretilen içeriği gör, kopyala, dışa aktar, yeni doküman yükle”.
+
+---
+
+### 6. Navigation Bar
+
+- Height: `56–64 px`.
+- Background: `--sb-color-primary` (`#2563EB`).
+- Contents:
+  - Left: Logo (icon + “StudyBuddy” wordmark).
+  - Right: Minimal navigation (e.g., “Ana Sayfa”, “Hakkında”, “Destek”) and primary CTA if needed.
+- Text:
+  - Color: `#FFFFFF`.
+  - Active link: underline or bottom border in `#FACC15` (accent) or a lighter shade.
+
+---
+
+### 7. Buttons
+
+Define three main button types: **Primary**, **Secondary**, **Tertiary**.
+
+#### 7.1 Primary Button (Main CTA)
+
+- Usage:
+  - Main actions like “Sınavı Oluştur”, “Soruları Üret”, “Yeni Doküman Yükle”.
+- Style:
+  - Background: `#2563EB`
+  - Text color: `#FFFFFF`
+  - Border: none or same color as background
+  - Radius: `8–9999 px` (slightly rounded or pill-shaped)
+  - Padding:
+    - Vertical: `8–12 px`
+    - Horizontal: `16–20 px`
+  - Font: `14–16 px`, weight `600`.
+
+- States:
+  - Hover: slightly darker blue (e.g. `#1D4ED8`), subtle shadow.
+  - Active: `#1E40AF`, shadow reduced.
+  - Disabled:
+    - Background: `#93C5FD`,
+    - Text: `#E5E7EB`,
+    - No shadow.
+
+#### 7.2 Secondary Button
+
+- Usage:
+  - Less critical actions: “Geri dön”, “İptal et”, “Filtrele”, “Farklı seçenekler”.
+- Style:
+  - Background: `#FFFFFF`
+  - Border: `1 px solid #2563EB`
+  - Text: `#2563EB`
+  - Radius, padding, font: same as Primary.
+
+- States:
+  - Hover: light blue background tint (`#EFF6FF`),
+  - Active: slightly darker border and text (`#1D4ED8`).
+
+#### 7.3 Tertiary Button / Text Button
+
+- Usage:
+  - Very light actions like “Daha fazla oku”, “Ayrıntılar”.
+- Style:
+  - No background,
+  - No border or very subtle underline on hover.
+  - Text color: `#2563EB`.
+  - Keep hover state visible (underline or color darkening).
+
+---
+
+### 8. Cards & Content Sections
+
+Cards are the core building blocks of StudyBuddy screens.
+
+Use cards for:
+
+- “Doküman Özeti”
+- “Çoktan Seçmeli Sorular”
+- “Kısa Cevap Soruları”
+- “Flashcard Seti”
+- “İşlem Durumu / Geçmiş Çalışmalar” (future)
+
+#### Card style
+
+- Background: `#FFFFFF`
+- Border: `1 px solid #E5E7EB` or none with light shadow
+- Shadow: `0 1px 2px rgba(15, 23, 42, 0.06)`
+- Radius: `12 px`
+- Padding: `16–24 px`
+- Layout:
+  - Header:
+    - Title (Section Title style),
+    - Optional small badge (e.g. “Yeni”, “Oluşturuldu”).
+  - Body:
+    - Text, lists, question items, etc.
+  - Footer (optional):
+    - Small actions (e.g. “Hepsini kopyala”, “PDF Olarak Dışa Aktar”).
+
+#### Card header accent
+
+- Add a thin top border or small left accent bar:
+  - Summary card → `#2563EB`
+  - Questions card → `#22C55E`
+  - Flashcards card → `#FACC15`
+
+---
+
+### 9. Forms & Inputs
+
+Forms (file upload, options selection, filters) must be **simple and clear**.
+
+#### Input style
+
+- Background: `#FFFFFF`
+- Border: `1 px solid #D1D5DB`
+- Radius: `8 px`
+- Padding: `8–10 px` vertical, `10–12 px` horizontal
+- Text: `#0F172A`
+- Placeholder: `#9CA3AF`
+
+#### States
+
+- Focus:
+  - Border: `2 px solid #2563EB`
+  - Optional subtle shadow: `0 0 0 1px rgba(37, 99, 235, 0.3)`
+- Error:
+  - Border: `1 px solid #EF4444`
+  - Helper text below in `#EF4444`
+- Disabled:
+  - Background: `#F3F4F6`
+  - Text: `#9CA3AF`
+  - No strong shadow.
+
+#### Labels & helper text
+
+- Label:
+  - Above the input,
+  - Text: `#0F172A`, 14 px, medium weight.
+- Helper text:
+  - Below the input (optional),
+  - `#6B7280`, 12–13 px.
+
+#### File upload area
+
+- Use a **card-like dropzone**:
+  - Dashed border: `#93C5FD` or `#CBD5F5`,
+  - Icon (cloud upload or file icon) in primary color,
+  - Short instruction text: “PDF, DOCX, PPTX veya TXT yükleyin” (Turkish default),
+  - Small hint: “Maksimum boyut: X MB”.
+
+---
+
+### 10. Tables & Lists (for Questions / Results)
+
+When displaying generated questions or flashcards:
+
+- Use either:
+  - Simple list groups (for small datasets), or
+  - A light table (for many questions).
+
+Basic table style:
+
+- Header row:
+  - Background: `#F3F4F6`,
+  - Text: `#0F172A`, slightly bolder.
+- Rows:
+  - Alternating background: `#FFFFFF` / `#F9FAFB` is allowed.
+  - Row hover: subtle background tint `#EFF6FF`.
+- Borders:
+  - Vertical separation can be minimal; horizontal lines in `#E5E7EB`.
+
+---
+
+### 11. Feedback Components (Alerts, Toasts, Loading)
+
+#### Alerts / Banners
+
+- Success:
+  - Background: very light green (`#ECFDF3`),
+  - Border-left: `#22C55E`,
+  - Icon: checkmark in `#22C55E`,
+  - Text: `#166534`.
+- Error:
+  - Background: `#FEF2F2`,
+  - Border-left: `#EF4444`,
+  - Icon: error in `#B91C1C`,
+  - Text: `#B91C1C`.
+- Info:
+  - Background: `#EFF6FF`,
+  - Border-left: `#2563EB`,
+  - Text: `#1D4ED8`.
+
+#### Toasts / Notifications
+
+- Small, right-bottom or right-top,
+- Card style with slight shadow,
+- Short message + optional CTA.
+
+#### Loading / Skeletons
+
+- Use activity indicators while generating questions:
+  - Simple spinner in primary color,
+  - Optional “skeleton” placeholders for text blocks.
+- Always show explicit text:
+  - Example: “Sorular oluşturuluyor, lütfen bekleyin…”
+
+---
+
+### 12. Motion & Micro-interactions
+
+- Use subtle animations:
+  - Fade-in for cards when results are ready,
+  - Slight scale or shadow change on button hover.
+- Avoid:
+  - Flashy bouncing, rotating or neon effects.
+- Duration:
+  - 150–250 ms for most interactions.
+- Easing:
+  - Standard ease-out for entering,
+  - Ease-in for exiting.
+
+---
+
+### 13. Language & Content Tone
+
+- Default UI language: **Turkish**.
+- Tone:
+  - Friendly but not childish,
+  - Motivational but not cheesy,
+  - Clear, short sentences.
+
+Examples:
+- Primary CTA: “Soruları Oluştur”
+- Secondary CTA: “Yeni Doküman Yükle”
+- Empty state:  
+  - Title: “Henüz bir doküman yüklemediniz.”  
+  - Text: “Başlamak için PDF, Word, PowerPoint veya metin dosyanızı seçin.”
 
 ---
 
@@ -401,6 +766,47 @@ Ajan, OpenAI ile çalışırken aşağıdaki davranış kurallarına uymalıdır
 
 ---
 
+## Preserve Existing Working Behavior (Very Important)
+
+- This project is already **running and functional**, even if the UI is not perfect.
+- Therefore, the agent MUST follow these rules:
+
+1. Do NOT touch critical startup & config parts unless explicitly asked:
+   - Do not change how `app.py` starts the app (Flask init, routes wiring),
+   - Do not change environment variable usage (e.g. `OPENAI_API_KEY`),
+   - Do not change WSGI / deployment configuration files.
+
+2. Prefer ADDITIVE changes over destructive ones:
+   - You may add new CSS classes, small helper functions, or new templates,
+   - But do NOT delete or radically rewrite existing working code unless the user clearly requests a refactor.
+
+3. UI-first approach:
+   - When the user asks for “visual improvements” or “UI/UX refactor”, focus on:
+     - HTML structure,
+     - CSS / Bootstrap classes,
+     - Template layout.
+   - Do NOT modify backend logic, routes, or services unless:
+     - There is a clear bug, and
+     - The user agrees that the logic should change.
+
+4. No renaming of files, routes, or core functions without permission:
+   - Do not rename template files (e.g. `index.html`, `result.html`),
+   - Do not rename Flask routes or main service functions,
+   - Do not change URLs used by the frontend.
+   - If you believe a rename is beneficial, propose it as a suggestion first and wait for explicit approval.
+
+5. Always explain “What changed and why”:
+   - For any non-trivial code change, include a short section:
+     - “What changed and why (impact on existing behavior)”.
+   - Clearly state if there is any risk that the current working behavior might be affected.
+
+6. When in doubt, be conservative:
+   - If you are not sure whether a visual change might break existing behavior,
+   - First propose it in a high-level description or pseudo-diff,
+   - Then wait for the user to confirm before giving full code.
+
+---
+
 ## Hata, Varsayım ve Halüsinasyon Politikası (Çok Önemli)
 
 Bu proje için ajan aşağıdaki KESİN kurallara uymalıdır:
@@ -431,7 +837,7 @@ Bu proje için ajan aşağıdaki KESİN kurallara uymalıdır:
    - Ajan aşağıdaki üç alanda “makul varsayım” yapabilir:
      1. UI/UX metinleri (buton ismi, etiket vb.)  
      2. Küçük yardımcı fonksiyon isimleri (ör. `format_text`, `clean_content` gibi)  
-     3. Dosya içi kod düzeni (aynı dosya içinde fonksiyon sırasını değiştirmek gibi)
+     3. Dosya içi kod düzeni (aynı dosya içinde fonksiyon sırası gibi)
 
    - Bunun DIŞINDA:
      - İş kuralları,

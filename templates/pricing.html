@@ -34,15 +34,14 @@
     
     .pricing-card {
         width: 100%;
-        height: 100%;
-        min-height: 550px;
+        min-height: 500px;
         border-radius: 20px;
         background: linear-gradient(170deg, rgba(58, 56, 56, 0.623) 0%, rgb(31, 31, 31) 100%);
         position: relative;
         box-shadow: 0 25px 50px rgba(0,0,0,0.55);
         cursor: pointer;
         transition: all .3s;
-        padding: 40px 30px;
+        padding: 40px;
         color: white;
         display: flex;
         flex-direction: column;
@@ -192,12 +191,6 @@
         background-image: linear-gradient(45deg, #28a745 0%, #20c997  51%, #28a745  100%);
     }
     
-    /* Card Content - Başlık ve Fiyatları Sağa Yasla */
-    .plan-header {
-        margin-top: 50px;
-        text-align: right;
-        margin-bottom: 20px;
-    }
     
     .token-packages-section {
         margin-top: 60px;
@@ -219,17 +212,20 @@
     
     .token-card {
         width: 100%;
-        min-height: 300px;
+        height: 100%;
+        min-height: 420px;
         border-radius: 20px;
         background: linear-gradient(170deg, rgba(58, 56, 56, 0.623) 0%, rgb(31, 31, 31) 100%);
         position: relative;
         box-shadow: 0 25px 50px rgba(0,0,0,0.55);
         cursor: pointer;
         transition: all .3s;
-        padding: 30px;
+        padding: 32px 28px;
         color: white;
         display: flex;
         flex-direction: column;
+        flex: 1;
+        text-align: center;
     }
     
     .token-card .plan-button {
@@ -237,7 +233,7 @@
     }
     
     .token-card:hover {
-        transform: scale(0.95);
+        transform: scale(0.98);
     }
     
     .token-card.popular {
@@ -290,6 +286,7 @@
         font-weight: 700;
         color: inherit;
         margin-bottom: 10px;
+        margin-top: 55px;
     }
     
     .token-price {
@@ -301,7 +298,7 @@
     
     .token-price-per-unit {
         opacity: 0.8;
-        font-size: 0.9rem;
+        font-size: 0.95rem;
         margin-bottom: 15px;
     }
     
@@ -315,6 +312,12 @@
         display: inline-block;
         margin-bottom: 15px;
         border: 1px solid #4caf50;
+    }
+    
+    .token-note {
+        opacity: 0.85;
+        font-size: 0.95rem;
+        margin-bottom: 18px;
     }
     
     .plan-name {
@@ -504,9 +507,9 @@
             <p>İhtiyacınız olduğunda ekstra fiş satın alın</p>
         </div>
         
-        <div class="row g-4">
+        <div class="row g-4 align-items-stretch">
             {% for package_key, package in config.TOKEN_PACKAGES.items() %}
-            <div class="col-md-6 col-lg-3">
+            <div class="col-md-6 col-lg-3 d-flex">
                 <div class="token-card {% if package.get('popular') %}popular{% endif %}">
                     {% if package.get('popular') %}
                     <span class="card_badge"></span>
@@ -523,7 +526,7 @@
                         %{{ package.discount_percent }} İndirim
                     </div>
                     {% endif %}
-                    <p style="opacity: 0.8; font-size: 0.9rem; margin-bottom: 15px;">Fişler süresiz geçerlidir</p>
+                    <p class="token-note">Fişler süresiz geçerlidir</p>
                     {% if current_user.is_authenticated %}
                         <a href="{{ url_for('checkout', plan_type='token', package=package_key) }}" class="plan-button select" style="text-decoration: none; display: block; margin-top: auto;">
                             <i class="bi bi-cart-plus"></i> Satın Al
