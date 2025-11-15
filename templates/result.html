@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}Sonuçlar - StudyBuddy{% endblock %}
+{% block title %}{{ _('Sonuçlar') }} - StudyBuddy{% endblock %}
 
 {% block extra_head %}
 <style>
@@ -456,20 +456,22 @@
 <div class="container">
     <!-- Demo Modu Uyarısı -->
     {% if config.DEMO_MODE %}
-    <div class="alert alert-warning alert-dismissible fade show" role="alert">
-        <i class="bi bi-info-circle-fill"></i> <strong>Demo Modu:</strong> 
-        Bu içerikler sahte verilerdir. Gerçek AI üretimi için OpenAI API anahtarı gereklidir.
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    <div class="demo-mode-banner">
+        <i class="bi bi-exclamation-triangle-fill"></i>
+        <div>
+            <strong>{{ _(config.DEMO_MODE_WARNING_TEXT['banner']) }}</strong>
+            <br><small>{{ _('Gerçek AI üretimi için lütfen .env dosyasında OPENAI_API_KEY ayarlayın.') }}</small>
+        </div>
     </div>
     {% endif %}
     
     <!-- Cache Hit Uyarısı -->
     {% if from_cache %}
     <div class="alert alert-success alert-dismissible fade show" role="alert">
-        <i class="bi bi-lightning-fill"></i> <strong>Hızlı Sonuç!</strong> 
-        Bu dosya daha önce işlenmişti. Kayıtlı sonuçlar gösteriliyor.
+        <i class="bi bi-lightning-fill"></i> <strong>{{ _('Hızlı Sonuç!') }}</strong> 
+        {{ _('Bu dosya daha önce işlenmişti. Kayıtlı sonuçlar gösteriliyor.') }}
         {% if results.token_used %}
-        <br><small>Token Tasarrufu: ~{{ results.token_used }} | İlk İşlenme: {{ results.cached_date }}</small>
+        <br><small>{{ _('Token Tasarrufu:') }} ~{{ results.token_used }} | {{ _('İlk İşlenme:') }} {{ results.cached_date }}</small>
         {% endif %}
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
@@ -478,64 +480,64 @@
     <!-- Breadcrumb -->
     <nav aria-label="breadcrumb" class="mb-3">
         <ol class="breadcrumb breadcrumb-gradient">
-            <li class="breadcrumb-item"><a href="{{ url_for('index') }}"><i class="bi bi-house"></i> Ana Sayfa</a></li>
-            <li class="breadcrumb-item"><a href="{{ url_for('upload') }}"><i class="bi bi-cloud-upload"></i> Dosya Yükle</a></li>
-            <li class="breadcrumb-item active" aria-current="page"><i class="bi bi-file-check"></i> Sonuçlar</li>
+            <li class="breadcrumb-item"><a href="{{ url_for('index') }}"><i class="bi bi-house"></i> {{ _('Ana Sayfa') }}</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('upload') }}"><i class="bi bi-cloud-upload"></i> {{ _('Dosya Yükle') }}</a></li>
+            <li class="breadcrumb-item active" aria-current="page"><i class="bi bi-file-check"></i> {{ _('Sonuçlar') }}</li>
         </ol>
     </nav>
     
     <div class="header">
         <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
             <div class="flex-grow-1">
-                <h1><i class="bi bi-check-circle text-success"></i> İçerik Başarıyla Oluşturuldu!</h1>
+                <h1><i class="bi bi-check-circle text-success"></i> {{ _('İçerik Başarıyla Oluşturuldu!') }}</h1>
                 <p class="mb-0"><i class="bi bi-file-earmark"></i> {{ filename }}</p>
                 {% if user and user.is_authenticated %}
-                <p class="user-info mb-0"><i class="bi bi-person"></i> {{ user.username }} tarafından işlendi</p>
+                <p class="user-info mb-0"><i class="bi bi-person"></i> {{ user.username }} {{ _('tarafından işlendi') }}</p>
                 {% endif %}
             </div>
             <div class="d-flex gap-2 flex-wrap">
                 <button onclick="printContent()" class="btn btn-outline-secondary">
-                    <i class="bi bi-printer"></i> Yazdır
+                    <i class="bi bi-printer"></i> {{ _('Yazdır') }}
                 </button>
                 {% if user and user.is_authenticated and result_id %}
                     {% if user.subscription_plan == 'premium' or user.tokens_remaining >= 2 %}
                     <a href="{{ url_for('export', result_id=result_id, format='pdf') }}" class="btn btn-outline-primary position-relative">
-                        <i class="bi bi-file-pdf"></i> PDF Olarak İndir
+                        <i class="bi bi-file-pdf"></i> {{ _('PDF Olarak İndir') }}
                         {% if user.subscription_plan == 'premium' %}
-                        <span class="badge bg-success position-absolute top-0 start-100 translate-middle" style="font-size: 0.65rem;">Ücretsiz</span>
+                        <span class="badge bg-success position-absolute top-0 start-100 translate-middle" style="font-size: 0.65rem;">{{ _('Ücretsiz') }}</span>
                         {% else %}
-                        <span class="badge bg-primary position-absolute top-0 start-100 translate-middle" style="font-size: 0.65rem;">2 Fiş</span>
+                        <span class="badge bg-primary position-absolute top-0 start-100 translate-middle" style="font-size: 0.65rem;">2 {{ _('Fiş') }}</span>
                         {% endif %}
                     </a>
                     <a href="{{ url_for('export', result_id=result_id, format='docx') }}" class="btn btn-outline-primary position-relative">
-                        <i class="bi bi-file-word"></i> Word Olarak İndir
+                        <i class="bi bi-file-word"></i> {{ _('Word Olarak İndir') }}
                         {% if user.subscription_plan == 'premium' %}
-                        <span class="badge bg-success position-absolute top-0 start-100 translate-middle" style="font-size: 0.65rem;">Ücretsiz</span>
+                        <span class="badge bg-success position-absolute top-0 start-100 translate-middle" style="font-size: 0.65rem;">{{ _('Ücretsiz') }}</span>
                         {% else %}
-                        <span class="badge bg-primary position-absolute top-0 start-100 translate-middle" style="font-size: 0.65rem;">2 Fiş</span>
+                        <span class="badge bg-primary position-absolute top-0 start-100 translate-middle" style="font-size: 0.65rem;">2 {{ _('Fiş') }}</span>
                         {% endif %}
                     </a>
                     {% else %}
                     <button class="btn btn-outline-primary position-relative" disabled>
-                        <i class="bi bi-file-pdf"></i> PDF Olarak İndir
-                        <span class="badge bg-secondary position-absolute top-0 start-100 translate-middle" style="font-size: 0.65rem;">2 Fiş</span>
+                        <i class="bi bi-file-pdf"></i> {{ _('PDF Olarak İndir') }}
+                        <span class="badge bg-secondary position-absolute top-0 start-100 translate-middle" style="font-size: 0.65rem;">2 {{ _('Fiş') }}</span>
                     </button>
                     <button class="btn btn-outline-primary position-relative" disabled>
-                        <i class="bi bi-file-word"></i> Word Olarak İndir
-                        <span class="badge bg-secondary position-absolute top-0 start-100 translate-middle" style="font-size: 0.65rem;">2 Fiş</span>
+                        <i class="bi bi-file-word"></i> {{ _('Word Olarak İndir') }}
+                        <span class="badge bg-secondary position-absolute top-0 start-100 translate-middle" style="font-size: 0.65rem;">2 {{ _('Fiş') }}</span>
                     </button>
                     {% endif %}
                 {% endif %}
                 <a href="{{ url_for('history') }}" class="btn btn-outline-secondary">
-                    <i class="bi bi-clock-history"></i> Geçmiş
+                    <i class="bi bi-clock-history"></i> {{ _('Geçmiş') }}
                 </a>
                 <a href="{{ url_for('upload') }}" class="btn btn-home">
-                    <i class="bi bi-cloud-upload"></i> Yeni Dosya Yükle
+                    <i class="bi bi-cloud-upload"></i> {{ _('Yeni Dosya Yükle') }}
                 </a>
             </div>
             {% if user and user.is_authenticated and user.tokens_remaining < 2 and user.subscription_plan != 'premium' %}
             <div class="alert alert-warning mt-3 mb-0" style="font-size: 0.875rem;">
-                <i class="bi bi-exclamation-triangle"></i> Export için yeterli fişiniz yok. Lütfen <a href="{{ url_for('pricing') }}" class="alert-link">paket yükseltin</a> veya fiş satın alın.
+                <i class="bi bi-exclamation-triangle"></i> {{ _('Export için yeterli fişiniz yok. Lütfen') }} <a href="{{ url_for('pricing') }}" class="alert-link">{{ _('paket yükseltin') }}</a> {{ _('veya fiş satın alın.') }}
             </div>
             {% endif %}
         </div>
@@ -546,32 +548,32 @@
             <ul class="nav nav-tabs" id="resultTabs" role="tablist">
                 <li class="nav-item" role="presentation">
                     <button class="nav-link active" id="summary-tab" data-bs-toggle="tab" data-bs-target="#summary" type="button">
-                        <i class="bi bi-journal-text"></i> Özet
+                        <i class="bi bi-journal-text"></i> {{ _('Özet') }}
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
                     <button class="nav-link" id="multiple-choice-tab" data-bs-toggle="tab" data-bs-target="#multiple-choice" type="button">
-                        <i class="bi bi-card-list"></i> Çoktan Seçmeli
+                        <i class="bi bi-card-list"></i> {{ _('Çoktan Seçmeli') }}
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
                     <button class="nav-link" id="short-answer-tab" data-bs-toggle="tab" data-bs-target="#short-answer" type="button">
-                        <i class="bi bi-pencil-square"></i> Kısa Cevap
+                        <i class="bi bi-pencil-square"></i> {{ _('Kısa Cevap') }}
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
                     <button class="nav-link" id="fill-blank-tab" data-bs-toggle="tab" data-bs-target="#fill-blank" type="button">
-                        <i class="bi bi-dash-square"></i> Boş Doldurma
+                        <i class="bi bi-dash-square"></i> {{ _('Boş Doldurma') }}
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
                     <button class="nav-link" id="true-false-tab" data-bs-toggle="tab" data-bs-target="#true-false" type="button">
-                        <i class="bi bi-check2-square"></i> Doğru-Yanlış
+                        <i class="bi bi-check2-square"></i> {{ _('Doğru-Yanlış') }}
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
                     <button class="nav-link" id="flashcards-tab" data-bs-toggle="tab" data-bs-target="#flashcards" type="button">
-                        <i class="bi bi-collection"></i> Flashcards
+                        <i class="bi bi-collection"></i> {{ _('Flashcard\'lar') }}
                     </button>
                 </li>
             </ul>
@@ -580,7 +582,7 @@
         <div class="tab-content" id="resultTabsContent">
             <!-- Özet -->
             <div class="tab-pane fade show active" id="summary" role="tabpanel">
-                <h3 class="mb-4">Konu Özeti</h3>
+                <h3 class="mb-4">{{ _('Konu Özeti') }}</h3>
                 <div class="summary-box">
                     {% if results.summary_html %}
                         {{ results.summary_html | safe }}
@@ -593,38 +595,41 @@
             <!-- Çoktan Seçmeli Sorular -->
             <div class="tab-pane fade quiz-mode-active" id="multiple-choice" role="tabpanel">
                 <div class="quiz-header">
-                    <h3>Çoktan Seçmeli Sorular <span class="badge-custom">{{ results.multiple_choice | length }}</span></h3>
+                    <h3>{{ _('Çoktan Seçmeli Sorular') }} <span class="badge-custom">{{ results.multiple_choice | length }}</span></h3>
                     {% if plan_limit_info and plan_limit_info.get('multiple_choice') %}
                     <div class="alert alert-warning mt-3" role="alert">
-                        <i class="bi bi-exclamation-triangle-fill"></i> <strong>Paket Limit Bilgisi</strong><br>
-                        Bu bölümde {{ plan_limit_info.multiple_choice.generated }} soru oluşturuldu. 
-                        Paketiniz {{ user_plan }} olduğu için {{ plan_limit_info.multiple_choice.displayed }} adet gösteriliyor.
+                        <i class="bi bi-exclamation-triangle-fill"></i> <strong>{{ _('Paket Limit Bilgisi') }}</strong><br>
+                        {{ _('Bu bölümde') }} {{ plan_limit_info.multiple_choice.generated }} {{ _('soru oluşturuldu.') }} 
+                        {{ _('Paketiniz') }} {{ user_plan }} {{ _('olduğu için') }} {{ plan_limit_info.multiple_choice.displayed }} {{ _('adet gösteriliyor.') }}
                         <a href="{{ url_for('pricing') }}" class="btn btn-sm btn-primary ms-2">
-                            <i class="bi bi-arrow-up-circle"></i> Paket Yükselt
+                            <i class="bi bi-arrow-up-circle"></i> {{ _('Paket Yükselt') }}
                         </a>
                     </div>
                     {% endif %}
                     <div class="d-flex flex-wrap gap-2">
                         <button class="btn btn-primary" onclick="toggleQuizMode('multiple-choice')" id="quiz-toggle-multiple-choice">
-                            <i class="bi bi-eye"></i> <span id="quiz-status-multiple-choice">Quiz Modu: Açık</span>
+                            <i class="bi bi-eye"></i> <span id="quiz-status-multiple-choice">{{ _('Quiz Modu: Açık') }}</span>
                         </button>
                         <button class="btn btn-success" onclick="calculateScore('multiple-choice')" id="calculate-score-multiple-choice" style="display: inline-block;">
-                            <i class="bi bi-calculator"></i> Skor Hesapla
+                            <i class="bi bi-calculator"></i> {{ _('Skor Hesapla') }}
                         </button>
                         <button class="btn btn-outline-secondary" onclick="resetQuiz('multiple-choice')" id="reset-multiple-choice" style="display: inline-block;">
-                            <i class="bi bi-arrow-counterclockwise"></i> Sıfırla
+                            <i class="bi bi-arrow-counterclockwise"></i> {{ _('Sıfırla') }}
                         </button>
                     </div>
                 </div>
                 <div class="quiz-stats" id="quiz-stats-multiple-choice" style="display: block;">
-                    <strong>Skorunuz:</strong> <span id="score-multiple-choice">0</span> / {{ results.multiple_choice | length }} 
+                    <strong>{{ _('Skorunuz:') }}</strong> <span id="score-multiple-choice">0</span> / {{ results.multiple_choice | length }} 
                     (<span id="percentage-multiple-choice">0</span>%)
-                    <span class="ms-3 text-success"><i class="bi bi-check-circle-fill"></i> Doğru: <span id="correct-count-multiple-choice">0</span></span>
-                    <span class="ms-3 text-danger"><i class="bi bi-x-circle-fill"></i> Yanlış: <span id="wrong-count-multiple-choice">0</span></span>
-                    <span class="ms-3 text-primary"><i class="bi bi-info-circle-fill"></i> Boş: <span id="blank-count-multiple-choice">0</span></span>
+                    <span class="ms-3 text-success"><i class="bi bi-check-circle-fill"></i> {{ _('Doğru:') }} <span id="correct-count-multiple-choice">0</span></span>
+                    <span class="ms-3 text-danger"><i class="bi bi-x-circle-fill"></i> {{ _('Yanlış:') }} <span id="wrong-count-multiple-choice">0</span></span>
+                    <span class="ms-3 text-primary"><i class="bi bi-info-circle-fill"></i> {{ _('Boş:') }} <span id="blank-count-multiple-choice">0</span></span>
                 </div>
                 {% for q in results.multiple_choice %}
                 <div class="question-card" data-question-id="mc-{{ loop.index }}" data-correct-answer="{{ q.correct_answer }}">
+                    {% if config.DEMO_MODE %}
+                    <span class="demo-data-note"><i class="bi bi-info-circle"></i> {{ _(config.DEMO_MODE_WARNING_TEXT['card_note']) }}</span>
+                    {% endif %}
                     <div class="mb-3">
                         <span class="question-number">{{ loop.index }}</span>
                         <strong>{{ q.question }}</strong>
@@ -653,7 +658,7 @@
             <!-- Kısa Cevap Soruları -->
             <div class="tab-pane fade quiz-mode-active" id="short-answer" role="tabpanel">
                 <div class="quiz-header">
-                    <h3>Kısa Cevap Soruları <span class="badge-custom">{{ results.short_answer | length }}</span></h3>
+                    <h3>{{ _('Kısa Cevap Soruları') }} <span class="badge-custom">{{ results.short_answer | length }}</span></h3>
                     {% if plan_limit_info and plan_limit_info.get('short_answer') %}
                     <div class="alert alert-warning mt-3" role="alert">
                         <i class="bi bi-exclamation-triangle-fill"></i> <strong>Paket Limit Bilgisi</strong><br>
@@ -688,6 +693,9 @@
                      data-question-id="sa-{{ loop.index }}"
                      data-correct-answer="{{ q.answer }}"
                      data-alt-answers='{{ (q.accepted_answers if q.accepted_answers is defined else []) | tojson | safe }}'>
+                    {% if config.DEMO_MODE %}
+                    <span class="demo-data-note"><i class="bi bi-info-circle"></i> {{ _(config.DEMO_MODE_WARNING_TEXT['card_note']) }}</span>
+                    {% endif %}
                     <div class="mb-3">
                         <span class="question-number">{{ loop.index }}</span>
                         <strong>{{ q.question }}</strong>
@@ -713,7 +721,7 @@
             <!-- Boş Doldurma Soruları -->
             <div class="tab-pane fade quiz-mode-active" id="fill-blank" role="tabpanel">
                 <div class="quiz-header">
-                    <h3>Boş Doldurma Soruları <span class="badge-custom">{{ results.fill_blank | length }}</span></h3>
+                    <h3>{{ _('Boş Doldurma Soruları') }} <span class="badge-custom">{{ results.fill_blank | length }}</span></h3>
                     {% if plan_limit_info and plan_limit_info.get('fill_blank') %}
                     <div class="alert alert-warning mt-3" role="alert">
                         <i class="bi bi-exclamation-triangle-fill"></i> <strong>Paket Limit Bilgisi</strong><br>
@@ -748,6 +756,9 @@
                      data-question-id="fb-{{ loop.index }}"
                      data-correct-answer="{{ q.answer }}"
                      data-alt-answers='{{ (q.accepted_answers if q.accepted_answers is defined else []) | tojson | safe }}'>
+                    {% if config.DEMO_MODE %}
+                    <span class="demo-data-note"><i class="bi bi-info-circle"></i> {{ _(config.DEMO_MODE_WARNING_TEXT['card_note']) }}</span>
+                    {% endif %}
                     <div class="mb-3">
                         <span class="question-number">{{ loop.index }}</span>
                         <strong>{{ q.question }}</strong>
@@ -769,7 +780,7 @@
             <!-- Doğru-Yanlış Soruları -->
             <div class="tab-pane fade quiz-mode-active" id="true-false" role="tabpanel">
                 <div class="quiz-header">
-                    <h3>Doğru-Yanlış Soruları <span class="badge-custom">{{ results.true_false | length }}</span></h3>
+                    <h3>{{ _('Doğru-Yanlış Soruları') }} <span class="badge-custom">{{ results.true_false | length }}</span></h3>
                     {% if plan_limit_info and plan_limit_info.get('true_false') %}
                     <div class="alert alert-warning mt-3" role="alert">
                         <i class="bi bi-exclamation-triangle-fill"></i> <strong>Paket Limit Bilgisi</strong><br>
@@ -801,6 +812,9 @@
                 </div>
                 {% for q in results.true_false %}
                 <div class="true-false-card" data-question-id="tf-{{ loop.index }}" data-correct-answer="{% if q.is_true %}true{% else %}false{% endif %}">
+                    {% if config.DEMO_MODE %}
+                    <span class="demo-data-note"><i class="bi bi-info-circle"></i> {{ _(config.DEMO_MODE_WARNING_TEXT['card_note']) }}</span>
+                    {% endif %}
                     <div class="d-flex justify-content-between align-items-start mb-2">
                         <div style="flex: 1; display: flex; align-items: center; gap: 10px;">
                             <span class="question-number">{{ loop.index }}</span>
@@ -832,8 +846,8 @@
             
             <!-- Flashcards -->
             <div class="tab-pane fade" id="flashcards" role="tabpanel">
-                <h3 class="mb-4">Flashcard Çalışma Kartları <span class="badge-custom">{{ results.flashcards | length }}</span></h3>
-                <p class="text-muted mb-4"><i class="bi bi-hand-index"></i> Kartları çevirmek için üzerine tıklayın</p>
+                <h3 class="mb-4">{{ _('Flashcard Çalışma Kartları') }} <span class="badge-custom">{{ results.flashcards | length }}</span></h3>
+                <p class="text-muted mb-4"><i class="bi bi-hand-index"></i> {{ _('Kartları çevirmek için üzerine tıklayın') }}</p>
                 
                 <div class="row">
                     {% for card in results.flashcards %}
@@ -842,6 +856,9 @@
                             <div class="flashcard-inner">
                                 <div class="flashcard-front">
                                     <div>
+                                        {% if config.DEMO_MODE %}
+                                        <span class="demo-data-note"><i class="bi bi-info-circle"></i> {{ _(config.DEMO_MODE_WARNING_TEXT['card_note']) }}</span>
+                                        {% endif %}
                                         <div class="mb-2"><i class="bi bi-question-circle" style="font-size: 30px;"></i></div>
                                         <h5>{{ card.front }}</h5>
                                     </div>

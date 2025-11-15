@@ -35,9 +35,33 @@ class Config:
     # Demo modu (OpenAI API olmadan test için)
     DEMO_MODE = os.environ.get('DEMO_MODE', 'false').lower() in ('true', '1', 'yes')
     
+    # Demo modu uyarı metinleri
+    DEMO_MODE_WARNING_TEXT = {
+        'banner': 'Demo Modu Aktif: Bu içerikler yapay zeka tarafından üretilmemiş sahte verilerdir. Gerçek AI üretimi için OpenAI API anahtarı gereklidir.',
+        'navbar': 'DEMO MODU',
+        'card_note': 'Bu demo veridir'
+    }
+    
+    # Internationalization (i18n) ayarları
+    BABEL_DEFAULT_LOCALE = 'tr'
+    BABEL_DEFAULT_TIMEZONE = 'Europe/Istanbul'
+    BABEL_TRANSLATION_DIRECTORIES = 'translations'
+    SUPPORTED_LANGUAGES = {
+        'tr': {'name': 'Türkçe', 'flag': '🇹🇷'},
+        'en': {'name': 'English', 'flag': '🇬🇧'}
+    }
+    DEFAULT_LANGUAGE = 'tr'
+    
     # SQLite Database
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'sqlite:///studybuddy.db'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    
+    # Alembic Migration Ayarları
+    # AUTO_MIGRATE_ON_STARTUP: Uygulama başlangıcında otomatik migration kontrolü
+    # Production'da 'false' olmalı, development'ta 'true' olabilir
+    # Manuel kontrol için: alembic upgrade head
+    AUTO_MIGRATE_ON_STARTUP = os.environ.get('AUTO_MIGRATE_ON_STARTUP', 'false').lower() in ('true', '1', 'yes')
+    ALEMBIC_CONFIG_PATH = os.path.join(os.path.dirname(__file__), 'alembic.ini')
     
     # Seviye bazli soru sayilari ve zorluk dagilimi
     LEVEL_SETTINGS = {

@@ -21,4 +21,7 @@ pytest-flask>=1.2.0
 pytest-mock>=3.11.0
 pytest-cov>=4.1.0
 faker>=19.0.0
+Flask-Babel>=4.0.0
+Babel>=2.0.0
+alembic>=1.13.0
 

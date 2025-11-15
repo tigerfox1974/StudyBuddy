@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Profilim - StudyBuddy{% endblock %}
+{% block title %}{{ _('Profilim') }} - StudyBuddy{% endblock %}
 
 {% block content %}
 <div class="profile-page">
@@ -8,18 +8,18 @@
         <!-- Breadcrumb -->
         <nav aria-label="breadcrumb" class="mb-4">
             <ol class="breadcrumb breadcrumb-light">
-                <li class="breadcrumb-item"><a href="{{ url_for('index') }}"><i class="bi bi-house"></i> Ana Sayfa</a></li>
-                <li class="breadcrumb-item active" aria-current="page"><i class="bi bi-person"></i> Profilim</li>
+                <li class="breadcrumb-item"><a href="{{ url_for('index') }}"><i class="bi bi-house"></i> {{ _('Ana Sayfa') }}</a></li>
+                <li class="breadcrumb-item active" aria-current="page"><i class="bi bi-person"></i> {{ _('Profilim') }}</li>
             </ol>
         </nav>
         
-        <h1 class="mb-4">Profil Bilgilerim</h1>
+        <h1 class="mb-4">{{ _('Profil Bilgilerim') }}</h1>
         
         <div class="row">
             <div class="col-lg-8">
                 <!-- Profil Bilgileri Card -->
                 <div class="profile-card">
-                    <h3>Profil Bilgileri</h3>
+                    <h3>{{ _('Profil Bilgileri') }}</h3>
                     
                     <div class="profile-avatar">
                         {{ user.username[0].upper() }}
@@ -33,39 +33,39 @@
                     <hr>
                     
                     <div class="stat-item">
-                        <span><i class="bi bi-calendar"></i> Kayıt Tarihi:</span>
+                        <span><i class="bi bi-calendar"></i> {{ _('Kayıt Tarihi:') }}</span>
                         <strong>{{ user.created_at.strftime('%d %B %Y') }}</strong>
                     </div>
                     
                     <div class="stat-item">
-                        <span><i class="bi bi-clock-history"></i> Son Giriş:</span>
+                        <span><i class="bi bi-clock-history"></i> {{ _('Son Giriş:') }}</span>
                         <strong>
                             {% if user.last_login %}
                                 {{ user.last_login.strftime('%d %B %Y, %H:%M') }}
                             {% else %}
-                                <span class="text-muted">Henüz giriş yapılmamış</span>
+                                <span class="text-muted">{{ _('Henüz giriş yapılmamış') }}</span>
                             {% endif %}
                         </strong>
                     </div>
                     
                     <div class="stat-item">
-                        <span><i class="bi bi-shield-check"></i> Hesap Durumu:</span>
+                        <span><i class="bi bi-shield-check"></i> {{ _('Hesap Durumu:') }}</span>
                         <strong>
                             {% if user.is_active %}
-                                <span class="badge bg-success">Aktif</span>
+                                <span class="badge bg-success">{{ _('Aktif') }}</span>
                             {% else %}
-                                <span class="badge bg-danger">Devre Dışı</span>
+                                <span class="badge bg-danger">{{ _('Devre Dışı') }}</span>
                             {% endif %}
                         </strong>
                     </div>
                     
                     <div class="stat-item">
-                        <span><i class="bi bi-envelope-check"></i> Email Doğrulama:</span>
+                        <span><i class="bi bi-envelope-check"></i> {{ _('Email Doğrulama:') }}</span>
                         <strong>
                             {% if user.is_verified %}
-                                <span class="badge bg-success">Doğrulandı</span>
+                                <span class="badge bg-success">{{ _('Doğrulandı') }}</span>
                             {% else %}
-                                <span class="badge bg-warning">Doğrulanmadı</span>
+                                <span class="badge bg-warning">{{ _('Doğrulanmadı') }}</span>
                             {% endif %}
                         </strong>
                     </div>
@@ -73,10 +73,10 @@
                 
                 <!-- Güvenlik Card -->
                 <div class="profile-card">
-                    <h3><i class="bi bi-lock"></i> Güvenlik</h3>
-                    <p class="text-muted">Şifre değiştirme ve iki faktörlü kimlik doğrulama özellikleri yakında eklenecektir.</p>
+                    <h3><i class="bi bi-lock"></i> {{ _('Güvenlik') }}</h3>
+                    <p class="text-muted">{{ _('Şifre değiştirme ve iki faktörlü kimlik doğrulama özellikleri yakında eklenecektir.') }}</p>
                     <button class="btn btn-outline-primary" disabled>
-                        <i class="bi bi-key"></i> Şifre Değiştir (Yakında)
+                        <i class="bi bi-key"></i> {{ _('Şifre Değiştir (Yakında)') }}
                     </button>
                 </div>
             </div>
@@ -84,16 +84,16 @@
             <div class="col-lg-4">
                 <!-- Abonelik Bilgileri Card -->
                 <div class="profile-card">
-                    <h3><i class="bi bi-star"></i> Abonelik Planım</h3>
+                    <h3><i class="bi bi-star"></i> {{ _('Abonelik Planım') }}</h3>
                     
                     <div class="text-center mb-4">
                         <span class="badge-plan {{ user.subscription_plan or 'free' }}">
-                            {{ plan_config.name if plan_config else 'Ücretsiz Plan' }}
+                            {{ _(plan_config.name) if plan_config else _('Ücretsiz Plan') }}
                         </span>
                         {% if token_info and token_info.trial_active %}
                         <div class="mt-2">
                             <span class="badge-trial">
-                                <i class="bi bi-clock"></i> 7 Günlük Deneme Aktif
+                                <i class="bi bi-clock"></i> {{ _('7 Günlük Deneme Aktif') }}
                             </span>
                         </div>
                         {% endif %}
@@ -104,15 +104,15 @@
                     <div class="token-info-card">
                         <div class="token-display">
                             <span class="token-count">{{ token_info.tokens_remaining }}</span>
-                            <span class="token-label">Kalan Fiş</span>
+                            <span class="token-label">{{ _('Kalan Fiş') }}</span>
                         </div>
                         {% if token_info.trial_active %}
                         <p class="text-center text-muted mb-0">
-                            <i class="bi bi-info-circle"></i> Deneme süreniz: {{ token_info.trial_ends_at[:10] }} tarihine kadar
+                            <i class="bi bi-info-circle"></i> {{ _('Deneme süreniz:') }} {{ token_info.trial_ends_at[:10] }} {{ _('tarihine kadar') }}
                         </p>
                         {% else %}
                         <p class="text-center text-muted mb-0">
-                            <i class="bi bi-arrow-repeat"></i> Aylık {{ token_info.monthly_tokens }} fiş (otomatik yenilenir)
+                            <i class="bi bi-arrow-repeat"></i> {{ _('Aylık') }} {{ token_info.monthly_tokens }} {{ _('fiş (otomatik yenilenir)') }}
                         </p>
                         {% endif %}
                     </div>
@@ -121,7 +121,7 @@
                     <!-- Aylık Kullanım Durumu -->
                     {% if stats and stats.limit_info and stats.limit_info.limit %}
                     <div class="mb-3">
-                        <strong class="d-block mb-2"><i class="bi bi-upload"></i> Bu Ay Dosya Yükleme:</strong>
+                        <strong class="d-block mb-2"><i class="bi bi-upload"></i> {{ _('Bu Ay Dosya Yükleme:') }}</strong>
                         <div class="progress" style="height: 25px;">
                             <div class="progress-bar" 
                                  role="progressbar" 
@@ -134,11 +134,11 @@
                         </div>
                         <small class="text-muted d-block mt-1">
                             {% if stats.limit_info.remaining is none %}
-                                Sınırsız yükleme hakkı
+                                {{ _('Sınırsız yükleme hakkı') }}
                             {% elif stats.limit_info.remaining > 0 %}
-                                {{ stats.limit_info.remaining }} yükleme hakkı kaldı
+                                {{ stats.limit_info.remaining }} {{ _('yükleme hakkı kaldı') }}
                             {% else %}
-                                Aylık limitiniz doldu
+                                {{ _('Aylık limitiniz doldu') }}
                             {% endif %}
                         </small>
                     </div>
@@ -146,7 +146,7 @@
                     
                     <!-- Plan Özellikleri -->
                     <div class="mb-3">
-                        <strong class="d-block mb-2"><i class="bi bi-list-check"></i> Plan Özellikleri:</strong>
+                        <strong class="d-block mb-2"><i class="bi bi-list-check"></i> {{ _('Plan Özellikleri:') }}</strong>
                         <ul class="plan-features-list">
                             {% if plan_config and plan_config.highlights %}
                                 {% for highlight in plan_config.highlights %}
@@ -156,11 +156,11 @@
                                     {% else %}
                                         <i class="bi bi-check-circle-fill"></i>
                                     {% endif %}
-                                    {{ highlight }}
+                                    {{ _(highlight) }}
                                 </li>
                                 {% endfor %}
                             {% else %}
-                                <li class="text-muted">Plan bilgileri yükleniyor...</li>
+                                <li class="text-muted">{{ _('Plan bilgileri yükleniyor...') }}</li>
                             {% endif %}
                         </ul>
                     </div>
@@ -168,46 +168,46 @@
                     <!-- Upgrade Buttons -->
                     {% if user.subscription_plan == 'free' %}
                     <a href="{{ url_for('pricing') }}" class="btn btn-primary-custom w-100 mb-2">
-                        <i class="bi bi-arrow-up-circle"></i> Paket Yükselt
+                        <i class="bi bi-arrow-up-circle"></i> {{ _('Paket Yükselt') }}
                     </a>
                     {% elif user.subscription_plan == 'standard' %}
                     <a href="{{ url_for('pricing') }}" class="btn btn-primary-custom w-100 mb-2">
-                        <i class="bi bi-star"></i> Premium'a Geç
+                        <i class="bi bi-star"></i> {{ _('Premium\'a Geç') }}
                     </a>
                     {% else %}
                     <button class="btn btn-success w-100" disabled>
-                        <i class="bi bi-check-circle"></i> Premium Üyesiniz
+                        <i class="bi bi-check-circle"></i> {{ _('Premium Üyesiniz') }}
                     </button>
                     {% endif %}
                 </div>
                 
                 <!-- Kullanım İstatistikleri Card -->
                 <div class="profile-card">
-                    <h3><i class="bi bi-graph-up"></i> İstatistikler</h3>
+                    <h3><i class="bi bi-graph-up"></i> {{ _('İstatistikler') }}</h3>
                     
                     {% if stats %}
                     <div class="stat-item">
-                        <span><i class="bi bi-file-earmark-text text-primary"></i> Bu Ay Yüklenen</span>
+                        <span><i class="bi bi-file-earmark-text text-primary"></i> {{ _('Bu Ay Yüklenen') }}</span>
                         <strong>{{ stats.current_month.uploads }}</strong>
                     </div>
                     <div class="stat-item">
-                        <span><i class="bi bi-lightning text-warning"></i> Cache Hit</span>
+                        <span><i class="bi bi-lightning text-warning"></i> {{ _('Cache Hit') }}</span>
                         <strong>{{ stats.current_month.cache_hits }}</strong>
                     </div>
                     <div class="stat-item">
-                        <span><i class="bi bi-piggy-bank text-success"></i> Token Tasarrufu</span>
+                        <span><i class="bi bi-piggy-bank text-success"></i> {{ _('Token Tasarrufu') }}</span>
                         <strong>{{ stats.current_month.tokens_saved }}</strong>
                     </div>
                     <div class="stat-item">
-                        <span><i class="bi bi-collection text-info"></i> Toplam Döküman</span>
+                        <span><i class="bi bi-collection text-info"></i> {{ _('Toplam Döküman') }}</span>
                         <strong>{{ stats.total_documents }}</strong>
                     </div>
                     
                     <a href="{{ url_for('dashboard') }}" class="btn btn-outline-custom w-100 mt-3">
-                        <i class="bi bi-bar-chart"></i> Detaylı İstatistikler
+                        <i class="bi bi-bar-chart"></i> {{ _('Detaylı İstatistikler') }}
                     </a>
                     {% else %}
-                    <p class="text-muted">İstatistik bilgisi yükleniyor...</p>
+                    <p class="text-muted">{{ _('İstatistik bilgisi yükleniyor...') }}</p>
                     {% endif %}
                 </div>
             </div>
@@ -215,19 +215,19 @@
             <!-- Ödeme Geçmişi Card -->
             <div class="col-lg-12">
                 <div class="profile-card">
-                    <h3><i class="bi bi-receipt"></i> Ödeme Geçmişi</h3>
+                    <h3><i class="bi bi-receipt"></i> {{ _('Ödeme Geçmişi') }}</h3>
                     
                     {% if payment_history and payment_history|length > 0 %}
                     <div class="table-responsive">
                         <table class="payment-history-table table">
                             <thead>
                                 <tr>
-                                    <th>Tarih</th>
-                                    <th>Fatura No</th>
-                                    <th>Plan</th>
-                                    <th>Tutar</th>
-                                    <th>Durum</th>
-                                    <th>İşlem</th>
+                                    <th>{{ _('Tarih') }}</th>
+                                    <th>{{ _('Fatura No') }}</th>
+                                    <th>{{ _('Plan') }}</th>
+                                    <th>{{ _('Tutar') }}</th>
+                                    <th>{{ _('Durum') }}</th>
+                                    <th>{{ _('İşlem') }}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -255,11 +255,11 @@
                                     <td><strong>{{ format_currency(payment.amount, payment.currency) }}</strong></td>
                                     <td>
                                         {% if payment.status == 'completed' %}
-                                            <span class="badge bg-success">Tamamlandı</span>
+                                            <span class="badge bg-success">{{ _('Tamamlandı') }}</span>
                                         {% elif payment.status == 'pending' %}
-                                            <span class="badge bg-warning text-dark">İşleniyor</span>
+                                            <span class="badge bg-warning text-dark">{{ _('İşleniyor') }}</span>
                                         {% elif payment.status == 'failed' %}
-                                            <span class="badge bg-danger">Başarısız</span>
+                                            <span class="badge bg-danger">{{ _('Başarısız') }}</span>
                                         {% else %}
                                             <span class="badge bg-secondary">{{ payment.status }}</span>
                                         {% endif %}
@@ -269,7 +269,7 @@
                                             <a href="{{ url_for('download_invoice', payment_id=payment.id) }}" 
                                                class="btn btn-sm btn-outline-custom" 
                                                target="_blank">
-                                                <i class="bi bi-download"></i> İndir
+                                                <i class="bi bi-download"></i> {{ _('İndir') }}
                                             </a>
                                         {% else %}
                                             <span class="text-muted">-</span>
@@ -283,10 +283,10 @@
                     {% else %}
                     <div class="text-center py-5">
                         <i class="bi bi-receipt" style="font-size: 4rem; color: var(--color-text-muted);"></i>
-                        <p class="text-muted mt-3 mb-3">Henüz ödeme geçmişiniz bulunmuyor.</p>
+                        <p class="text-muted mt-3 mb-3">{{ _('Henüz ödeme geçmişiniz bulunmuyor.') }}</p>
                         {% if user.subscription_plan == 'free' %}
                         <a href="{{ url_for('pricing') }}" class="btn btn-primary-custom">
-                            <i class="bi bi-star"></i> Premium'a Geçerek Sınırsız Özelliklerden Yararlanın
+                            <i class="bi bi-star"></i> {{ _('Premium\'a Geçerek Sınırsız Özelliklerden Yararlanın') }}
                         </a>
                         {% endif %}
                     </div>

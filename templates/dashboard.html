@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}Dashboard - StudyBuddy{% endblock %}
+{% block title %}{{ _('Dashboard') }} - StudyBuddy{% endblock %}
 
 {% block content %}
 <div class="dashboard-page">
@@ -8,30 +8,30 @@
         <!-- Breadcrumb -->
         <nav aria-label="breadcrumb" class="mb-4">
             <ol class="breadcrumb breadcrumb-light">
-                <li class="breadcrumb-item"><a href="{{ url_for('index') }}"><i class="bi bi-house"></i> Ana Sayfa</a></li>
-                <li class="breadcrumb-item active" aria-current="page"><i class="bi bi-bar-chart"></i> Dashboard</li>
+                <li class="breadcrumb-item"><a href="{{ url_for('index') }}"><i class="bi bi-house"></i> {{ _('Ana Sayfa') }}</a></li>
+                <li class="breadcrumb-item active" aria-current="page"><i class="bi bi-bar-chart"></i> {{ _('Dashboard') }}</li>
             </ol>
         </nav>
         
         <div class="dashboard-header">
-            <h1>📊 Dashboard</h1>
-            <p>Hoş geldiniz, <strong>{{ user.username }}</strong>! Kullanım istatistikleriniz aşağıda görüntülenmektedir.</p>
+            <h1>📊 {{ _('Dashboard') }}</h1>
+            <p>{{ _('Hoş geldiniz,') }} <strong>{{ user.username }}</strong>! {{ _('Kullanım istatistikleriniz aşağıda görüntülenmektedir.') }}</p>
         </div>
         
         <div class="row g-4">
             <!-- Aylık Kullanım Kartı -->
             <div class="col-md-6 col-lg-4">
                 <div class="stat-card">
-                    <h3><i class="bi bi-calendar-month"></i> Bu Ay Kullanım</h3>
+                    <h3><i class="bi bi-calendar-month"></i> {{ _('Bu Ay Kullanım') }}</h3>
                     
                     {% if stats and stats.limit_info %}
                     <div class="stat-value-display">
                         <span class="stat-value-large">{{ stats.limit_info.used }}</span>
                         <span class="stat-value-label">
                             {% if stats.limit_info.limit %}
-                                / {{ stats.limit_info.limit }} Dosya
+                                / {{ stats.limit_info.limit }} {{ _('Dosya') }}
                             {% else %}
-                                Dosya (Sınırsız)
+                                {{ _('Dosya (Sınırsız)') }}
                             {% endif %}
                         </span>
                     </div>
@@ -49,8 +49,8 @@
                             </div>
                         </div>
                         <div class="progress-info">
-                            <span>Kullanılan: {{ stats.limit_info.used }}</span>
-                            <span>Kalan: {% if stats.limit_info.remaining is none %}Sınırsız{% else %}{{ stats.limit_info.remaining }}{% endif %}</span>
+                            <span>{{ _('Kullanılan:') }} {{ stats.limit_info.used }}</span>
+                            <span>{{ _('Kalan:') }} {% if stats.limit_info.remaining is none %}{{ _('Sınırsız') }}{% else %}{{ stats.limit_info.remaining }}{% endif %}</span>
                         </div>
                     </div>
                     {% endif %}
@@ -58,16 +58,16 @@
                     {% if stats.limit_info.remaining is not none and stats.limit_info.remaining <= 0 %}
                     <div class="alert-limit">
                         <i class="bi bi-exclamation-triangle-fill"></i>
-                        <strong>Aylık limitiniz doldu!</strong> Premium plana geçerek sınırsız yükleme yapabilirsiniz.
+                        <strong>{{ _('Aylık limitiniz doldu!') }}</strong> {{ _('Premium plana geçerek sınırsız yükleme yapabilirsiniz.') }}
                         <div class="mt-2">
                             <a href="{{ url_for('pricing') }}" class="btn btn-warning btn-sm">
-                                <i class="bi bi-star"></i> Premium'a Geç
+                                <i class="bi bi-star"></i> {{ _('Premium\'a Geç') }}
                             </a>
                         </div>
                     </div>
                     {% endif %}
                     {% else %}
-                    <p class="text-muted">İstatistik bilgisi yükleniyor...</p>
+                    <p class="text-muted">{{ _('İstatistik bilgisi yükleniyor...') }}</p>
                     {% endif %}
                 </div>
             </div>
@@ -75,29 +75,29 @@
             <!-- Cache İstatistikleri -->
             <div class="col-md-6 col-lg-4">
                 <div class="stat-card">
-                    <h3><i class="bi bi-lightning-charge"></i> Cache Performansı</h3>
+                    <h3><i class="bi bi-lightning-charge"></i> {{ _('Cache Performansı') }}</h3>
                     
                     {% if stats and stats.current_month %}
                     <div class="stat-value-display">
                         <span class="stat-value-large">{{ stats.current_month.cache_hits }}</span>
-                        <span class="stat-value-label">Cache Hit</span>
+                        <span class="stat-value-label">{{ _('Cache Hit') }}</span>
                     </div>
                     
                     <div class="stat-item">
-                        <span><i class="bi bi-piggy-bank text-warning"></i> Token Tasarrufu</span>
+                        <span><i class="bi bi-piggy-bank text-warning"></i> {{ _('Token Tasarrufu') }}</span>
                         <strong>{{ stats.current_month.tokens_saved }}</strong>
                     </div>
                     
                     {% if stats.current_month.uploads > 0 %}
                     <div class="stat-item">
-                        <span><i class="bi bi-percent text-info"></i> Hit Rate</span>
+                        <span><i class="bi bi-percent text-info"></i> {{ _('Hit Rate') }}</span>
                         <strong>
                             {{ ((stats.current_month.cache_hits / (stats.current_month.cache_hits + stats.current_month.uploads)) * 100)|round(1) }}%
                         </strong>
                     </div>
                     {% endif %}
                     {% else %}
-                    <p class="text-muted">İstatistik bilgisi yükleniyor...</p>
+                    <p class="text-muted">{{ _('İstatistik bilgisi yükleniyor...') }}</p>
                     {% endif %}
                 </div>
             </div>
@@ -105,19 +105,19 @@
             <!-- Toplam Dökümanlar -->
             <div class="col-md-6 col-lg-4">
                 <div class="stat-card">
-                    <h3><i class="bi bi-file-earmark-text"></i> Toplam İşlenen</h3>
+                    <h3><i class="bi bi-file-earmark-text"></i> {{ _('Toplam İşlenen') }}</h3>
                     
                     {% if stats %}
                     <div class="stat-value-display">
                         <span class="stat-value-large">{{ stats.total_documents }}</span>
-                        <span class="stat-value-label">Döküman</span>
+                        <span class="stat-value-label">{{ _('Döküman') }}</span>
                     </div>
                     
                     <a href="{{ url_for('history') }}" class="btn btn-outline-custom w-100">
-                        <i class="bi bi-clock-history"></i> Geçmişi Görüntüle
+                        <i class="bi bi-clock-history"></i> {{ _('Geçmişi Görüntüle') }}
                     </a>
                     {% else %}
-                    <p class="text-muted">İstatistik bilgisi yükleniyor...</p>
+                    <p class="text-muted">{{ _('İstatistik bilgisi yükleniyor...') }}</p>
                     {% endif %}
                 </div>
             </div>
@@ -127,21 +127,21 @@
         <div class="row mt-4">
             <div class="col-12">
                 <div class="stat-card">
-                    <h3><i class="bi bi-lightning"></i> Hızlı İşlemler</h3>
+                    <h3><i class="bi bi-lightning"></i> {{ _('Hızlı İşlemler') }}</h3>
                     <div class="quick-actions">
                         <a href="{{ url_for('upload') }}" class="btn btn-primary-custom">
-                            <i class="bi bi-cloud-upload"></i> Yeni Döküman Yükle
+                            <i class="bi bi-cloud-upload"></i> {{ _('Yeni Döküman Yükle') }}
                         </a>
                         <a href="{{ url_for('history') }}" class="btn btn-outline-custom">
-                            <i class="bi bi-clock-history"></i> Geçmişi Görüntüle
+                            <i class="bi bi-clock-history"></i> {{ _('Geçmişi Görüntüle') }}
                         </a>
                         {% if user.subscription_plan == 'free' %}
                         <a href="{{ url_for('pricing') }}" class="btn btn-primary-custom">
-                            <i class="bi bi-star"></i> Planımı Yükselt
+                            <i class="bi bi-star"></i> {{ _('Planımı Yükselt') }}
                         </a>
                         {% endif %}
                         <a href="{{ url_for('profile') }}" class="btn btn-outline-custom">
-                            <i class="bi bi-person"></i> Profilim
+                            <i class="bi bi-person"></i> {{ _('Profilim') }}
                         </a>
                     </div>
                 </div>

@@ -56,6 +56,16 @@ logs/
 *.db-journal
 *.db-wal
 *.db-shm
+*.db.backup
+
+# Alembic
+*.pyc
+__pycache__/
+migrations_alembic/__pycache__/
+migrations_alembic/versions/__pycache__/
+
+# Migration SQL outputs
+migration*.sql
 
 # Testing
 .pytest_cache/

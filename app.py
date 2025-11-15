@@ -7,13 +7,14 @@ import os
 import time
 from datetime import datetime
 from urllib.parse import urlparse
-from flask import Flask, render_template, request, redirect, url_for, flash, abort, send_file
+from flask import Flask, render_template, request, redirect, url_for, flash, abort, send_file, session, make_response
 from flask_socketio import SocketIO, emit
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from flask_mail import Mail, Message
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from flask_wtf.csrf import CSRFProtect, CSRFError
+from flask_babel import Babel, gettext, lazy_gettext, get_locale
 from werkzeug.utils import secure_filename
 from config import Config
 from services.document_reader import DocumentReader
@@ -72,6 +73,39 @@ limiter = Limiter(
 # Flask-WTF CSRF Protection'ı başlat
 csrf = CSRFProtect(app)
 
+# Babel (i18n) başlat
+# Flask-Babel 4.0.0+ API: locale_selector callback'i constructor'a veriliyor
+def get_locale():
+    """Locale seçici fonksiyonu"""
+    # 1. URL parametresinden dil seç (örn: ?lang=en)
+    if 'lang' in request.args:
+        lang = request.args.get('lang')
+        if lang in Config.SUPPORTED_LANGUAGES:
+            session['language'] = lang
+            return lang
+    
+    # 2. Session'dan dil seç
+    if 'language' in session:
+        lang = session.get('language')
+        if lang in Config.SUPPORTED_LANGUAGES:
+            return lang
+    
+    # 3. Cookie'den dil seç
+    lang = request.cookies.get('language')
+    if lang and lang in Config.SUPPORTED_LANGUAGES:
+        session['language'] = lang
+        return lang
+    
+    # 4. Browser accept-language header'ından seç
+    lang = request.accept_languages.best_match(Config.SUPPORTED_LANGUAGES.keys())
+    if lang:
+        return lang
+    
+    # 5. Default dil
+    return Config.DEFAULT_LANGUAGE
+
+babel = Babel(app, locale_selector=get_locale)
+
 # Upload klasörünün var olduğundan emin ol
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
@@ -92,10 +126,54 @@ except ValueError as e:
     print("Stripe has been disabled. Payment features will not be available.")
 
 # Database tablolarını oluştur
-# NOT: db.create_all() sadece initial schema oluşturma için kullanılır.
-# Mevcut tablolarda değişiklik yapmak için migration script'lerini kullanın (migrations/add_user_id_column.py)
+# NOT: db.create_all() ile Alembic birlikte kullanıldığında çakışma riski var.
+# Bu nedenle db.create_all() sadece test amaçlı özel bir koşulda çalıştırılır.
+# Production/dev için Alembic migration'ları tek kaynak olmalıdır.
 with app.app_context():
-    db.create_all()
+    # db.create_all() sadece test amaçlı özel bir flag ile çalıştırılır
+    # Normal kullanımda Alembic migration'ları kullanılmalıdır
+    use_db_create_all = os.environ.get('USE_DB_CREATE_ALL_FOR_TESTS', 'false').lower() in ('true', '1', 'yes')
+    if use_db_create_all:
+        db.create_all()
+        print("[INFO] db.create_all() test modunda calistirildi")
+    
+    # Alembic otomatik migration kontrolü (opsiyonel)
+    if Config.AUTO_MIGRATE_ON_STARTUP:
+        try:
+            from alembic.config import Config as AlembicConfig
+            from alembic import command
+            from alembic.runtime.migration import MigrationContext
+            from sqlalchemy import inspect
+            
+            alembic_cfg = AlembicConfig(Config.ALEMBIC_CONFIG_PATH)
+            
+            # Veritabanında tablo varlığını kontrol et
+            inspector = inspect(db.engine)
+            existing_tables = inspector.get_table_names()
+            has_tables = len(existing_tables) > 0
+            
+            # Alembic version tablosunun varlığını kontrol et
+            conn = db.engine.connect()
+            context = MigrationContext.configure(conn)
+            current_rev = context.get_current_revision()
+            conn.close()
+            
+            # Eğer tablolar var ama Alembic version tablosu yoksa (db.create_all() ile oluşturulmuş)
+            # önce stamp head yap, sonra upgrade
+            if has_tables and current_rev is None:
+                print("[INFO] Veritabani tablolari mevcut ama Alembic version tablosu yok")
+                print("[INFO] Alembic version tablosu olusturuluyor (stamp head)...")
+                command.stamp(alembic_cfg, "head")
+                print("[OK] Alembic version tablosu olusturuldu")
+            
+            # Veritabanını en son versiyona güncelle
+            command.upgrade(alembic_cfg, "head")
+            print("[OK] Veritabani migration'lari guncellendi")
+        except Exception as e:
+            print(f"[WARNING] Migration kontrolu basarisiz: {e}")
+            print("[INFO] Manuel migration icin: alembic upgrade head")
+    else:
+        print("[INFO] Otomatik migration devre disi. Manuel kontrol icin: alembic upgrade head")
 
 
 @login_manager.user_loader
@@ -120,7 +198,7 @@ def send_reset_email(to_email, reset_link):
         logo_url = url_for('static', filename='img/studybuddy-owl.png', _external=True)
         
         msg = Message(
-            subject='StudyBuddy - Şifre Sıfırlama',
+            subject=gettext('StudyBuddy - Şifre Sıfırlama'),
             recipients=[to_email],
             body=render_template('email/reset_password.txt', reset_link=reset_link, expiry_hours=expiry_hours),
             html=render_template('email/reset_password.html', reset_link=reset_link, expiry_hours=expiry_hours, logo_url=logo_url)
@@ -131,6 +209,27 @@ def send_reset_email(to_email, reset_link):
         print(f"Email gönderme hatası: {str(e)}")
         return False
 
+
+@app.context_processor
+def inject_language():
+    """Template'lere dil bilgisi ekle"""
+    return {
+        'current_language': str(get_locale()),
+        'supported_languages': Config.SUPPORTED_LANGUAGES
+    }
+
+@app.route('/set_language/<lang>')
+def set_language(lang):
+    """Dil değiştirme route'u"""
+    if lang in Config.SUPPORTED_LANGUAGES:
+        session['language'] = lang
+        response = make_response(redirect(request.referrer or url_for('index')))
+        response.set_cookie('language', lang, max_age=60*60*24*365)  # 1 yıl
+        flash(gettext('Dil başarıyla değiştirildi.'), 'success')
+    else:
+        flash(gettext('Geçersiz dil seçimi.'), 'error')
+        response = make_response(redirect(request.referrer or url_for('index')))
+    return response
 
 @app.route('/')
 def index():
@@ -171,14 +270,14 @@ def register():
         # Email validation
         validated_email = validate_email_address(email)
         if not validated_email:
-            flash('Geçersiz email adresi.', 'error')
+            flash(gettext('Geçersiz email adresi.'), 'error')
             return render_template('register.html')
         
         email = validated_email
         
         # Email uniqueness
         if User.query.filter_by(email=email).first():
-            flash('Bu email adresi zaten kullanılıyor.', 'error')
+            flash(gettext('Bu email adresi zaten kullanılıyor.'), 'error')
             return render_template('register.html')
         
         # Username validation: non-empty, trimmed, minimum length
@@ -188,12 +287,12 @@ def register():
                 from utils import generate_username_from_email
                 username = generate_username_from_email(email)
             else:
-                flash('Kullanıcı adı en az 3 karakter olmalıdır.', 'error')
+                flash(gettext('Kullanıcı adı en az 3 karakter olmalıdır.'), 'error')
                 return render_template('register.html')
         
         # Username uniqueness (sadece boş değilse kontrol et)
         if User.query.filter_by(username=username).first():
-            flash('Bu kullanıcı adı zaten kullanılıyor.', 'error')
+            flash(gettext('Bu kullanıcı adı zaten kullanılıyor.'), 'error')
             return render_template('register.html')
         
         # Password validation
@@ -205,7 +304,7 @@ def register():
         
         # Password confirmation
         if password != password_confirm:
-            flash('Şifreler eşleşmiyor.', 'error')
+            flash(gettext('Şifreler eşleşmiyor.'), 'error')
             return render_template('register.html')
         
         # Create user
@@ -222,11 +321,11 @@ def register():
             
             # Auto login
             login_user(user)
-            flash('Hesabınız başarıyla oluşturuldu! 7 günlük deneme süreniz başladı!', 'success')
+            flash(gettext('Hesabınız başarıyla oluşturuldu! 7 günlük deneme süreniz başladı!'), 'success')
             return redirect(url_for('upload'))
         except Exception as e:
             db.session.rollback()
-            flash(f'Kayıt sırasında bir hata oluştu: {str(e)}', 'error')
+            flash(gettext('Kayıt sırasında bir hata oluştu: %(error)s', error=str(e)), 'error')
             return render_template('register.html')
     
     return render_template('register.html')
@@ -247,12 +346,12 @@ def login():
         user = User.query.filter_by(email=email).first()
         
         if not user or not user.check_password(password):
-            flash('Email veya şifre hatalı.', 'error')
+            flash(gettext('Email veya şifre hatalı.'), 'error')
             return render_template('login.html')
         
         # Check if active
         if not user.is_active:
-            flash('Hesabınız devre dışı.', 'error')
+            flash(gettext('Hesabınız devre dışı.'), 'error')
             return render_template('login.html')
         
         # Login
@@ -262,7 +361,7 @@ def login():
         user.last_login = datetime.utcnow()
         db.session.commit()
         
-        flash(f'Hoş geldiniz, {user.username}!', 'success')
+        flash(gettext('Hoş geldiniz, %(username)s!', username=user.username), 'success')
         
         # Redirect to next page or upload
         next_page = request.args.get('next')
@@ -281,7 +380,7 @@ def login():
 def logout():
     """Kullanıcı çıkış"""
     logout_user()
-    flash('Başarıyla çıkış yaptınız.', 'info')
+    flash(gettext('Başarıyla çıkış yaptınız.'), 'info')
     return redirect(url_for('index'))
 
 
@@ -304,7 +403,7 @@ def forgot_password():
             reset_link = url_for('reset_password', token=token, _external=True)
             send_reset_email(user.email, reset_link)
         
-        flash('Şifre sıfırlama linki email adresinize gönderildi.', 'info')
+        flash(gettext('Şifre sıfırlama linki email adresinize gönderildi.'), 'info')
         return redirect(url_for('login'))
     
     return render_template('forgot_password.html')
@@ -319,7 +418,7 @@ def reset_password(token):
     user = User.query.filter_by(reset_token=token).first()
     
     if not user or not user.verify_reset_token(token):
-        flash('Geçersiz veya süresi dolmuş link.', 'error')
+        flash(gettext('Geçersiz veya süresi dolmuş link.'), 'error')
         return redirect(url_for('forgot_password'))
     
     if request.method == 'POST':
@@ -335,7 +434,7 @@ def reset_password(token):
         
         # Password confirmation
         if password != password_confirm:
-            flash('Şifreler eşleşmiyor.', 'error')
+            flash(gettext('Şifreler eşleşmiyor.'), 'error')
             return render_template('reset_password.html', token=token)
         
         # Update password
@@ -343,7 +442,7 @@ def reset_password(token):
         user.clear_reset_token()
         db.session.commit()
         
-        flash('Şifreniz başarıyla güncellendi.', 'success')
+        flash(gettext('Şifreniz başarıyla güncellendi.'), 'success')
         return redirect(url_for('login'))
     
     return render_template('reset_password.html', token=token)
@@ -407,19 +506,19 @@ def process():
     """
     # Dosya kontrolü
     if 'file' not in request.files:
-        flash('Dosya seçilmedi', 'error')
+        flash(gettext('Dosya seçilmedi'), 'error')
         return redirect(url_for('upload'))
     
     file = request.files['file']
     
     # Dosya adı kontrolü
     if file.filename == '':
-        flash('Dosya seçilmedi', 'error')
+        flash(gettext('Dosya seçilmedi'), 'error')
         return redirect(url_for('upload'))
     
     # Dosya uzantısı kontrolü
     if not Config.allowed_file(file.filename):
-        flash(f'Desteklenmeyen dosya formatı. Lütfen şu formatlardan birini kullanın: {", ".join(Config.ALLOWED_EXTENSIONS)}', 'error')
+        flash(gettext('Desteklenmeyen dosya formatı. Lütfen şu formatlardan birini kullanın: %(formats)s', formats=", ".join(Config.ALLOWED_EXTENSIONS)), 'error')
         return redirect(url_for('upload'))
     
     # Profil ve seviye bilgilerini al
@@ -429,7 +528,7 @@ def process():
     short_answer_max_words = short_settings.get('max_words', 4)
     
     try:
-        emit_progress(5, 'Dosya yükleniyor...')
+        emit_progress(5, gettext('Dosya yükleniyor...'))
         
         # Dosyayı oku
         file_content = file.read()
@@ -437,7 +536,7 @@ def process():
         filename = secure_filename(file.filename)
         file_extension = filename.rsplit('.', 1)[1].lower()
         
-        emit_progress(15, 'Dosya kontrol ediliyor...')
+        emit_progress(15, gettext('Dosya kontrol ediliyor...'))
         
         # Dosya imza doğrulaması (Magic Number Validation)
         if app.config.get('VALIDATE_FILE_SIGNATURES', True):
@@ -449,7 +548,7 @@ def process():
         # Dosya hash'ini hesapla
         file_hash = get_file_hash(file_content)
         
-        emit_progress(20, 'Önbellek kontrol ediliyor...')
+        emit_progress(20, gettext('Önbellek kontrol ediliyor...'))
         
         # Cache kontrolü yap
         cached_result = check_cache(file_hash, user_level, user_type, current_user.id)
@@ -471,7 +570,7 @@ def process():
             # Özeti markdown'dan HTML'e çevir
             results_data['summary_html'] = markdown.markdown(results_data['summary'])
             
-            flash(f'Bu dosya daha önce işlenmişti! Kayıtlı sonuçlar gösteriliyor. (Token tasarrufu: ~{cached_result.token_used})', 'success')
+            flash(gettext('Bu dosya daha önce işlenmişti! Kayıtlı sonuçlar gösteriliyor. (Token tasarrufu: ~%(tokens)s)', tokens=cached_result.token_used), 'success')
             
             return render_template('result.html',
                                    filename=filename,
@@ -496,7 +595,8 @@ def process():
         max_file_size_bytes = max_file_size_mb * 1024 * 1024 if max_file_size_mb else None
         
         if max_file_size_bytes and file_size > max_file_size_bytes:
-            error_msg = f'Dosya çok büyük! {plan_config.get("name", plan_type.upper())} için maksimum {max_file_size_mb} MB dosya yükleyebilirsiniz.'
+            plan_name = plan_config.get("name", plan_type.upper())
+            error_msg = gettext('Dosya çok büyük! %(plan_name)s için maksimum %(max_size)d MB dosya yükleyebilirsiniz.', plan_name=plan_name, max_size=max_file_size_mb)
             flash(error_msg, 'error')
             return redirect(url_for('upload'))
         
@@ -515,14 +615,14 @@ def process():
             flash(token_error_msg, 'error')
             return redirect(url_for('pricing'))
         
-        emit_progress(25, 'Dosya kaydediliyor...')
+        emit_progress(25, gettext('Dosya kaydediliyor...'))
         
         # Geçici dosyayı kaydet
         file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         with open(file_path, 'wb') as f:
             f.write(file_content)
         
-        emit_progress(30, 'Metin çıkartılıyor...')
+        emit_progress(30, gettext('Metin çıkartılıyor...'))
         
         # Dosyadan metin çıkar
         text, error = DocumentReader.extract_text_from_file(file_path, file_extension)
@@ -530,10 +630,10 @@ def process():
         if error:
             if os.path.exists(file_path):
                 os.remove(file_path)
-            flash(f'Dosya işleme hatası: {error}', 'error')
+            flash(gettext('Dosya işleme hatası: %(error)s', error=error), 'error')
             return redirect(url_for('upload'))
         
-        emit_progress(40, 'Metin hazırlanıyor...')
+        emit_progress(40, gettext('Metin hazırlanıyor...'))
         
         # Metni token limitine göre kısalt
         text = DocumentReader.truncate_text(text)
@@ -543,15 +643,18 @@ def process():
         try:
             Config.validate_config()
             
-            emit_progress(50, 'Özet oluşturuluyor...')
+            emit_progress(50, gettext('Özet oluşturuluyor...'))
             start_time = time.time()
             
-            ai_generator = AIGenerator()
+            # Mevcut locale'i al
+            current_lang = str(get_locale())
             
-            emit_progress(60, 'Sorular üretiliyor...')
-            results = ai_generator.generate_all_content(text, level=user_level, user_type=user_type, user_plan=plan_type)
+            ai_generator = AIGenerator(language=current_lang)
             
-            emit_progress(90, 'Sonuçlar hazırlanıyor...')
+            emit_progress(60, gettext('Sorular üretiliyor...'))
+            results = ai_generator.generate_all_content(text, level=user_level, user_type=user_type, user_plan=plan_type, language=current_lang)
+            
+            emit_progress(90, gettext('Sonuçlar hazırlanıyor...'))
             
             processing_time = time.time() - start_time
             
@@ -593,7 +696,7 @@ def process():
                 os.remove(file_path)
             
             # Cache'e kaydet
-            save_to_cache(
+            result = save_to_cache(
                 file_hash=file_hash,
                 filename=filename,
                 file_type=file_extension,
@@ -642,11 +745,11 @@ def process():
         except Exception as e:
             if os.path.exists(file_path):
                 os.remove(file_path)
-            flash(f'İçerik üretimi sırasında hata oluştu: {str(e)}', 'error')
+            flash(gettext('İçerik üretimi sırasında hata oluştu: %(error)s', error=str(e)), 'error')
             return redirect(url_for('upload'))
     
     except Exception as e:
-        flash(f'Bir hata oluştu: {str(e)}', 'error')
+        flash(gettext('Bir hata oluştu: %(error)s', error=str(e)), 'error')
         return redirect(url_for('upload'))
 
 
@@ -674,14 +777,14 @@ def checkout():
         
         # Plan kontrolü
         if plan_type not in Config.SUBSCRIPTION_PLANS:
-            flash('Geçersiz plan seçimi.', 'error')
+            flash(gettext('Geçersiz plan seçimi.'), 'error')
             return redirect(url_for('pricing'))
         
         plan = Config.SUBSCRIPTION_PLANS[plan_type]
         
         # Kullanıcı zaten bu planda mı?
         if current_user.subscription_plan == plan_type:
-            flash('Zaten bu plandasınız.', 'info')
+            flash(gettext('Zaten bu plandasınız.'), 'info')
             return redirect(url_for('pricing'))
         
         # Stripe price ID kontrolü
@@ -709,14 +812,14 @@ def checkout():
         
         # Plan kontrolü
         if plan_type not in Config.SUBSCRIPTION_PLANS:
-            flash('Geçersiz plan seçimi.', 'error')
+            flash(gettext('Geçersiz plan seçimi.'), 'error')
             return redirect(url_for('pricing'))
         
         plan = Config.SUBSCRIPTION_PLANS[plan_type]
         
         # Kullanıcı zaten bu planda mı?
         if current_user.subscription_plan == plan_type:
-            flash('Zaten bu plandasınız.', 'info')
+            flash(gettext('Zaten bu plandasınız.'), 'info')
             return redirect(url_for('pricing'))
         
         # Stripe price ID kontrolü
@@ -771,7 +874,7 @@ def checkout():
             
     except Exception as e:
         db.session.rollback()
-        flash(f'Bir hata oluştu: {str(e)}', 'error')
+        flash(gettext('Bir hata oluştu: %(error)s', error=str(e)), 'error')
         return redirect(url_for('pricing'))
 
 
@@ -782,7 +885,7 @@ def checkout_success():
     session_id = request.args.get('session_id')
     
     if not session_id:
-        flash('Geçersiz oturum.', 'error')
+        flash(gettext('Geçersiz oturum.'), 'error')
         return redirect(url_for('pricing'))
     
     try:
@@ -818,7 +921,7 @@ def checkout_success():
         flash(f'Ödeme bilgileri alınamadı: {str(e)}', 'error')
         return redirect(url_for('pricing'))
     except Exception as e:
-        flash(f'Bir hata oluştu: {str(e)}', 'error')
+        flash(gettext('Bir hata oluştu: %(error)s', error=str(e)), 'error')
         return redirect(url_for('pricing'))
 
 
@@ -1041,7 +1144,7 @@ def export(result_id):
     # Format validasyonu
     format_param = request.args.get('format', 'pdf').lower()
     if format_param not in Config.EXPORT_FORMATS:
-        flash(f'Geçersiz export formatı. Desteklenen formatlar: {", ".join(Config.EXPORT_FORMATS)}', 'error')
+        flash(gettext('Geçersiz export formatı. Desteklenen formatlar: %(formats)s', formats=", ".join(Config.EXPORT_FORMATS)), 'error')
         return redirect(url_for('view_result', result_id=result_id))
     
     # Format type parametresi (full, questions_only, summary_only)
@@ -1064,13 +1167,13 @@ def export(result_id):
             file_path = generate_export_docx(result, current_user, format_type=type_param)
             mimetype = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
         else:
-            flash('Desteklenmeyen export formatı.', 'error')
+            flash(gettext('Desteklenmeyen export formatı.'), 'error')
             return redirect(url_for('view_result', result_id=result_id))
     except ImportError as e:
-        flash(f'Export için gerekli kütüphane yüklü değil: {str(e)}', 'error')
+        flash(gettext('Export için gerekli kütüphane yüklü değil: %(error)s', error=str(e)), 'error')
         return redirect(url_for('view_result', result_id=result_id))
     except Exception as e:
-        flash(f'Export oluşturulurken hata oluştu: {str(e)}', 'error')
+        flash(gettext('Export oluşturulurken hata oluştu: %(error)s', error=str(e)), 'error')
         return redirect(url_for('view_result', result_id=result_id))
     
     # Token düşme (sadece required_tokens > 0 ise)
@@ -1107,11 +1210,11 @@ def too_large(e):
     if current_user.is_authenticated:
         plan_type = current_user.subscription_plan or 'free'
         max_file_size_mb = Config.get_plan_limit(plan_type, 'max_file_size_mb')
-        error_msg = f'Dosya çok büyük! {plan_type.upper()} planı için maksimum {max_file_size_mb} MB dosya yükleyebilirsiniz.'
+        error_msg = gettext('Dosya çok büyük! %(plan_name)s planı için maksimum %(max_size)d MB dosya yükleyebilirsiniz.', plan_name=plan_type.upper(), max_size=max_file_size_mb)
     else:
         # Giriş yapmamış kullanıcılar için varsayılan free plan limiti
         max_file_size_mb = Config.get_plan_limit('free', 'max_file_size_mb')
-        error_msg = f'Dosya çok büyük! Maksimum {max_file_size_mb} MB dosya yükleyebilirsiniz.'
+        error_msg = gettext('Dosya çok büyük! Maksimum %(max_size)d MB dosya yükleyebilirsiniz.', max_size=max_file_size_mb)
     flash(error_msg, 'error')
     if current_user.is_authenticated:
         return redirect(url_for('upload'))

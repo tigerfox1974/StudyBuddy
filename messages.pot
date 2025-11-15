@@ -1,0 +1,989 @@
+# Translations template for PROJECT.
+# Copyright (C) 2025 ORGANIZATION
+# This file is distributed under the same license as the PROJECT project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2025.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2025-11-16 00:17+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.17.0\n"
+
+#: app.py:184
+msgid "Dil başarıyla değiştirildi."
+msgstr ""
+
+#: app.py:186
+msgid "Geçersiz dil seçimi."
+msgstr ""
+
+#: app.py:229
+msgid "Geçersiz email adresi."
+msgstr ""
+
+#: app.py:236
+msgid "Bu email adresi zaten kullanılıyor."
+msgstr ""
+
+#: app.py:246
+msgid "Kullanıcı adı en az 3 karakter olmalıdır."
+msgstr ""
+
+#: app.py:251
+msgid "Bu kullanıcı adı zaten kullanılıyor."
+msgstr ""
+
+#: app.py:263 app.py:393
+msgid "Şifreler eşleşmiyor."
+msgstr ""
+
+#: app.py:280
+msgid "Hesabınız başarıyla oluşturuldu! 7 günlük deneme süreniz başladı!"
+msgstr ""
+
+#: app.py:284
+#, python-format
+msgid "Kayıt sırasında bir hata oluştu: %(error)s"
+msgstr ""
+
+#: app.py:305
+msgid "Email veya şifre hatalı."
+msgstr ""
+
+#: app.py:310
+msgid "Hesabınız devre dışı."
+msgstr ""
+
+#: app.py:320
+#, python-format
+msgid "Hoş geldiniz, %(username)s!"
+msgstr ""
+
+#: app.py:339
+msgid "Başarıyla çıkış yaptınız."
+msgstr ""
+
+#: app.py:362
+msgid "Şifre sıfırlama linki email adresinize gönderildi."
+msgstr ""
+
+#: app.py:377
+msgid "Geçersiz veya süresi dolmuş link."
+msgstr ""
+
+#: app.py:401
+msgid "Şifreniz başarıyla güncellendi."
+msgstr ""
+
+#: app.py:465 app.py:472
+msgid "Dosya seçilmedi"
+msgstr ""
+
+#: app.py:477
+#, python-format
+msgid ""
+"Desteklenmeyen dosya formatı. Lütfen şu formatlardan birini kullanın: "
+"%(formats)s"
+msgstr ""
+
+#: app.py:529
+#, python-format
+msgid ""
+"Bu dosya daha önce işlenmişti! Kayıtlı sonuçlar gösteriliyor. (Token "
+"tasarrufu: ~%(tokens)s)"
+msgstr ""
+
+#: app.py:703
+#, python-format
+msgid "İçerik üretimi sırasında hata oluştu: %(error)s"
+msgstr ""
+
+#: app.py:707 app.py:832 app.py:879
+#, python-format
+msgid "Bir hata oluştu: %(error)s"
+msgstr ""
+
+#: app.py:735 app.py:770
+msgid "Geçersiz plan seçimi."
+msgstr ""
+
+#: app.py:742 app.py:777
+msgid "Zaten bu plandasınız."
+msgstr ""
+
+#: app.py:843
+msgid "Geçersiz oturum."
+msgstr ""
+
+#: app.py:1102
+#, python-format
+msgid "Geçersiz export formatı. Desteklenen formatlar: %(formats)s"
+msgstr ""
+
+#: app.py:1125
+msgid "Desteklenmeyen export formatı."
+msgstr ""
+
+#: app.py:1128
+#, python-format
+msgid "Export için gerekli kütüphane yüklü değil: %(error)s"
+msgstr ""
+
+#: app.py:1131
+#, python-format
+msgid "Export oluşturulurken hata oluştu: %(error)s"
+msgstr ""
+
+#: templates/base.html:61 templates/result.html:484 templates/upload.html:3
+msgid "Dosya Yükle"
+msgstr ""
+
+#: templates/base.html:66
+msgid "Merhaba"
+msgstr ""
+
+#: templates/base.html:69 templates/dashboard.html:144 templates/profile.html:3
+#: templates/profile.html:12
+msgid "Profilim"
+msgstr ""
+
+#: templates/base.html:70
+msgid "Geçmişim"
+msgstr ""
+
+#: templates/base.html:71 templates/dashboard.html:12
+#: templates/dashboard.html:17
+msgid "Dashboard"
+msgstr ""
+
+#: templates/base.html:72 templates/base.html:79 templates/pricing.html:441
+msgid "Planlar"
+msgstr ""
+
+#: templates/base.html:74
+msgid "Çıkış Yap"
+msgstr ""
+
+#: templates/base.html:82 templates/login.html:3 templates/login.html:64
+msgid "Giriş Yap"
+msgstr ""
+
+#: templates/base.html:85 templates/pricing.html:496 templates/pricing.html:538
+#: templates/register.html:128
+msgid "Kayıt Ol"
+msgstr ""
+
+#: templates/base.html:113 templates/email/reset_password.html:68
+msgid "© 2024 StudyBuddy. Tüm hakları saklıdır."
+msgstr ""
+
+#: templates/dashboard.html:11 templates/pricing.html:440
+#: templates/profile.html:11 templates/result.html:483
+msgid "Ana Sayfa"
+msgstr ""
+
+#: templates/dashboard.html:18
+msgid "Hoş geldiniz,"
+msgstr ""
+
+#: templates/dashboard.html:18
+msgid "Kullanım istatistikleriniz aşağıda görüntülenmektedir."
+msgstr ""
+
+#: templates/dashboard.html:25
+msgid "Bu Ay Kullanım"
+msgstr ""
+
+#: templates/dashboard.html:32
+msgid "Dosya"
+msgstr ""
+
+#: templates/dashboard.html:34
+msgid "Dosya (Sınırsız)"
+msgstr ""
+
+#: templates/dashboard.html:52
+msgid "Kullanılan:"
+msgstr ""
+
+#: templates/dashboard.html:53
+msgid "Kalan:"
+msgstr ""
+
+#: templates/dashboard.html:53
+msgid "Sınırsız"
+msgstr ""
+
+#: templates/dashboard.html:61
+msgid "Aylık limitiniz doldu!"
+msgstr ""
+
+#: templates/dashboard.html:61
+msgid "Premium plana geçerek sınırsız yükleme yapabilirsiniz."
+msgstr ""
+
+#: templates/dashboard.html:64 templates/profile.html:175
+#: templates/upload.html:157
+msgid "Premium'a Geç"
+msgstr ""
+
+#: templates/dashboard.html:70 templates/dashboard.html:100
+#: templates/dashboard.html:120 templates/profile.html:210
+msgid "İstatistik bilgisi yükleniyor..."
+msgstr ""
+
+#: templates/dashboard.html:78
+msgid "Cache Performansı"
+msgstr ""
+
+#: templates/dashboard.html:83 templates/profile.html:194
+msgid "Cache Hit"
+msgstr ""
+
+#: templates/dashboard.html:87 templates/profile.html:198
+msgid "Token Tasarrufu"
+msgstr ""
+
+#: templates/dashboard.html:93
+msgid "Hit Rate"
+msgstr ""
+
+#: templates/dashboard.html:108
+msgid "Toplam İşlenen"
+msgstr ""
+
+#: templates/dashboard.html:113
+msgid "Döküman"
+msgstr ""
+
+#: templates/dashboard.html:117 templates/dashboard.html:136
+msgid "Geçmişi Görüntüle"
+msgstr ""
+
+#: templates/dashboard.html:130
+msgid "Hızlı İşlemler"
+msgstr ""
+
+#: templates/dashboard.html:133
+msgid "Yeni Döküman Yükle"
+msgstr ""
+
+#: templates/dashboard.html:140
+msgid "Planımı Yükselt"
+msgstr ""
+
+#: templates/login.html:11
+msgid "StudyBuddy'ye Giriş Yap"
+msgstr ""
+
+#: templates/login.html:28 templates/register.html:44
+msgid "Email Adresi"
+msgstr ""
+
+#: templates/login.html:42 templates/register.html:59
+msgid "Şifre"
+msgstr ""
+
+#: templates/login.html:46 templates/register.html:63
+msgid "Şifreyi göster"
+msgstr ""
+
+#: templates/login.html:58
+msgid "Beni hatırla"
+msgstr ""
+
+#: templates/login.html:60
+msgid "Şifremi unuttum"
+msgstr ""
+
+#: templates/login.html:68
+msgid "Hesabınız yok mu?"
+msgstr ""
+
+#: templates/login.html:68
+msgid "Kayıt olun"
+msgstr ""
+
+#: templates/pricing.html:446
+msgid "Planınızı Seçin"
+msgstr ""
+
+#: templates/pricing.html:447
+msgid "İhtiyacınıza uygun planı seçin ve öğrenmeye başlayın"
+msgstr ""
+
+#: templates/pricing.html:481
+msgid "Mevcut Planınız"
+msgstr ""
+
+#: templates/pricing.html:486 templates/profile.html:91
+msgid "Ücretsiz Plan"
+msgstr ""
+
+#: templates/pricing.html:490
+msgid "Planı Seç"
+msgstr ""
+
+#: templates/pricing.html:508
+msgid "Ekstra Fiş Paketleri"
+msgstr ""
+
+#: templates/pricing.html:509
+msgid "İhtiyacınız olduğunda ekstra fiş satın alın"
+msgstr ""
+
+#: templates/pricing.html:519 templates/result.html:509
+#: templates/result.html:517 templates/result.html:523
+#: templates/result.html:527
+msgid "Fiş"
+msgstr ""
+
+#: templates/pricing.html:524
+msgid "TL/fiş"
+msgstr ""
+
+#: templates/pricing.html:528
+msgid "İndirim"
+msgstr ""
+
+#: templates/pricing.html:531
+msgid "Fişler süresiz geçerlidir"
+msgstr ""
+
+#: templates/pricing.html:534
+msgid "Satın Al"
+msgstr ""
+
+#: templates/profile.html:16
+msgid "Profil Bilgilerim"
+msgstr ""
+
+#: templates/profile.html:22
+msgid "Profil Bilgileri"
+msgstr ""
+
+#: templates/profile.html:36
+msgid "Kayıt Tarihi:"
+msgstr ""
+
+#: templates/profile.html:41
+msgid "Son Giriş:"
+msgstr ""
+
+#: templates/profile.html:46
+msgid "Henüz giriş yapılmamış"
+msgstr ""
+
+#: templates/profile.html:52
+msgid "Hesap Durumu:"
+msgstr ""
+
+#: templates/profile.html:55
+msgid "Aktif"
+msgstr ""
+
+#: templates/profile.html:57
+msgid "Devre Dışı"
+msgstr ""
+
+#: templates/profile.html:63
+msgid "Email Doğrulama:"
+msgstr ""
+
+#: templates/profile.html:66
+msgid "Doğrulandı"
+msgstr ""
+
+#: templates/profile.html:68
+msgid "Doğrulanmadı"
+msgstr ""
+
+#: templates/profile.html:76
+msgid "Güvenlik"
+msgstr ""
+
+#: templates/profile.html:77
+msgid ""
+"Şifre değiştirme ve iki faktörlü kimlik doğrulama özellikleri yakında "
+"eklenecektir."
+msgstr ""
+
+#: templates/profile.html:79
+msgid "Şifre Değiştir (Yakında)"
+msgstr ""
+
+#: templates/profile.html:87
+msgid "Abonelik Planım"
+msgstr ""
+
+#: templates/profile.html:96
+msgid "7 Günlük Deneme Aktif"
+msgstr ""
+
+#: templates/profile.html:107
+msgid "Kalan Fiş"
+msgstr ""
+
+#: templates/profile.html:111
+msgid "Deneme süreniz:"
+msgstr ""
+
+#: templates/profile.html:111
+msgid "tarihine kadar"
+msgstr ""
+
+#: templates/profile.html:115
+msgid "Aylık"
+msgstr ""
+
+#: templates/profile.html:115
+msgid "fiş (otomatik yenilenir)"
+msgstr ""
+
+#: templates/profile.html:124
+msgid "Bu Ay Dosya Yükleme:"
+msgstr ""
+
+#: templates/profile.html:137
+msgid "Sınırsız yükleme hakkı"
+msgstr ""
+
+#: templates/profile.html:139
+msgid "yükleme hakkı kaldı"
+msgstr ""
+
+#: templates/profile.html:141
+msgid "Aylık limitiniz doldu"
+msgstr ""
+
+#: templates/profile.html:149
+msgid "Plan Özellikleri:"
+msgstr ""
+
+#: templates/profile.html:163
+msgid "Plan bilgileri yükleniyor..."
+msgstr ""
+
+#: templates/profile.html:171 templates/result.html:605
+msgid "Paket Yükselt"
+msgstr ""
+
+#: templates/profile.html:179
+msgid "Premium Üyesiniz"
+msgstr ""
+
+#: templates/profile.html:186
+msgid "İstatistikler"
+msgstr ""
+
+#: templates/profile.html:190
+msgid "Bu Ay Yüklenen"
+msgstr ""
+
+#: templates/profile.html:202
+msgid "Toplam Döküman"
+msgstr ""
+
+#: templates/profile.html:207
+msgid "Detaylı İstatistikler"
+msgstr ""
+
+#: templates/profile.html:218
+msgid "Ödeme Geçmişi"
+msgstr ""
+
+#: templates/profile.html:225
+msgid "Tarih"
+msgstr ""
+
+#: templates/profile.html:226
+msgid "Fatura No"
+msgstr ""
+
+#: templates/profile.html:227
+msgid "Plan"
+msgstr ""
+
+#: templates/profile.html:228
+msgid "Tutar"
+msgstr ""
+
+#: templates/profile.html:229
+msgid "Durum"
+msgstr ""
+
+#: templates/profile.html:230
+msgid "İşlem"
+msgstr ""
+
+#: templates/profile.html:258
+msgid "Tamamlandı"
+msgstr ""
+
+#: templates/profile.html:260
+msgid "İşleniyor"
+msgstr ""
+
+#: templates/profile.html:262
+msgid "Başarısız"
+msgstr ""
+
+#: templates/profile.html:272
+msgid "İndir"
+msgstr ""
+
+#: templates/profile.html:286
+msgid "Henüz ödeme geçmişiniz bulunmuyor."
+msgstr ""
+
+#: templates/profile.html:289
+msgid "Premium'a Geçerek Sınırsız Özelliklerden Yararlanın"
+msgstr ""
+
+#: templates/register.html:11
+msgid "StudyBuddy'ye Kayıt Ol"
+msgstr ""
+
+#: templates/register.html:29
+msgid "Kullanıcı Adı"
+msgstr ""
+
+#: templates/register.html:73
+msgid "Şifre gereksinimleri"
+msgstr ""
+
+#: templates/register.html:77
+msgid "En az 8 karakter"
+msgstr ""
+
+#: templates/register.html:81
+msgid "En az bir büyük harf"
+msgstr ""
+
+#: templates/register.html:85
+msgid "En az bir küçük harf"
+msgstr ""
+
+#: templates/register.html:89
+msgid "En az bir rakam"
+msgstr ""
+
+#: templates/register.html:93
+msgid "En az bir özel karakter"
+msgstr ""
+
+#: templates/register.html:109
+msgid "Şifre Tekrar"
+msgstr ""
+
+#: templates/register.html:113
+msgid "Şifre tekrarını göster"
+msgstr ""
+
+#: templates/register.html:124
+msgid "Kullanım şartlarını kabul ediyorum"
+msgstr ""
+
+#: templates/register.html:132
+msgid "Zaten hesabınız var mı?"
+msgstr ""
+
+#: templates/register.html:132
+msgid "Giriş yapın"
+msgstr ""
+
+#: templates/register.html:138
+msgid "Şifreler eşleşmiyor"
+msgstr ""
+
+#: templates/result.html:3 templates/result.html:485
+msgid "Sonuçlar"
+msgstr ""
+
+#: templates/result.html:463
+msgid "Gerçek AI üretimi için lütfen .env dosyasında OPENAI_API_KEY ayarlayın."
+msgstr ""
+
+#: templates/result.html:471
+msgid "Hızlı Sonuç!"
+msgstr ""
+
+#: templates/result.html:472
+msgid "Bu dosya daha önce işlenmişti. Kayıtlı sonuçlar gösteriliyor."
+msgstr ""
+
+#: templates/result.html:474
+msgid "Token Tasarrufu:"
+msgstr ""
+
+#: templates/result.html:474
+msgid "İlk İşlenme:"
+msgstr ""
+
+#: templates/result.html:492
+msgid "İçerik Başarıyla Oluşturuldu!"
+msgstr ""
+
+#: templates/result.html:495
+msgid "tarafından işlendi"
+msgstr ""
+
+#: templates/result.html:500
+msgid "Yazdır"
+msgstr ""
+
+#: templates/result.html:505 templates/result.html:522
+msgid "PDF Olarak İndir"
+msgstr ""
+
+#: templates/result.html:507 templates/result.html:515
+msgid "Ücretsiz"
+msgstr ""
+
+#: templates/result.html:513 templates/result.html:526
+msgid "Word Olarak İndir"
+msgstr ""
+
+#: templates/result.html:532
+msgid "Geçmiş"
+msgstr ""
+
+#: templates/result.html:535
+msgid "Yeni Dosya Yükle"
+msgstr ""
+
+#: templates/result.html:540
+msgid "Export için yeterli fişiniz yok. Lütfen"
+msgstr ""
+
+#: templates/result.html:540
+msgid "paket yükseltin"
+msgstr ""
+
+#: templates/result.html:540
+msgid "veya fiş satın alın."
+msgstr ""
+
+#: templates/result.html:551
+msgid "Özet"
+msgstr ""
+
+#: templates/result.html:556
+msgid "Çoktan Seçmeli"
+msgstr ""
+
+#: templates/result.html:561
+msgid "Kısa Cevap"
+msgstr ""
+
+#: templates/result.html:566
+msgid "Boş Doldurma"
+msgstr ""
+
+#: templates/result.html:571
+msgid "Doğru-Yanlış"
+msgstr ""
+
+#: templates/result.html:576
+msgid "Flashcard'lar"
+msgstr ""
+
+#: templates/result.html:585 templates/upload.html:182
+msgid "Konu Özeti"
+msgstr ""
+
+#: templates/result.html:598 templates/upload.html:186
+msgid "Çoktan Seçmeli Sorular"
+msgstr ""
+
+#: templates/result.html:601
+msgid "Paket Limit Bilgisi"
+msgstr ""
+
+#: templates/result.html:602
+msgid "Bu bölümde"
+msgstr ""
+
+#: templates/result.html:602
+msgid "soru oluşturuldu."
+msgstr ""
+
+#: templates/result.html:603
+msgid "Paketiniz"
+msgstr ""
+
+#: templates/result.html:603
+msgid "olduğu için"
+msgstr ""
+
+#: templates/result.html:603
+msgid "adet gösteriliyor."
+msgstr ""
+
+#: templates/result.html:611
+msgid "Quiz Modu: Açık"
+msgstr ""
+
+#: templates/result.html:614
+msgid "Skor Hesapla"
+msgstr ""
+
+#: templates/result.html:617
+msgid "Sıfırla"
+msgstr ""
+
+#: templates/result.html:622
+msgid "Skorunuz:"
+msgstr ""
+
+#: templates/result.html:624
+msgid "Doğru:"
+msgstr ""
+
+#: templates/result.html:625
+msgid "Yanlış:"
+msgstr ""
+
+#: templates/result.html:626
+msgid "Boş:"
+msgstr ""
+
+#: templates/result.html:661 templates/upload.html:190
+msgid "Kısa Cevap Soruları"
+msgstr ""
+
+#: templates/result.html:724 templates/upload.html:194
+msgid "Boş Doldurma Soruları"
+msgstr ""
+
+#: templates/result.html:783 templates/upload.html:198
+msgid "Doğru-Yanlış Soruları"
+msgstr ""
+
+#: templates/result.html:849 templates/upload.html:202
+msgid "Flashcard Çalışma Kartları"
+msgstr ""
+
+#: templates/result.html:850
+msgid "Kartları çevirmek için üzerine tıklayın"
+msgstr ""
+
+#: templates/upload.html:15
+msgid "StudyBuddy Nedir? Nasıl Çalışır?"
+msgstr ""
+
+#: templates/upload.html:20
+msgid "StudyBuddy ile Öğrenmeyi Kolaylaştırın"
+msgstr ""
+
+#: templates/upload.html:21
+msgid ""
+"StudyBuddy, ders notlarınızı yükleyerek otomatik olarak özet, test "
+"soruları ve flashcard'lar üreten yapay zeka destekli bir öğrenme "
+"asistanıdır."
+msgstr ""
+
+#: templates/upload.html:24
+msgid "Dosya Yükleme"
+msgstr ""
+
+#: templates/upload.html:25
+msgid ""
+"PDF, Word, PowerPoint veya metin dosyalarınızı yükleyin. Sistem otomatik "
+"olarak içeriği analiz eder."
+msgstr ""
+
+#: templates/upload.html:29
+msgid "Otomatik İçerik Üretimi"
+msgstr ""
+
+#: templates/upload.html:30
+msgid "Yapay zeka, dokümanınızdan şunları otomatik olarak üretir:"
+msgstr ""
+
+#: templates/upload.html:32
+msgid "Konu Özeti:"
+msgstr ""
+
+#: templates/upload.html:32
+msgid "Dokümanın ana konularını özetler"
+msgstr ""
+
+#: templates/upload.html:33
+msgid "Çoktan Seçmeli Sorular:"
+msgstr ""
+
+#: templates/upload.html:33
+msgid "4 şıklı test soruları ve doğru cevaplar"
+msgstr ""
+
+#: templates/upload.html:34
+msgid "Kısa Cevap Soruları:"
+msgstr ""
+
+#: templates/upload.html:34
+msgid "Açık uçlu sorular ve örnek cevaplar"
+msgstr ""
+
+#: templates/upload.html:35
+msgid "Boş Doldurma Soruları:"
+msgstr ""
+
+#: templates/upload.html:35
+msgid "Cümlelerdeki boşlukları doldurma soruları"
+msgstr ""
+
+#: templates/upload.html:36
+msgid "Doğru-Yanlış Soruları:"
+msgstr ""
+
+#: templates/upload.html:36
+msgid "İfadelerin doğruluğunu test eden sorular"
+msgstr ""
+
+#: templates/upload.html:37
+msgid "Flashcard'lar:"
+msgstr ""
+
+#: templates/upload.html:37
+msgid "Soru-cevap çiftleri ile çalışma kartları"
+msgstr ""
+
+#: templates/upload.html:42
+msgid "İnteraktif Öğrenme"
+msgstr ""
+
+#: templates/upload.html:43
+msgid ""
+"Quiz modu ile soruları çözebilir, skorunuzu görebilir ve flashcard'ları "
+"çevirerek çalışabilirsiniz."
+msgstr ""
+
+#: templates/upload.html:47
+msgid "Hızlı ve Akıllı"
+msgstr ""
+
+#: templates/upload.html:48
+msgid ""
+"Aynı dosyayı tekrar yüklediğinizde, sistem önbellekten hızlıca sonuçları "
+"gösterir. Token tasarrufu sağlar!"
+msgstr ""
+
+#: templates/upload.html:52
+msgid "Hemen başlamak için dosyanızı yükleyin!"
+msgstr ""
+
+#: templates/upload.html:61
+msgid "Demo Modu Aktif:"
+msgstr ""
+
+#: templates/upload.html:62
+msgid "OpenAI API olmadan çalışıyorsunuz. Sahte veriler gösterilecektir."
+msgstr ""
+
+#: templates/upload.html:63
+msgid ""
+"Gerçek içerik için .env dosyasında DEMO_MODE=false yapın ve OpenAI API "
+"anahtarı ekleyin."
+msgstr ""
+
+#: templates/upload.html:112
+msgid "Kimsiniz?"
+msgstr ""
+
+#: templates/upload.html:116
+msgid "Öğrenci"
+msgstr ""
+
+#: templates/upload.html:121
+msgid "Öğretmen"
+msgstr ""
+
+#: templates/upload.html:128
+msgid "Seviye"
+msgstr ""
+
+#: templates/upload.html:139
+msgid "Dosyanızı Yükleyin"
+msgstr ""
+
+#: templates/upload.html:140
+msgid "PDF, Word, PowerPoint veya Metin dosyası seçin"
+msgstr ""
+
+#: templates/upload.html:153
+msgid "Aylık Limit Doldu"
+msgstr ""
+
+#: templates/upload.html:163
+msgid "İçerik Üret"
+msgstr ""
+
+#: templates/upload.html:174
+msgid "Dosya yükleniyor..."
+msgstr ""
+
+#: templates/upload.html:179
+msgid "Neler Oluşturulacak:"
+msgstr ""
+
+#: templates/upload.html:274
+msgid "İşleniyor..."
+msgstr ""
+
+#: templates/upload.html:275
+msgid "Başlıyor..."
+msgstr ""
+
+#: templates/email/reset_password.html:6
+msgid "Şifre Sıfırlama"
+msgstr ""
+
+#: templates/email/reset_password.html:26
+msgid "Merhaba,"
+msgstr ""
+
+#: templates/email/reset_password.html:29
+msgid ""
+"StudyBuddy hesabınız için şifre sıfırlama talebinde bulundunuz. Aşağıdaki"
+" butona tıklayarak yeni şifrenizi belirleyebilirsiniz."
+msgstr ""
+
+#: templates/email/reset_password.html:37
+msgid "Şifremi Sıfırla"
+msgstr ""
+
+#: templates/email/reset_password.html:45
+msgid "Buton çalışmıyorsa bu linki kopyalayın:"
+msgstr ""
+
+#: templates/email/reset_password.html:52
+msgid "Önemli:"
+msgstr ""
+
+#: templates/email/reset_password.html:52
+msgid "Bu link"
+msgstr ""
+
+#: templates/email/reset_password.html:52
+msgid "saat içinde geçerliliğini yitirecektir."
+msgstr ""
+
+#: templates/email/reset_password.html:58
+msgid ""
+"Eğer bu talebi siz yapmadıysanız, bu emaili görmezden gelebilirsiniz. "
+"Şifreniz değişmeyecektir."
+msgstr ""
+
+#: templates/email/reset_password.html:67
+msgid "StudyBuddy Ekibi"
+msgstr ""
+

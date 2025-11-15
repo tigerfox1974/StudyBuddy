@@ -437,14 +437,14 @@
     <!-- Breadcrumb -->
     <nav aria-label="breadcrumb" class="mb-4">
         <ol class="breadcrumb" style="background: rgba(0, 0, 0, 0.3); padding: 12px 20px; border-radius: 10px; backdrop-filter: blur(10px);">
-            <li class="breadcrumb-item"><a href="{{ url_for('index') }}" class="text-white" style="text-decoration: none; font-weight: 500;"><i class="bi bi-house"></i> Ana Sayfa</a></li>
-            <li class="breadcrumb-item active text-white" aria-current="page" style="font-weight: 600;"><i class="bi bi-star"></i> Planlar</li>
+            <li class="breadcrumb-item"><a href="{{ url_for('index') }}" class="text-white" style="text-decoration: none; font-weight: 500;"><i class="bi bi-house"></i> {{ _('Ana Sayfa') }}</a></li>
+            <li class="breadcrumb-item active text-white" aria-current="page" style="font-weight: 600;"><i class="bi bi-star"></i> {{ _('Planlar') }}</li>
         </ol>
     </nav>
     
     <div class="pricing-header">
-        <h1>Planınızı Seçin</h1>
-        <p>İhtiyacınıza uygun planı seçin ve öğrenmeye başlayın</p>
+        <h1>{{ _('Planınızı Seçin') }}</h1>
+        <p>{{ _('İhtiyacınıza uygun planı seçin ve öğrenmeye başlayın') }}</p>
     </div>
     
     <div class="row g-4">
@@ -454,12 +454,12 @@
                 {% if plan_key == 'premium' or plan_key == 'standard' %}
                 <span class="card_badge"></span>
                 {% endif %}
-                <div class="plan-name">{{ plan.name }}</div>
+                <div class="plan-name">{{ _(plan.name) }}</div>
                 <div class="plan-price">
                     <span class="currency">₺</span>{{ plan.price }}
                     <span class="period">/{{ plan.billing_period }}</span>
                 </div>
-                <div class="plan-description">{{ plan.description }}</div>
+                <div class="plan-description">{{ _(plan.description) }}</div>
                 
                 <ul class="plan-features">
                     {% for highlight in plan.highlights %}
@@ -469,7 +469,7 @@
                         {% else %}
                             <i class="bi bi-check-circle-fill"></i>
                         {% endif %}
-                        {{ highlight }}
+                        {{ _(highlight) }}
                     </li>
                     {% endfor %}
                 </ul>
@@ -478,22 +478,22 @@
                     {% if current_user.is_authenticated %}
                         {% if current_plan == plan_key %}
                             <button class="plan-button current" disabled>
-                                <i class="bi bi-check-circle"></i> Mevcut Planınız
+                                <i class="bi bi-check-circle"></i> {{ _('Mevcut Planınız') }}
                             </button>
                         {% else %}
                             {% if plan_key == 'free' %}
                                 <button class="plan-button select" disabled>
-                                    <i class="bi bi-info-circle"></i> Ücretsiz Plan
+                                    <i class="bi bi-info-circle"></i> {{ _('Ücretsiz Plan') }}
                                 </button>
                             {% else %}
                                 <a href="{{ url_for('checkout', plan_type=plan_key) }}" class="plan-button {% if plan_key == 'premium' %}premium-btn{% elif plan_key == 'standard' %}select{% else %}select{% endif %}" style="text-decoration: none; display: block;">
-                                    <i class="bi bi-star"></i> Planı Seç
+                                    <i class="bi bi-star"></i> {{ _('Planı Seç') }}
                                 </a>
                             {% endif %}
                         {% endif %}
                     {% else %}
                         <a href="{{ url_for('register') }}" class="plan-button select" style="text-decoration: none; display: block;">
-                            <i class="bi bi-person-plus"></i> Kayıt Ol
+                            <i class="bi bi-person-plus"></i> {{ _('Kayıt Ol') }}
                         </a>
                     {% endif %}
                 </div>
@@ -505,8 +505,8 @@
     <!-- Fiş Paketleri Bölümü -->
     <div class="token-packages-section">
         <div class="token-packages-header">
-            <h2>Ekstra Fiş Paketleri</h2>
-            <p>İhtiyacınız olduğunda ekstra fiş satın alın</p>
+            <h2>{{ _('Ekstra Fiş Paketleri') }}</h2>
+            <p>{{ _('İhtiyacınız olduğunda ekstra fiş satın alın') }}</p>
         </div>
         
         <div class="row g-4 align-items-stretch">
@@ -516,26 +516,26 @@
                     {% if package.get('popular') %}
                     <span class="card_badge"></span>
                     {% endif %}
-                    <div class="token-amount">{{ package.tokens }} Fiş</div>
+                    <div class="token-amount">{{ package.tokens }} {{ _('Fiş') }}</div>
                     <div class="token-price">
                         <span class="currency">₺</span>{{ package.price }}
                     </div>
                     <div class="token-price-per-unit">
-                        {{ package.price_per_token }} TL/fiş
+                        {{ package.price_per_token }} {{ _('TL/fiş') }}
                     </div>
                     {% if package.discount_percent > 0 %}
                     <div class="token-discount">
-                        %{{ package.discount_percent }} İndirim
+                        %{{ package.discount_percent }} {{ _('İndirim') }}
                     </div>
                     {% endif %}
-                    <p class="token-note">Fişler süresiz geçerlidir</p>
+                    <p class="token-note">{{ _('Fişler süresiz geçerlidir') }}</p>
                     {% if current_user.is_authenticated %}
                         <a href="{{ url_for('checkout', plan_type='token', package=package_key) }}" class="plan-button select" style="text-decoration: none; display: block; margin-top: auto;">
-                            <i class="bi bi-cart-plus"></i> Satın Al
+                            <i class="bi bi-cart-plus"></i> {{ _('Satın Al') }}
                         </a>
                     {% else %}
                         <a href="{{ url_for('register') }}" class="plan-button select" style="text-decoration: none; display: block; margin-top: auto;">
-                            <i class="bi bi-person-plus"></i> Kayıt Ol
+                            <i class="bi bi-person-plus"></i> {{ _('Kayıt Ol') }}
                         </a>
                     {% endif %}
                 </div>

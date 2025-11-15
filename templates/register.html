@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Kayıt Ol - StudyBuddy{% endblock %}
+{% block title %}{{ _('Kayıt Ol') }} - StudyBuddy{% endblock %}
 
 {% block content %}
 <section class="page-gradient-bg">
@@ -8,7 +8,7 @@
         <div class="auth-card">
             <div class="auth-logo">
                 <img src="{{ url_for('static', filename='img/studybuddy-owl.png') }}" alt="StudyBuddy Logo">
-                <h2>StudyBuddy'ye Kayıt Ol</h2>
+                <h2>{{ _('StudyBuddy\'ye Kayıt Ol') }}</h2>
             </div>
 
             <form method="POST" action="{{ url_for('register') }}" id="registerForm" class="auth-form" novalidate>
@@ -26,7 +26,7 @@
                             maxlength="80" 
                             autocomplete="username"
                             value="{{ request.form.get('username', '') }}">
-                        <label for="username" class="floating-label">Kullanıcı Adı</label>
+                        <label for="username" class="floating-label">{{ _('Kullanıcı Adı') }}</label>
                     </div>
                     <small class="input-feedback" id="usernameFeedback" role="alert" aria-live="polite"></small>
                 </div>
@@ -41,7 +41,7 @@
                             required 
                             autocomplete="email"
                             value="{{ request.form.get('email', '') }}">
-                        <label for="email" class="floating-label">Email Adresi</label>
+                        <label for="email" class="floating-label">{{ _('Email Adresi') }}</label>
                     </div>
                     <small class="input-feedback" id="emailFeedback" role="alert" aria-live="polite"></small>
                 </div>
@@ -56,11 +56,11 @@
                             required 
                             minlength="8" 
                             autocomplete="new-password">
-                        <label for="password" class="floating-label">Şifre</label>
+                        <label for="password" class="floating-label">{{ _('Şifre') }}</label>
                         <button 
                             type="button" 
                             class="password-toggle-btn" 
-                            aria-label="Şifreyi göster" 
+                            aria-label="{{ _('Şifreyi göster') }}" 
                             aria-pressed="false" 
                             data-target="password">
                             <i class="bi bi-eye-fill"></i>
@@ -70,27 +70,27 @@
                         <span id="passwordStrengthMeter"></span>
                     </div>
                     <div class="password-requirements">
-                        <div class="password-requirements-title">Şifre gereksinimleri</div>
+                        <div class="password-requirements-title">{{ _('Şifre gereksinimleri') }}</div>
                         <ul>
                             <li data-rule="length">
                                 <span class="requirement-icon invalid"><i class="bi bi-x-circle"></i></span>
-                                <span>En az 8 karakter</span>
+                                <span>{{ _('En az 8 karakter') }}</span>
                             </li>
                             <li data-rule="uppercase">
                                 <span class="requirement-icon invalid"><i class="bi bi-x-circle"></i></span>
-                                <span>En az bir büyük harf</span>
+                                <span>{{ _('En az bir büyük harf') }}</span>
                             </li>
                             <li data-rule="lowercase">
                                 <span class="requirement-icon invalid"><i class="bi bi-x-circle"></i></span>
-                                <span>En az bir küçük harf</span>
+                                <span>{{ _('En az bir küçük harf') }}</span>
                             </li>
                             <li data-rule="number">
                                 <span class="requirement-icon invalid"><i class="bi bi-x-circle"></i></span>
-                                <span>En az bir rakam</span>
+                                <span>{{ _('En az bir rakam') }}</span>
                             </li>
                             <li data-rule="symbol">
                                 <span class="requirement-icon invalid"><i class="bi bi-x-circle"></i></span>
-                                <span>En az bir özel karakter</span>
+                                <span>{{ _('En az bir özel karakter') }}</span>
                             </li>
                         </ul>
                     </div>
@@ -106,11 +106,11 @@
                             class="floating-input" 
                             required 
                             autocomplete="new-password">
-                        <label for="password_confirm" class="floating-label">Şifre Tekrar</label>
+                        <label for="password_confirm" class="floating-label">{{ _('Şifre Tekrar') }}</label>
                         <button 
                             type="button" 
                             class="password-toggle-btn" 
-                            aria-label="Şifre tekrarını göster" 
+                            aria-label="{{ _('Şifre tekrarını göster') }}" 
                             aria-pressed="false" 
                             data-target="password_confirm">
                             <i class="bi bi-eye-fill"></i>
@@ -121,20 +121,21 @@
 
                 <div class="form-check">
                     <input type="checkbox" class="form-check-input" id="terms" required>
-                    <label class="form-check-label" for="terms">Kullanım şartlarını kabul ediyorum</label>
+                    <label class="form-check-label" for="terms">{{ _('Kullanım şartlarını kabul ediyorum') }}</label>
                 </div>
 
                 <button type="submit" class="btn-primary-custom w-100">
-                    <i class="bi bi-person-plus"></i> Kayıt Ol
+                    <i class="bi bi-person-plus"></i> {{ _('Kayıt Ol') }}
                 </button>
 
                 <div class="auth-footer">
-                    <p class="mb-0">Zaten hesabınız var mı? <a href="{{ url_for('login') }}">Giriş yapın</a></p>
+                    <p class="mb-0">{{ _('Zaten hesabınız var mı?') }} <a href="{{ url_for('login') }}">{{ _('Giriş yapın') }}</a></p>
                 </div>
             </form>
         </div>
     </div>
 </section>
+<span id="js-password-mismatch" style="display:none;">{{ _('Şifreler eşleşmiyor') }}</span>
 {% endblock %}
 
 {% block extra_scripts %}
@@ -235,8 +236,9 @@
             }
 
             if (confirmField.value !== passwordField.value) {
-                passwordMatchFeedback.textContent = 'Şifreler eşleşmiyor';
-                confirmField.setCustomValidity('Şifreler eşleşmiyor');
+                const mismatchText = document.getElementById('js-password-mismatch')?.textContent || 'Şifreler eşleşmiyor';
+                passwordMatchFeedback.textContent = mismatchText;
+                confirmField.setCustomValidity(mismatchText);
             } else {
                 passwordMatchFeedback.textContent = '';
                 confirmField.setCustomValidity('');

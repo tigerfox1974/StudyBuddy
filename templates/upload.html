@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}Dosya Yükle - StudyBuddy{% endblock %}
+{% block title %}{{ _('Dosya Yükle') }} - StudyBuddy{% endblock %}
 
 {% block content %}
 <div class="upload-page">
@@ -12,44 +12,44 @@
         <!-- Program Hakkında Bölümü -->
         <div class="about-section">
             <button class="about-toggle" type="button" data-bs-toggle="collapse" data-bs-target="#aboutContent" aria-expanded="false" aria-controls="aboutContent">
-                <span><i class="bi bi-info-circle"></i> StudyBuddy Nedir? Nasıl Çalışır?</span>
+                <span><i class="bi bi-info-circle"></i> {{ _('StudyBuddy Nedir? Nasıl Çalışır?') }}</span>
                 <i class="bi bi-chevron-down"></i>
             </button>
             <div class="collapse" id="aboutContent">
                 <div class="about-content">
-                    <h4>🎓 StudyBuddy ile Öğrenmeyi Kolaylaştırın</h4>
-                    <p>StudyBuddy, ders notlarınızı yükleyerek otomatik olarak özet, test soruları ve flashcard'lar üreten yapay zeka destekli bir öğrenme asistanıdır.</p>
+                    <h4>🎓 {{ _('StudyBuddy ile Öğrenmeyi Kolaylaştırın') }}</h4>
+                    <p>{{ _('StudyBuddy, ders notlarınızı yükleyerek otomatik olarak özet, test soruları ve flashcard\'lar üreten yapay zeka destekli bir öğrenme asistanıdır.') }}</p>
                     
                     <div class="feature-box">
-                        <h5><i class="bi bi-file-earmark-text"></i> Dosya Yükleme</h5>
-                        <p>PDF, Word, PowerPoint veya metin dosyalarınızı yükleyin. Sistem otomatik olarak içeriği analiz eder.</p>
+                        <h5><i class="bi bi-file-earmark-text"></i> {{ _('Dosya Yükleme') }}</h5>
+                        <p>{{ _('PDF, Word, PowerPoint veya metin dosyalarınızı yükleyin. Sistem otomatik olarak içeriği analiz eder.') }}</p>
                     </div>
                     
                     <div class="feature-box">
-                        <h5><i class="bi bi-magic"></i> Otomatik İçerik Üretimi</h5>
-                        <p>Yapay zeka, dokümanınızdan şunları otomatik olarak üretir:</p>
+                        <h5><i class="bi bi-magic"></i> {{ _('Otomatik İçerik Üretimi') }}</h5>
+                        <p>{{ _('Yapay zeka, dokümanınızdan şunları otomatik olarak üretir:') }}</p>
                         <ul>
-                            <li><strong>Konu Özeti:</strong> Dokümanın ana konularını özetler</li>
-                            <li><strong>Çoktan Seçmeli Sorular:</strong> 4 şıklı test soruları ve doğru cevaplar</li>
-                            <li><strong>Kısa Cevap Soruları:</strong> Açık uçlu sorular ve örnek cevaplar</li>
-                            <li><strong>Boş Doldurma Soruları:</strong> Cümlelerdeki boşlukları doldurma soruları</li>
-                            <li><strong>Doğru-Yanlış Soruları:</strong> İfadelerin doğruluğunu test eden sorular</li>
-                            <li><strong>Flashcard'lar:</strong> Soru-cevap çiftleri ile çalışma kartları</li>
+                            <li><strong>{{ _('Konu Özeti:') }}</strong> {{ _('Dokümanın ana konularını özetler') }}</li>
+                            <li><strong>{{ _('Çoktan Seçmeli Sorular:') }}</strong> {{ _('4 şıklı test soruları ve doğru cevaplar') }}</li>
+                            <li><strong>{{ _('Kısa Cevap Soruları:') }}</strong> {{ _('Açık uçlu sorular ve örnek cevaplar') }}</li>
+                            <li><strong>{{ _('Boş Doldurma Soruları:') }}</strong> {{ _('Cümlelerdeki boşlukları doldurma soruları') }}</li>
+                            <li><strong>{{ _('Doğru-Yanlış Soruları:') }}</strong> {{ _('İfadelerin doğruluğunu test eden sorular') }}</li>
+                            <li><strong>{{ _('Flashcard\'lar:') }}</strong> {{ _('Soru-cevap çiftleri ile çalışma kartları') }}</li>
                         </ul>
                     </div>
                     
                     <div class="feature-box">
-                        <h5><i class="bi bi-graph-up"></i> İnteraktif Öğrenme</h5>
-                        <p>Quiz modu ile soruları çözebilir, skorunuzu görebilir ve flashcard'ları çevirerek çalışabilirsiniz.</p>
+                        <h5><i class="bi bi-graph-up"></i> {{ _('İnteraktif Öğrenme') }}</h5>
+                        <p>{{ _('Quiz modu ile soruları çözebilir, skorunuzu görebilir ve flashcard\'ları çevirerek çalışabilirsiniz.') }}</p>
                     </div>
                     
                     <div class="feature-box">
-                        <h5><i class="bi bi-lightning-charge"></i> Hızlı ve Akıllı</h5>
-                        <p>Aynı dosyayı tekrar yüklediğinizde, sistem önbellekten hızlıca sonuçları gösterir. Token tasarrufu sağlar!</p>
+                        <h5><i class="bi bi-lightning-charge"></i> {{ _('Hızlı ve Akıllı') }}</h5>
+                        <p>{{ _('Aynı dosyayı tekrar yüklediğinizde, sistem önbellekten hızlıca sonuçları gösterir. Token tasarrufu sağlar!') }}</p>
                     </div>
                     
                     <p class="mt-3 mb-0" style="text-align: center;">
-                        <strong>Hemen başlamak için dosyanızı yükleyin! 🚀</strong>
+                        <strong>{{ _('Hemen başlamak için dosyanızı yükleyin!') }} 🚀</strong>
                     </p>
                 </div>
             </div>
@@ -58,9 +58,9 @@
         <!-- Demo Modu Uyarısı -->
         {% if config.DEMO_MODE %}
         <div class="alert alert-warning alert-dismissible fade show" role="alert">
-            <i class="bi bi-info-circle-fill"></i> <strong>Demo Modu Aktif:</strong> 
-            OpenAI API olmadan çalışıyorsunuz. Sahte veriler gösterilecektir. 
-            Gerçek içerik için .env dosyasında DEMO_MODE=false yapın ve OpenAI API anahtarı ekleyin.
+            <i class="bi bi-info-circle-fill"></i> <strong>{{ _('Demo Modu Aktif:') }}</strong> 
+            {{ _('OpenAI API olmadan çalışıyorsunuz. Sahte veriler gösterilecektir.') }} 
+            {{ _('Gerçek içerik için .env dosyasında DEMO_MODE=false yapın ve OpenAI API anahtarı ekleyin.') }}
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
         {% endif %}
@@ -72,30 +72,30 @@
                 <i class="bi bi-info-circle-fill me-2"></i>
                 <div>
                     {% if limit_info.limit %}
-                        <strong>{{ limit_info.plan|upper }} Plan:</strong> 
-                        Bu ay <strong>{{ limit_info.used }}/{{ limit_info.limit }}</strong> dosya yüklediniz.
+                        <strong>{{ limit_info.plan|upper }} {{ _('Plan') }}:</strong> 
+                        {{ _('Bu ay') }} <strong>{{ limit_info.used }}/{{ limit_info.limit }}</strong> {{ _('dosya yüklediniz.') }}
                         {% if limit_info.remaining is none %}
-                            <strong>Sınırsız</strong> yükleme hakkınız var.
+                            <strong>{{ _('Sınırsız') }}</strong> {{ _('yükleme hakkınız var.') }}
                         {% elif limit_info.remaining > 0 %}
-                            <strong>{{ limit_info.remaining }}</strong> yükleme hakkınız kaldı.
+                            <strong>{{ limit_info.remaining }}</strong> {{ _('yükleme hakkınız kaldı.') }}
                         {% else %}
-                            <strong>Aylık limitiniz doldu.</strong> 
-                            <a href="{{ url_for('pricing') }}" class="alert-link">Premium'a geçin</a> ve sınırsız yükleme yapın.
+                            <strong>{{ _('Aylık limitiniz doldu.') }}</strong> 
+                            <a href="{{ url_for('pricing') }}" class="alert-link">{{ _('Premium\'a geçin') }}</a> {{ _('ve sınırsız yükleme yapın.') }}
                         {% endif %}
                     {% else %}
                         {% if limit_info.plan == 'premium' %}
-                            <strong>PREMIUM Plan:</strong> Sınırsız dosya yükleme hakkınız var! 🎉
+                            <strong>PREMIUM {{ _('Plan') }}:</strong> {{ _('Sınırsız dosya yükleme hakkınız var!') }} 🎉
                         {% else %}
-                            <strong>{{ limit_info.plan|upper }} Plan:</strong> 
+                            <strong>{{ limit_info.plan|upper }} {{ _('Plan') }}:</strong> 
                             {% if token_info %}
-                                Kalan fiş: <strong>{{ token_info.tokens_remaining }}</strong> fiş
+                                {{ _('Kalan fiş') }}: <strong>{{ token_info.tokens_remaining }}</strong> {{ _('fiş') }}
                                 {% if token_info.trial_active %}
-                                    (7 günlük deneme süreniz devam ediyor)
+                                    ({{ _('7 günlük deneme süreniz devam ediyor') }})
                                 {% endif %}
                             {% else %}
-                                Yeni fiş sistemi aktif! Dosya yükleme için fiş kullanıyorsunuz.
+                                {{ _('Yeni fiş sistemi aktif! Dosya yükleme için fiş kullanıyorsunuz.') }}
                             {% endif %}
-                            <a href="{{ url_for('pricing') }}" class="alert-link ms-2">Paketlerimizi inceleyin</a>
+                            <a href="{{ url_for('pricing') }}" class="alert-link ms-2">{{ _('Paketlerimizi inceleyin') }}</a>
                         {% endif %}
                     {% endif %}
                 </div>
@@ -109,60 +109,58 @@
             
             <!-- Profil Seçimi -->
             <div class="profile-selection">
-                <h5><i class="bi bi-person-circle"></i> Kimsiniz?</h5>
+                <h5><i class="bi bi-person-circle"></i> {{ _('Kimsiniz?') }}</h5>
                 <div class="btn-group w-100 profile-toggle-group" role="group">
                     <input type="radio" class="btn-check" name="user_type" id="student" value="student" checked>
                     <label class="btn" for="student">
-                        <i class="bi bi-mortarboard"></i> Öğrenci
+                        <i class="bi bi-mortarboard"></i> {{ _('Öğrenci') }}
                     </label>
                     
                     <input type="radio" class="btn-check" name="user_type" id="teacher" value="teacher">
                     <label class="btn" for="teacher">
-                        <i class="bi bi-person-workspace"></i> Öğretmen
+                        <i class="bi bi-person-workspace"></i> {{ _('Öğretmen') }}
                     </label>
                 </div>
             </div>
             
             <!-- Seviye Seçimi -->
             <div class="level-selection">
-                <h5><i class="bi bi-bar-chart-steps"></i> Seviye</h5>
+                <h5><i class="bi bi-bar-chart-steps"></i> {{ _('Seviye') }}</h5>
                 <select class="form-select form-select-lg" name="level" id="level" required>
-                    <option value="elementary">İlkokul (1-4. Sınıf) - 6-10 yaş</option>
-                    <option value="middle_school">Ortaokul (5-8. Sınıf) - 11-14 yaş</option>
-                    <option value="high_school" selected>Lise (9-12. Sınıf) - 15-18 yaş</option>
-                    <option value="university">Üniversite - 18+ yaş</option>
-                    <option value="exam_prep">Sınav Hazırlığı (YKS, KPSS, vb.) - 17+ yaş</option>
+                    {% for level_key, level_config in config.LEVEL_SETTINGS.items() %}
+                    <option value="{{ level_key }}" {% if level_key == 'high_school' %}selected{% endif %}>{{ _(level_config.name) }} - {{ level_config.age_range }}</option>
+                    {% endfor %}
                 </select>
             </div>
             
             <!-- Dosya Yükleme -->
             <div class="upload-area" onclick="document.getElementById('fileInput').click()">
                 <i class="bi bi-cloud-upload"></i>
-                <h4>Dosyanızı Yükleyin</h4>
-                <p class="text-muted">PDF, Word, PowerPoint veya Metin dosyası seçin</p>
+                <h4>{{ _('Dosyanızı Yükleyin') }}</h4>
+                <p class="text-muted">{{ _('PDF, Word, PowerPoint veya Metin dosyası seçin') }}</p>
                 <input type="file" id="fileInput" name="file" accept=".pdf,.docx,.pptx,.txt" style="display: none;" required>
             </div>
             
             <div id="fileInfo" class="file-info">
                 <i class="bi bi-check-circle-fill"></i>
-                <span id="fileName">Dosya seçildi</span>
+                <span id="fileName">{{ _('Dosya seçildi') }}</span>
             </div>
             
             <div class="text-center">
                 {% if limit_info and limit_info.remaining is not none and limit_info.remaining <= 0 %}
                     <!-- Limit dolmuşsa butonu disable et -->
                     <button type="button" class="btn btn-secondary btn-upload" disabled>
-                        <i class="bi bi-lock"></i> Aylık Limit Doldu
+                        <i class="bi bi-lock"></i> {{ _('Aylık Limit Doldu') }}
                     </button>
                     <div class="mt-2">
                         <a href="{{ url_for('pricing') }}" class="btn btn-warning btn-sm">
-                            <i class="bi bi-star"></i> Premium'a Geç
+                            <i class="bi bi-star"></i> {{ _('Premium\'a Geç') }}
                         </a>
                     </div>
                 {% else %}
                     <!-- Normal submit butonu -->
                     <button type="submit" class="btn btn-primary btn-upload" id="submitBtn">
-                        <i class="bi bi-magic"></i> İçerik Üret
+                        <i class="bi bi-magic"></i> {{ _('İçerik Üret') }}
                         <span class="spinner-border spinner-border-sm" role="status"></span>
                     </button>
                 {% endif %}
@@ -173,35 +171,35 @@
                 <div class="progress">
                     <div class="progress-bar" id="progressBar" role="progressbar" style="width: 0%">0%</div>
                 </div>
-                <div class="progress-text" id="progressText">Dosya yükleniyor...</div>
+                <div class="progress-text" id="progressText">{{ _('Dosya yükleniyor...') }}</div>
             </div>
         </form>
         
         <div class="upload-features">
-            <h5><strong>Neler Oluşturulacak:</strong></h5>
+            <h5><strong>{{ _('Neler Oluşturulacak:') }}</strong></h5>
             <div class="feature-item">
                 <i class="bi bi-journal-text"></i>
-                <span>Konu Özeti</span>
+                <span>{{ _('Konu Özeti') }}</span>
             </div>
             <div class="feature-item">
                 <i class="bi bi-card-list"></i>
-                <span>Çoktan Seçmeli Sorular</span>
+                <span>{{ _('Çoktan Seçmeli Sorular') }}</span>
             </div>
             <div class="feature-item">
                 <i class="bi bi-pencil-square"></i>
-                <span>Kısa Cevap Soruları</span>
+                <span>{{ _('Kısa Cevap Soruları') }}</span>
             </div>
             <div class="feature-item">
                 <i class="bi bi-dash-square"></i>
-                <span>Boş Doldurma Soruları</span>
+                <span>{{ _('Boş Doldurma Soruları') }}</span>
             </div>
             <div class="feature-item">
                 <i class="bi bi-check2-square"></i>
-                <span>Doğru-Yanlış Soruları</span>
+                <span>{{ _('Doğru-Yanlış Soruları') }}</span>
             </div>
             <div class="feature-item">
                 <i class="bi bi-collection"></i>
-                <span>Flashcard Çalışma Kartları</span>
+                <span>{{ _('Flashcard Çalışma Kartları') }}</span>
             </div>
         </div>
     </div>
@@ -260,7 +258,8 @@
         
         submitBtn.classList.add('loading');
         submitBtn.disabled = true;
-        submitBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> İşleniyor... <span class="spinner-border spinner-border-sm" role="status"></span>';
+        const processingText = document.getElementById('js-processing')?.textContent || 'İşleniyor...';
+        submitBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> ' + processingText + ' <span class="spinner-border spinner-border-sm" role="status"></span>';
         
         // Progress bar'ı göster
         progressContainer.classList.add('active');
@@ -268,7 +267,10 @@
         // İlk durumu ayarla
         progressBar.style.width = '0%';
         progressBar.textContent = '0%';
-        progressText.textContent = 'Başlıyor...';
+        const startingText = document.getElementById('js-starting')?.textContent || 'Başlıyor...';
+        progressText.textContent = startingText;
     });
 </script>
+<span id="js-processing" style="display:none;">{{ _('İşleniyor...') }}</span>
+<span id="js-starting" style="display:none;">{{ _('Başlıyor...') }}</span>
 {% endblock %}

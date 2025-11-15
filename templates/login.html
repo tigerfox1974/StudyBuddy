@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Giriş Yap - StudyBuddy{% endblock %}
+{% block title %}{{ _('Giriş Yap') }} - StudyBuddy{% endblock %}
 
 {% block content %}
 <section class="page-gradient-bg">
@@ -8,7 +8,7 @@
         <div class="auth-card">
             <div class="auth-logo">
                 <img src="{{ url_for('static', filename='img/studybuddy-owl.png') }}" alt="StudyBuddy Logo">
-                <h2>StudyBuddy'ye Giriş Yap</h2>
+                <h2>{{ _('StudyBuddy\'ye Giriş Yap') }}</h2>
             </div>
 
             <form method="POST" action="{{ url_for('login') }}" class="auth-form" novalidate>
@@ -25,7 +25,7 @@
                             autocomplete="email" 
                             autofocus
                             value="{{ request.form.get('email', '') }}">
-                        <label for="email" class="floating-label">Email Adresi</label>
+                        <label for="email" class="floating-label">{{ _('Email Adresi') }}</label>
                     </div>
                     <small class="input-feedback" id="emailFeedback" role="alert" aria-live="polite"></small>
                 </div>
@@ -39,11 +39,11 @@
                             class="floating-input" 
                             required 
                             autocomplete="current-password">
-                        <label for="password" class="floating-label">Şifre</label>
+                        <label for="password" class="floating-label">{{ _('Şifre') }}</label>
                         <button 
                             type="button" 
                             class="password-toggle-btn" 
-                            aria-label="Şifreyi göster" 
+                            aria-label="{{ _('Şifreyi göster') }}" 
                             aria-pressed="false" 
                             data-target="password">
                             <i class="bi bi-eye-fill"></i>
@@ -55,17 +55,17 @@
                 <div class="auth-meta">
                     <div class="form-check mb-0">
                         <input type="checkbox" class="form-check-input" id="remember_me" name="remember_me">
-                        <label class="form-check-label" for="remember_me">Beni hatırla</label>
+                        <label class="form-check-label" for="remember_me">{{ _('Beni hatırla') }}</label>
                     </div>
-                    <a href="{{ url_for('forgot_password') }}" class="text-decoration-none">Şifremi unuttum</a>
+                    <a href="{{ url_for('forgot_password') }}" class="text-decoration-none">{{ _('Şifremi unuttum') }}</a>
                 </div>
 
                 <button type="submit" class="btn-primary-custom w-100">
-                    <i class="bi bi-box-arrow-in-right"></i> Giriş Yap
+                    <i class="bi bi-box-arrow-in-right"></i> {{ _('Giriş Yap') }}
                 </button>
 
                 <div class="auth-footer">
-                    <p class="mb-0">Hesabınız yok mu? <a href="{{ url_for('register') }}">Kayıt olun</a></p>
+                    <p class="mb-0">{{ _('Hesabınız yok mu?') }} <a href="{{ url_for('register') }}">{{ _('Kayıt olun') }}</a></p>
                 </div>
             </form>
         </div>

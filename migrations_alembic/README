@@ -1,0 +1,49 @@
+# StudyBuddy Alembic Migrations
+
+Bu klasör, StudyBuddy veritabanı şema değişikliklerini (migration'ları) içerir.
+
+## Klasör Yapısı
+
+- `env.py` - Alembic çalışma ortamı yapılandırması
+- `script.py.mako` - Yeni migration dosyaları için şablon
+- `versions/` - Migration revision dosyaları
+
+## Migration Oluşturma
+
+Yeni bir migration oluşturmak için:
+
+```bash
+# Manuel migration
+alembic revision -m "aciklama"
+
+# Otomatik migration (model değişikliklerini algılar)
+alembic revision --autogenerate -m "aciklama"
+```
+
+## Migration Uygulama
+
+```bash
+# Tüm migration'ları uygula
+alembic upgrade head
+
+# Bir adım geri al
+alembic downgrade -1
+```
+
+## Önemli Notlar
+
+1. **SQLite Batch Mode:** SQLite'da ALTER TABLE sınırlamaları nedeniyle, 
+   tüm migration'larda `batch_alter_table` kullanılmalıdır.
+
+2. **Foreign Key'ler:** SQLite'da foreign key constraint'leri varsayılan 
+   olarak kapalıdır. Production'da `PRAGMA foreign_keys = ON` ayarlanmalıdır.
+
+3. **Downgrade:** Her migration'ın `downgrade()` fonksiyonu mutlaka 
+   implement edilmelidir (geri alma için).
+
+4. **Test:** Yeni migration'ları önce development ortamında test edin.
+
+## Daha Fazla Bilgi
+
+Detaylı dokümantasyon için README.md dosyasına bakın.
+

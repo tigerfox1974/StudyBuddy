@@ -1,0 +1,62 @@
+version: '3.8'
+
+services:
+  # StudyBuddy Flask Application
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: studybuddy-app
+    ports:
+      - "5000:5000"
+    env_file:
+      - .env
+    volumes:
+      # Persistent file storage
+      - ./uploads:/app/uploads
+      - ./exports:/app/exports
+      - ./invoices:/app/invoices
+      # SQLite database (optional - for production, PostgreSQL is recommended)
+      - ./studybuddy.db:/app/studybuddy.db
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - studybuddy-network
+
+  # Redis Service (optional but recommended for rate limiting)
+  # To enable Redis, use: docker-compose --profile redis up -d
+  redis:
+    image: redis:7-alpine
+    container_name: studybuddy-redis
+    # Port mapping removed - Redis is only accessible on internal network
+    # If external access is needed, uncomment the line below:
+    # ports:
+    #   - "6379:6379"
+    volumes:
+      - redis-data:/data
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    networks:
+      - studybuddy-network
+    profiles:
+      - redis
+
+volumes:
+  # Named volume for Redis persistence
+  redis-data:
+
+networks:
+  # Bridge network for service communication
+  studybuddy-network:
+    driver: bridge
+

@@ -132,7 +132,17 @@ DEMO_MODE=false
 - `SECRET_KEY` değerini güvenli, rastgele bir string ile değiştirin.
 - İlk aşamada maliyet için `gpt-3.5-turbo` önerilir. Daha iyi kalite için `gpt-4` kullanabilirsiniz.
 
-### 7. Uygulamayı Çalıştırın
+### 7. Çeviri Kataloglarını Derleyin (İlk Kurulum)
+
+İlk kez projeyi çeken geliştiricilerin çeviri kataloglarını derlemesi gerekir:
+
+```bash
+pybabel compile -d translations
+```
+
+Bu komut, `.po` dosyalarını `.mo` formatına çevirir ve uygulamanın çevirileri kullanabilmesini sağlar.
+
+### 8. Uygulamayı Çalıştırın
 
 ```bash
 python app.py
@@ -146,39 +156,185 @@ flask run
 
 Uygulama varsayılan olarak http://localhost:5000 adresinde çalışacaktır.
 
-## Database Migration
+## 📊 Veritabanı Migration'ları
 
-Yeni abonelik sistemi için migration çalıştırın:
+### Alembic ile Migration Yönetimi
+
+StudyBuddy, veritabanı şema değişikliklerini yönetmek için **Alembic** kullanır. Alembic, SQLAlchemy tabanlı otomatik migration aracıdır.
+
+#### İlk Kurulum
+
+**⚠️ ÖNEMLİ:** Yeni bir veritabanı kuruyorsanız, `db.create_all()` yerine **mutlaka Alembic migration'larını kullanın**. `db.create_all()` sadece test amaçlı özel bir flag ile çalıştırılır (`USE_DB_CREATE_ALL_FOR_TESTS=true`).
+
+1. **Alembic'i yükleyin** (zaten requirements.txt'de mevcut):
+
+   ```bash
+   pip install alembic
+   ```
+
+2. **Mevcut migration'ları uygulayın** (ZORUNLU ADIM):
+
+   ```bash
+   alembic upgrade head
+   ```
+
+   Bu komut, veritabanınızı en son versiyona güncelleyecektir. İlk kurulumda bu adım **mutlaka** çalıştırılmalıdır.
+
+**NOT:** `app.py` içinde `db.create_all()` çağrısı varsayılan olarak devre dışıdır. Veritabanı şeması Alembic migration'ları ile yönetilir. Bu, `db.create_all()` ile Alembic arasındaki çakışma riskini önler.
+
+#### Temel Alembic Komutları
+
+**Migration Durumunu Kontrol Etme:**
 
 ```bash
-python migrations/add_subscription_models.py
+# Mevcut veritabanı versiyonunu görüntüle
+alembic current
+
+# Migration geçmişini görüntüle
+alembic history --verbose
+
+# Bekleyen migration'ları kontrol et
+alembic heads
 ```
 
-Bu migration:
-- `subscription` tablosunu oluşturur
-- `user_usage_stats` tablosunu oluşturur
-- Mevcut kullanıcılar için default subscription kayıtları oluşturur
-
-Ödeme sistemi için migration çalıştırın:
+**Migration Uygulama:**
 
 ```bash
-python migrations/add_payment_model.py
+# Tüm migration'ları uygula (en son versiyona güncelle)
+alembic upgrade head
+
+# Belirli bir versiyona güncelle
+alembic upgrade <revision_id>
+
+# Bir sonraki migration'ı uygula
+alembic upgrade +1
+
+# Migration'ı SQL olarak görüntüle (uygulamadan önce)
+alembic upgrade head --sql
 ```
 
-Bu migration:
-- `payments` tablosunu oluşturur
-- `invoices/` klasörünü oluşturur
-
-Token sistemi için migration çalıştırın:
+**Migration Geri Alma:**
 
 ```bash
-python migrations/add_token_system_columns.py -y
+# Bir önceki versiyona geri dön
+alembic downgrade -1
+
+# Belirli bir versiyona geri dön
+alembic downgrade <revision_id>
+
+# Tüm migration'ları geri al (dikkatli kullanın!)
+alembic downgrade base
 ```
 
-Bu migration:
-- `users` tablosuna `tokens_remaining`, `trial_ends_at`, `last_token_refresh` kolonlarını ekler
-- `token_purchases` tablosunu oluşturur
-- Mevcut kullanıcılar için varsayılan değerleri ayarlar
+**Yeni Migration Oluşturma:**
+
+```bash
+# Manuel migration oluştur
+alembic revision -m "aciklama_buraya"
+
+# Otomatik migration oluştur (model değişikliklerini algılar)
+alembic revision --autogenerate -m "aciklama_buraya"
+```
+
+#### Mevcut Migration'lar
+
+Proje şu migration'ları içerir:
+
+1. **add_user_id_column** - `documents` tablosuna `user_id` kolonu ekler
+2. **add_token_system_columns** - `users` tablosuna token sistemi kolonları ekler
+3. **add_subscription_models** - `subscriptions` ve `user_usage_stats` tablolarını oluşturur
+4. **add_payment_model** - `payments` tablosunu oluşturur
+
+#### Otomatik Migration (Opsiyonel)
+
+Development ortamında, uygulama başlangıcında otomatik migration kontrolü aktif edilebilir:
+
+**.env dosyasına ekleyin:**
+
+```bash
+AUTO_MIGRATE_ON_STARTUP=true
+```
+
+**⚠️ UYARI:** Production ortamında bu özelliği **ASLA** aktif etmeyin! Production migration'ları manuel olarak uygulanmalıdır.
+
+#### Production Migration Workflow
+
+Production ortamında migration'ları güvenli şekilde uygulamak için:
+
+1. **Veritabanı yedeği alın:**
+
+   ```bash
+   cp studybuddy.db studybuddy.db.backup_$(date +%Y%m%d_%H%M%S)
+   ```
+
+2. **Migration'ı önce SQL olarak görüntüleyin:**
+
+   ```bash
+   alembic upgrade head --sql > migration_preview.sql
+   ```
+
+3. **SQL dosyasını inceleyin ve onaylayın**
+
+4. **Migration'ı uygulayın:**
+
+   ```bash
+   alembic upgrade head
+   ```
+
+5. **Uygulamayı test edin**
+
+6. **Sorun varsa geri alın:**
+
+   ```bash
+   alembic downgrade -1
+   # Veya yedekten geri yükleyin:
+   cp studybuddy.db.backup_YYYYMMDD_HHMMSS studybuddy.db
+   ```
+
+#### Docker ile Migration
+
+Docker container içinde migration çalıştırmak için:
+
+```bash
+# Container içinde komut çalıştır
+docker-compose exec app alembic upgrade head
+
+# Veya container başlatmadan önce
+docker-compose run --rm app alembic upgrade head
+```
+
+#### Sorun Giderme
+
+**"Can't locate revision identified by 'head'" hatası:**
+
+```bash
+# Migration geçmişini sıfırlayın
+alembic stamp head
+```
+
+**"Target database is not up to date" hatası:**
+
+```bash
+# Mevcut durumu kontrol edin
+alembic current
+alembic history
+
+# Gerekirse manuel stamp yapın
+alembic stamp <revision_id>
+```
+
+**Migration çakışması:**
+
+```bash
+# Çakışan migration'ları birleştirin
+alembic merge <rev1> <rev2> -m "merge_aciklamasi"
+```
+
+#### Legacy Migration Script'leri
+
+Eski manuel migration script'leri `migrations/legacy/` klasöründe yedek olarak saklanmıştır. Bu script'ler artık kullanılmamaktadır, ancak referans için korunmuştur.
+
+**⚠️ ÖNEMLİ:** Yeni bir veritabanı kuruyorsanız, legacy script'leri çalıştırmayın. Bunun yerine `alembic upgrade head` komutunu kullanın.
 
 ## Kullanım
 
@@ -657,16 +813,107 @@ This migration:
 - **Invoice not generated**: Check ReportLab installation and `invoices/` directory permissions
 - **Email not sent**: Verify SMTP settings in `.env`
 
+## 🌍 Çok Dilli Destek (i18n)
+
+StudyBuddy, Flask-Babel kullanarak çok dilli destek sunmaktadır. Uygulama şu anda **Türkçe (tr)** ve **İngilizce (en)** dillerini desteklemektedir.
+
+### Desteklenen Diller
+
+- **Türkçe (tr)**: Varsayılan dil)
+- **İngilizce (en)**
+
+### Dil Seçimi
+
+Kullanıcılar navbar'daki dil seçici ile istedikleri dili seçebilir. Dil tercihi session ve cookie'de saklanır, böylece sonraki ziyaretlerde de tercih edilen dil kullanılır.
+
+### Geliştiriciler İçin
+
+#### Yeni Çevrilebilir String Ekleme
+
+Template'lerde çevrilebilir string eklemek için `_()` fonksiyonunu kullanın:
+
+```html
+<h1>{{ _('Hoş Geldiniz') }}</h1>
+<p>{{ _('StudyBuddy\'ye hoş geldiniz!') }}</p>
+```
+
+Python kodunda çevrilebilir string eklemek için `gettext()` fonksiyonunu kullanın:
+
+```python
+from flask_babel import gettext
+
+flash(gettext('Kayıt başarılı!'), 'success')
+```
+
+#### Çeviri Kataloglarını Güncelleme
+
+1. **Tüm çevrilebilir string'leri extract edin:**
+   ```bash
+   pybabel extract -F babel.cfg -o messages.pot .
+   ```
+
+2. **Mevcut çeviri dosyalarını güncelleyin:**
+   ```bash
+   pybabel update -i messages.pot -d translations
+   ```
+
+3. **Çevirileri derleyin:**
+   ```bash
+   pybabel compile -d translations
+   ```
+
+#### Yeni Dil Ekleme
+
+Örnek olarak Almanca (de) eklemek için:
+
+1. **Yeni dil için çeviri dosyası oluşturun:**
+   ```bash
+   pybabel init -i messages.pot -d translations -l de
+   ```
+
+2. **`config.py` dosyasında `SUPPORTED_LANGUAGES`'e yeni dili ekleyin:**
+   ```python
+   SUPPORTED_LANGUAGES = {
+       'tr': 'Türkçe',
+       'en': 'English',
+       'de': 'Deutsch'  # Yeni dil
+   }
+   ```
+
+3. **`translations/de/LC_MESSAGES/messages.po` dosyasını düzenleyerek çevirileri ekleyin**
+
+4. **Çevirileri derleyin:**
+   ```bash
+   pybabel compile -d translations
+   ```
+
+#### İlk Kurulumda Çeviri Kataloglarını Derleme
+
+Projeyi ilk kez çeken geliştiricilerin, çeviri kataloglarını derlemesi gerekir:
+
+```bash
+pybabel compile -d translations
+```
+
+Bu komut, `.po` dosyalarını `.mo` formatına çevirir ve uygulamanın çevirileri kullanabilmesini sağlar.
+
+### Babel Komutları Referansı
+
+- `pybabel extract -F babel.cfg -o messages.pot .`: Tüm çevrilebilir string'leri extract eder
+- `pybabel init -i messages.pot -d translations -l <lang>`: Yeni dil için çeviri dosyası oluşturur
+- `pybabel update -i messages.pot -d translations`: Mevcut çeviri dosyalarını günceller
+- `pybabel compile -d translations`: Çevirileri derler (`.po` → `.mo`)
+
 ## İleride Eklenebilecek Özellikler
 
 - [x] Kullanıcı kayıt ve giriş sistemi
 - [x] Abonelik ve ödeme sistemi (temel yapı hazır, ödeme entegrasyonu bekleniyor)
+- [x] Çoklu dil desteği
 - [ ] Email doğrulama
 - [ ] Oluşturulan içerikleri kaydetme ve geçmiş
 - [ ] PDF olarak indirme özelliği
 - [ ] Yazdırma özelliği
 - [ ] Soru sayısını ve zorluk seviyesini ayarlama
-- [ ] Çoklu dil desteği
 - [ ] DOC formatı desteği
 - [ ] OCR desteği (resimlerden metin çıkarma)
 - [ ] Mobil uygulama
@@ -773,4 +1020,317 @@ Testler otomatik olarak:
 - Demo mode'da çalışır (OpenAI API gerektirmez)
 - CSRF ve rate limiting'i devre dışı bırakır
 - Mock'lanmış email ve payment servisleri kullanır
+
+## 🚀 Deployment (Production)
+
+### Docker ile Deployment
+
+StudyBuddy'yi production ortamında çalıştırmak için Docker ve Docker Compose kullanılır.
+
+**Gereksinimler:**
+- Docker 20.10+ 
+- Docker Compose 2.0+ (veya Docker Desktop ile birlikte gelen Docker Compose V2)
+
+**Docker Kurulumu:**
+- Windows için: [Docker Desktop for Windows](https://www.docker.com/products/docker-desktop/) indirip kurun
+- Docker Desktop kurulduktan sonra PowerShell'de `docker --version` ve `docker compose version` komutları ile kontrol edin
+
+**Hızlı Başlangıç:**
+
+1. `.env.production.example` dosyasını `.env` olarak kopyalayın:
+   ```bash
+   cp .env.production.example .env
+   ```
+
+2. `.env` dosyasını düzenleyin ve gerekli değerleri doldurun:
+   - `SECRET_KEY`: Güçlü random string oluşturun: `python -c "import secrets; print(secrets.token_hex(32))"`
+   - `OPENAI_API_KEY`: Production API key
+   - `STRIPE_SECRET_KEY`, `STRIPE_PUBLISHABLE_KEY`: Production keys
+   - `MAIL_USERNAME`, `MAIL_PASSWORD`: SMTP ayarları
+   - Diğer zorunlu değişkenler
+
+3. Docker Compose ile servisleri başlatın:
+   ```bash
+   docker compose up -d
+   ```
+   **Not:** Docker Compose V2 kullanılıyorsa `docker compose` (tire olmadan) komutunu kullanın. Eski versiyon için `docker-compose` kullanılabilir.
+
+4. Logları izleyin:
+   ```bash
+   docker compose logs -f app
+   ```
+
+5. Servisleri durdurmak için:
+   ```bash
+   docker compose down
+   ```
+
+### Environment Variables (Production)
+
+Production deployment için kritik environment variables:
+
+**Zorunlu Değişkenler:**
+- `SECRET_KEY`: Güçlü random string (32+ karakter)
+- `SESSION_COOKIE_SECURE=true`: HTTPS zorunlu
+- `OPENAI_API_KEY`: Production API key
+- `STRIPE_SECRET_KEY`, `STRIPE_PUBLISHABLE_KEY`: Production keys
+- `MAIL_USERNAME`, `MAIL_PASSWORD`: SMTP credentials
+- `RATELIMIT_STORAGE_URI=redis://redis:6379`: Redis kullanımı önerilir
+
+**Önemli Notlar:**
+- `.env.production.example` dosyasını referans olarak kullanın
+- `.env` dosyasını ASLA commit etmeyin (secrets içerir)
+- Tüm production keys kullanılmalı (test keys değil)
+
+### Redis Setup (Optional but Recommended)
+
+Redis, rate limiting için önerilir. Memory-based rate limiting tek container için yeterli ama restart'ta sıfırlanır.
+
+**Redis Kurulumu:**
+
+1. Redis servisini devreye almak için `--profile redis` kullanın:
+   ```bash
+   docker compose --profile redis up -d
+   ```
+2. `.env` dosyasında `RATELIMIT_STORAGE_URI=redis://redis:6379` ayarlayın
+3. Redis kullanılmadığında uygulama `RATELIMIT_STORAGE_URI=memory://` ile çalışabilir (tek container için yeterli, restart'ta sıfırlanır)
+4. Redis health check:
+   ```bash
+   docker compose exec redis redis-cli ping
+   ```
+   `PONG` dönmeli
+
+**Not:** Redis servisi varsayılan olarak başlatılmaz. Sadece `--profile redis` ile başlatıldığında çalışır ve sadece internal network üzerinden erişilebilir (port mapping yoktur).
+
+### Database Migration (Production)
+
+**SQLite vs PostgreSQL:**
+- SQLite: Başlangıç için yeterli, düşük trafik için uygun
+- PostgreSQL: Yüksek trafik ve production için önerilir
+
+**Migration Komutları:**
+
+Container içinde migration script'lerini çalıştırın:
+
+```bash
+# Subscription models
+docker compose exec app python migrations/add_subscription_models.py
+
+# Payment model
+docker compose exec app python migrations/add_payment_model.py
+
+# Token system columns
+docker compose exec app python migrations/add_token_system_columns.py -y
+
+# User ID column
+docker compose exec app python migrations/add_user_id_column.py
+```
+
+**PostgreSQL Kullanımı (Optional):**
+
+1. `docker-compose.yml`'ye postgres service ekleyin
+2. `.env` dosyasında `DATABASE_URL=postgresql://user:password@postgres:5432/studybuddy` ayarlayın
+
+### SSL/TLS Setup (HTTPS)
+
+Production'da HTTPS zorunludur (`SESSION_COOKIE_SECURE=true`).
+
+**Reverse Proxy Önerilir:**
+- Nginx veya Caddy kullanılabilir
+- Let's Encrypt ile ücretsiz SSL sertifikası
+
+**Nginx Örnek Konfigürasyonu (Basic):**
+
+```nginx
+upstream studybuddy {
+    server localhost:5000;
+}
+
+server {
+    listen 80;
+    server_name yourdomain.com;
+    return 301 https://$server_name$request_uri;
+}
+
+server {
+    listen 443 ssl http2;
+    server_name yourdomain.com;
+
+    ssl_certificate /path/to/cert.pem;
+    ssl_certificate_key /path/to/key.pem;
+
+    location / {
+        proxy_pass http://studybuddy;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        
+        # WebSocket support for SocketIO
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+    }
+}
+```
+
+### Health Checks and Monitoring
+
+**Docker Health Check:**
+```bash
+docker compose ps
+```
+Container health status görüntülenir.
+
+**Application Health:**
+- `GET /` endpoint'i 200 OK dönmeli
+- Health check (container içinde curl mevcut):
+  ```bash
+  docker compose exec app curl -f http://localhost:5000/
+  ```
+
+**Logs:**
+```bash
+# Real-time logs
+docker compose logs -f app
+
+# Last 100 lines
+docker compose logs --tail=100 app
+```
+
+Gunicorn logs stdout/stderr'a yazılır, Docker logs ile görüntülenir.
+
+### Backup and Persistence
+
+**Volumes (Persistent Data):**
+- `./uploads`: Kullanıcı dosyaları
+- `./exports`: Export dosyaları
+- `./invoices`: Fatura PDF'leri
+- `./studybuddy.db`: SQLite database
+- `redis-data`: Redis data (named volume)
+
+**Backup Stratejisi:**
+
+1. **Database Backup:**
+   ```bash
+   docker compose exec app sqlite3 studybuddy.db .dump > backup.sql
+   ```
+
+2. **Volume Backup:**
+   ```bash
+   # Uploads
+   docker cp studybuddy-app:/app/uploads ./backups/uploads-$(date +%Y%m%d)
+   
+   # Exports
+   docker cp studybuddy-app:/app/exports ./backups/exports-$(date +%Y%m%d)
+   ```
+
+3. **Otomatik Backup:**
+   - Cron job veya backup service kullanılabilir
+   - Günlük/haftalık backup stratejisi önerilir
+
+### Scaling and Performance
+
+**Gunicorn Workers:**
+- `GUNICORN_WORKERS` environment variable ile ayarlanır
+- Default: `cpu_count * 2 + 1`
+- Worker class: `gevent` (SocketIO için zorunlu, async)
+
+**Horizontal Scaling:**
+- Load balancer + multiple containers
+- Sticky sessions gerekli (SocketIO için)
+- Database: PostgreSQL + connection pooling önerilir
+
+**Cache:**
+- Redis + application-level caching
+- Rate limiting için Redis kullanımı önerilir
+
+### Troubleshooting (Production)
+
+**Container Başlamıyor:**
+- Logs kontrol edin: `docker compose logs app`
+- Environment variables eksik mi: `.env` dosyasını kontrol edin
+- Port conflict: 5000 portu kullanımda mı kontrol edin
+
+**SocketIO Çalışmıyor:**
+- Gunicorn worker class: `gevent` olmalı (`gunicorn.conf.py` kontrol edin)
+- Reverse proxy: WebSocket headers doğru mu (Nginx config)
+
+**Redis Bağlantı Hatası:**
+- Redis container çalışıyor mu: `docker compose ps redis`
+- `.env` dosyasında `RATELIMIT_STORAGE_URI=redis://redis:6379` doğru mu
+
+**Database Migration Hatası:**
+- Migration script'leri sırayla çalıştırıldı mı
+- Database file permissions: container user'ın yazma yetkisi var mı
+
+**Stripe Webhook Çalışmıyor:**
+- Webhook URL doğru mu: `https://yourdomain.com/stripe/webhook`
+- Webhook secret doğru mu: `.env` dosyasında `STRIPE_WEBHOOK_SECRET`
+- Stripe Dashboard'da webhook events aktif mi
+
+### Security Checklist (Production)
+
+Production deployment öncesi kontrol listesi:
+
+- ✅ `SECRET_KEY`: Güçlü, unique, 32+ karakter
+- ✅ `SESSION_COOKIE_SECURE=true`: HTTPS zorunlu
+- ✅ `WTF_CSRF_ENABLED=true`: CSRF protection aktif
+- ✅ `RATELIMIT_ENABLED=true`: Rate limiting aktif
+- ✅ `VALIDATE_FILE_SIGNATURES=true`: File validation aktif
+- ✅ `.env` dosyası `.gitignore`'da: Secrets commit edilmemeli
+- ✅ Stripe production keys: Test keys kullanılmamalı
+- ✅ HTTPS: SSL/TLS sertifikası aktif
+- ✅ Firewall: Sadece 80/443 portları açık (5000 portu external'e kapalı)
+- ✅ Database backups: Otomatik backup stratejisi
+
+### Quick Commands Reference
+
+**Build ve Start:**
+```bash
+# Build image
+docker compose build
+
+# Start services
+docker compose up -d
+
+# Start with rebuild
+docker compose up -d --build
+```
+
+**Management:**
+```bash
+# Stop services
+docker compose down
+
+# View logs
+docker compose logs -f app
+
+# Restart app
+docker compose restart app
+
+# Execute command in container
+docker compose exec app <command>
+
+# Shell access
+docker compose exec app bash
+```
+
+**Database:**
+```bash
+# Migration
+docker compose exec app python migrations/<script>.py
+
+# SQLite shell
+docker compose exec app sqlite3 studybuddy.db
+```
+
+**Cleanup:**
+```bash
+# Remove containers and volumes (DİKKAT: Tüm data silinir)
+docker compose down -v
+
+# Remove images
+docker compose down --rmi all
+```
 
