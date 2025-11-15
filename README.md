@@ -29,6 +29,9 @@
 - ✅ **Kullanım Limitleri:** Plan bazlı dosya boyutu ve soru limitleri
 - ✅ **Kullanım İstatistikleri:** Detaylı dashboard ve raporlama
 - ✅ **Cache Sistemi:** Token tasarrufu ve hızlı erişim
+- ♿ **Erişilebilirlik:** WCAG 2.1 AA uyumlu, keyboard navigation desteği
+- 🎨 **Design System:** Tutarlı renk paleti, spacing ve typography
+- 🔍 **Gelişmiş Form UX:** Floating label, password strength göstergesi, autofill desteği
 
 ## Teknoloji Yığını
 
@@ -215,10 +218,61 @@ StudyBuddy/
 │
 ├── static/                     # Statik dosyalar
 │   ├── css/
-│   └── js/
+│   │   └── styles.css           # Ana CSS dosyası (Design System)
+│   ├── js/
+│   └── img/
+│
+├── docs/                       # Dokümantasyon
+│   ├── design-system.md         # UI/UX tasarım sistem rehberi
+│   ├── ui-analysis.md           # UI/UX analiz raporu
+│   └── ui-qa-checklist.md       # Kalite kontrol listesi
 │
 └── uploads/                    # Yüklenen dosyalar (geçici)
 ```
+
+## UI/UX Design System 🎨
+
+StudyBuddy, tutarlı ve erişilebilir bir kullanıcı deneyimi sunmak için kapsamlı bir **Design System** kullanır.
+
+### Temel Özellikler
+- **Design Tokens:** CSS değişkenleri ile merkezi renk, spacing, typography yönetimi
+- **8px Tabanlı Spacing:** Tutarlı boşluk sistemi
+- **WCAG 2.1 AA Uyumlu:** Erişilebilirlik standartlarına uygun kontrast ve focus state'leri
+- **Responsive:** 576px ve 768px breakpoint'leri ile mobil uyumlu
+- **Floating Label Forms:** Modern form deneyimi, autofill desteği
+- **Password Strength Indicator:** Gerçek zamanlı şifre gücü göstergesi
+- **Keyboard Navigation:** Tam klavye desteği
+
+### Dokümantasyon
+- **`docs/design-system.md`**: Tasarım sistem rehberi, bileşen kullanımı, renk paleti
+- **`docs/ui-analysis.md`**: İyileştirme öncesi analiz raporu
+- **`docs/ui-qa-checklist.md`**: Kalite kontrol listesi ve test önerileri
+
+### Blueprint Sınıfları
+```html
+<!-- Butonlar -->
+<button class="btn-primary-custom">Kayıt Ol</button>
+<button class="btn-outline-custom">İptal</button>
+<button class="btn-hero btn-hero-primary">Başla</button>
+
+<!-- Kartlar -->
+<div class="card-custom">...</div>
+<div class="feature-card">...</div>
+<div class="pricing-card pricing-card-premium">...</div>
+
+<!-- Formlar -->
+<div class="floating-field">
+  <div class="floating-input-wrapper">
+    <input type="text" class="floating-input" id="name">
+    <label class="floating-label" for="name">İsim</label>
+  </div>
+</div>
+```
+
+### Hover Kontrast Garantisi ✅
+Tüm interaktif elementlerde (buton, link, nav item) hover state'lerinde metin okunabilirliği garanti edilmiştir. Gradient arka planlarda hover'da daha koyu tonlar veya arka plan rengi değişimi ile kontrast korunur.
+
+---
 
 ## Önemli Notlar
 

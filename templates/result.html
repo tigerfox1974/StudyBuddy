@@ -5,9 +5,9 @@
 {% block extra_head %}
 <style>
     body {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: var(--color-primary-gradient);
         min-height: 100vh;
-        padding: 20px;
+        padding: var(--spacing-lg);
     }
     
     .header {
@@ -477,10 +477,10 @@
     
     <!-- Breadcrumb -->
     <nav aria-label="breadcrumb" class="mb-3">
-        <ol class="breadcrumb" style="background: rgba(0, 0, 0, 0.3); padding: 12px 20px; border-radius: 10px; backdrop-filter: blur(10px);">
-            <li class="breadcrumb-item"><a href="{{ url_for('index') }}" class="text-white" style="text-decoration: none; font-weight: 500;"><i class="bi bi-house"></i> Ana Sayfa</a></li>
-            <li class="breadcrumb-item"><a href="{{ url_for('upload') }}" class="text-white" style="text-decoration: none; font-weight: 500;"><i class="bi bi-cloud-upload"></i> Dosya Yükle</a></li>
-            <li class="breadcrumb-item active text-white" aria-current="page" style="font-weight: 600;"><i class="bi bi-file-check"></i> Sonuçlar</li>
+        <ol class="breadcrumb breadcrumb-gradient">
+            <li class="breadcrumb-item"><a href="{{ url_for('index') }}"><i class="bi bi-house"></i> Ana Sayfa</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('upload') }}"><i class="bi bi-cloud-upload"></i> Dosya Yükle</a></li>
+            <li class="breadcrumb-item active" aria-current="page"><i class="bi bi-file-check"></i> Sonuçlar</li>
         </ol>
     </nav>
     

@@ -22,10 +22,10 @@
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
     {% endmacro %}
     <!-- Navigation Bar -->
-    <nav class="navbar navbar-expand-lg navbar-dark" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-custom">
         <div class="container">
-            <a class="navbar-brand" href="{{ url_for('index') }}" style="display: flex; align-items: center; gap: 10px;">
-                <img src="{{ url_for('static', filename='img/studybuddy-owl.png') }}" alt="StudyBuddy" style="height: 40px; width: auto;">
+            <a class="navbar-brand navbar-brand-custom" href="{{ url_for('index') }}">
+                <img src="{{ url_for('static', filename='img/studybuddy-owl.png') }}" alt="StudyBuddy">
                 <span>StudyBuddy</span>
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">

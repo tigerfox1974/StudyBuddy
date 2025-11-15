@@ -2,80 +2,24 @@
 
 {% block title %}Profilim - StudyBuddy{% endblock %}
 
-{% block extra_head %}
-<style>
-    body {
-        background: #f8f9fa;
-        min-height: 100vh;
-    }
-    
-    .profile-container {
-        padding: 40px 20px;
-    }
-    
-    .profile-card {
-        background: white;
-        border-radius: 15px;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        padding: 30px;
-        margin-bottom: 20px;
-    }
-    
-    .profile-avatar {
-        width: 100px;
-        height: 100px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-size: 40px;
-        font-weight: bold;
-        margin: 0 auto 20px;
-    }
-    
-    .badge-plan {
-        padding: 8px 15px;
-        border-radius: 20px;
-        font-weight: 600;
-    }
-    
-    .badge-plan.free {
-        background: #0d6efd;
-        color: white;
-    }
-    
-    .badge-plan.standard {
-        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-        color: white;
-    }
-    
-    .badge-plan.premium {
-        background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
-        color: #333;
-    }
-</style>
-{% endblock %}
-
 {% block content %}
-<div class="profile-container">
+<div class="profile-page">
     <div class="container">
         <!-- Breadcrumb -->
         <nav aria-label="breadcrumb" class="mb-4">
-            <ol class="breadcrumb" style="background: rgba(102, 126, 234, 0.1); padding: 12px 20px; border-radius: 10px;">
-                <li class="breadcrumb-item"><a href="{{ url_for('index') }}" style="text-decoration: none; color: #667eea; font-weight: 500;"><i class="bi bi-house"></i> Ana Sayfa</a></li>
-                <li class="breadcrumb-item active" aria-current="page" style="color: #333; font-weight: 600;"><i class="bi bi-person"></i> Profilim</li>
+            <ol class="breadcrumb breadcrumb-light">
+                <li class="breadcrumb-item"><a href="{{ url_for('index') }}"><i class="bi bi-house"></i> Ana Sayfa</a></li>
+                <li class="breadcrumb-item active" aria-current="page"><i class="bi bi-person"></i> Profilim</li>
             </ol>
         </nav>
         
         <h1 class="mb-4">Profil Bilgilerim</h1>
         
         <div class="row">
-            <div class="col-md-8">
+            <div class="col-lg-8">
                 <!-- Profil Bilgileri Card -->
                 <div class="profile-card">
-                    <h3 class="mb-4">Profil Bilgileri</h3>
+                    <h3>Profil Bilgileri</h3>
                     
                     <div class="profile-avatar">
                         {{ user.username[0].upper() }}
@@ -88,91 +32,59 @@
                     
                     <hr>
                     
-                    <div class="row mb-3">
-                        <div class="col-sm-4"><strong>Kayıt Tarihi:</strong></div>
-                        <div class="col-sm-8">{{ user.created_at.strftime('%d %B %Y') }}</div>
+                    <div class="stat-item">
+                        <span><i class="bi bi-calendar"></i> Kayıt Tarihi:</span>
+                        <strong>{{ user.created_at.strftime('%d %B %Y') }}</strong>
                     </div>
                     
-                    <div class="row mb-3">
-                        <div class="col-sm-4"><strong>Son Giriş:</strong></div>
-                        <div class="col-sm-8">
+                    <div class="stat-item">
+                        <span><i class="bi bi-clock-history"></i> Son Giriş:</span>
+                        <strong>
                             {% if user.last_login %}
                                 {{ user.last_login.strftime('%d %B %Y, %H:%M') }}
                             {% else %}
                                 <span class="text-muted">Henüz giriş yapılmamış</span>
                             {% endif %}
-                        </div>
+                        </strong>
                     </div>
                     
-                    <div class="row mb-3">
-                        <div class="col-sm-4"><strong>Hesap Durumu:</strong></div>
-                        <div class="col-sm-8">
+                    <div class="stat-item">
+                        <span><i class="bi bi-shield-check"></i> Hesap Durumu:</span>
+                        <strong>
                             {% if user.is_active %}
                                 <span class="badge bg-success">Aktif</span>
                             {% else %}
                                 <span class="badge bg-danger">Devre Dışı</span>
                             {% endif %}
-                        </div>
+                        </strong>
                     </div>
                     
-                    <div class="row">
-                        <div class="col-sm-4"><strong>Email Doğrulama:</strong></div>
-                        <div class="col-sm-8">
+                    <div class="stat-item">
+                        <span><i class="bi bi-envelope-check"></i> Email Doğrulama:</span>
+                        <strong>
                             {% if user.is_verified %}
                                 <span class="badge bg-success">Doğrulandı</span>
                             {% else %}
                                 <span class="badge bg-warning">Doğrulanmadı</span>
                             {% endif %}
-                        </div>
+                        </strong>
                     </div>
                 </div>
                 
                 <!-- Güvenlik Card -->
                 <div class="profile-card">
-                    <h3 class="mb-4">Güvenlik</h3>
+                    <h3><i class="bi bi-lock"></i> Güvenlik</h3>
                     <p class="text-muted">Şifre değiştirme ve iki faktörlü kimlik doğrulama özellikleri yakında eklenecektir.</p>
+                    <button class="btn btn-outline-primary" disabled>
+                        <i class="bi bi-key"></i> Şifre Değiştir (Yakında)
+                    </button>
                 </div>
             </div>
             
-            <div class="col-md-4">
-                <!-- Kullanım İstatistikleri Card -->
-                <div class="profile-card">
-                    <h3 class="mb-4">Kullanım İstatistikleri</h3>
-                    
-                    {% if stats %}
-                    <div class="mb-3">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <span><i class="bi bi-file-earmark-text text-primary"></i> Bu Ay Yüklenen</span>
-                            <strong>{{ stats.current_month.uploads }}</strong>
-                        </div>
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <span><i class="bi bi-lightning text-warning"></i> Cache Hit</span>
-                            <strong>{{ stats.current_month.cache_hits }}</strong>
-                        </div>
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <span><i class="bi bi-piggy-bank text-success"></i> Token Tasarrufu</span>
-                            <strong>{{ stats.current_month.tokens_saved }}</strong>
-                        </div>
-                        <hr>
-                        <div class="d-flex justify-content-between align-items-center">
-                            <span><i class="bi bi-collection text-info"></i> Toplam Döküman</span>
-                            <strong>{{ stats.total_documents }}</strong>
-                        </div>
-                    </div>
-                    
-                    <a href="{{ url_for('dashboard') }}" class="btn btn-outline-primary w-100">
-                        <i class="bi bi-bar-chart"></i> Detaylı İstatistikler
-                    </a>
-                    {% else %}
-                    <p class="text-muted">İstatistik bilgisi yükleniyor...</p>
-                    {% endif %}
-                </div>
-            </div>
-            
-            <div class="col-md-4">
+            <div class="col-lg-4">
                 <!-- Abonelik Bilgileri Card -->
                 <div class="profile-card">
-                    <h3 class="mb-4">Abonelik Planım</h3>
+                    <h3><i class="bi bi-star"></i> Abonelik Planım</h3>
                     
                     <div class="text-center mb-4">
                         <span class="badge-plan {{ user.subscription_plan or 'free' }}">
@@ -180,47 +92,47 @@
                         </span>
                         {% if token_info and token_info.trial_active %}
                         <div class="mt-2">
-                            <small class="badge bg-info text-white">
+                            <span class="badge-trial">
                                 <i class="bi bi-clock"></i> 7 Günlük Deneme Aktif
-                            </small>
+                            </span>
                         </div>
                         {% endif %}
                     </div>
                     
                     <!-- Fiş Bilgileri -->
                     {% if token_info %}
-                    <div class="mb-3 p-3 bg-light rounded">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <span><i class="bi bi-coin text-primary"></i> Kalan Fiş:</span>
-                            <strong class="text-primary" style="font-size: 1.2rem;">{{ token_info.tokens_remaining }} fiş</strong>
+                    <div class="token-info-card">
+                        <div class="token-display">
+                            <span class="token-count">{{ token_info.tokens_remaining }}</span>
+                            <span class="token-label">Kalan Fiş</span>
                         </div>
                         {% if token_info.trial_active %}
-                        <small class="text-muted">
+                        <p class="text-center text-muted mb-0">
                             <i class="bi bi-info-circle"></i> Deneme süreniz: {{ token_info.trial_ends_at[:10] }} tarihine kadar
-                        </small>
+                        </p>
                         {% else %}
-                        <small class="text-muted">
+                        <p class="text-center text-muted mb-0">
                             <i class="bi bi-arrow-repeat"></i> Aylık {{ token_info.monthly_tokens }} fiş (otomatik yenilenir)
-                        </small>
+                        </p>
                         {% endif %}
                     </div>
                     {% endif %}
                     
-                    <!-- Aylık Kullanım Durumu (sadece limit varsa) -->
+                    <!-- Aylık Kullanım Durumu -->
                     {% if stats and stats.limit_info and stats.limit_info.limit %}
-                    <div class="mt-3 mb-3">
-                        <strong>Bu Ay Dosya Yükleme:</strong>
-                        <div class="progress mt-2" style="height: 25px;">
+                    <div class="mb-3">
+                        <strong class="d-block mb-2"><i class="bi bi-upload"></i> Bu Ay Dosya Yükleme:</strong>
+                        <div class="progress" style="height: 25px;">
                             <div class="progress-bar" 
                                  role="progressbar" 
-                                 style="width: {{ stats.limit_info.percentage }}%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);"
+                                 style="width: {{ stats.limit_info.percentage }}%;"
                                  aria-valuenow="{{ stats.limit_info.used }}" 
                                  aria-valuemin="0" 
                                  aria-valuemax="{{ stats.limit_info.limit }}">
                                 {{ stats.limit_info.used }}/{{ stats.limit_info.limit }}
                             </div>
                         </div>
-                        <small class="text-muted">
+                        <small class="text-muted d-block mt-1">
                             {% if stats.limit_info.remaining is none %}
                                 Sınırsız yükleme hakkı
                             {% elif stats.limit_info.remaining > 0 %}
@@ -232,16 +144,17 @@
                     </div>
                     {% endif %}
                     
+                    <!-- Plan Özellikleri -->
                     <div class="mb-3">
-                        <strong>Plan Özellikleri:</strong>
-                        <ul class="mt-2" style="list-style: none; padding-left: 0;">
+                        <strong class="d-block mb-2"><i class="bi bi-list-check"></i> Plan Özellikleri:</strong>
+                        <ul class="plan-features-list">
                             {% if plan_config and plan_config.highlights %}
                                 {% for highlight in plan_config.highlights %}
-                                <li class="mb-1">
+                                <li class="{% if 'yok' in highlight.lower() or '✗' in highlight %}excluded{% else %}included{% endif %}">
                                     {% if 'yok' in highlight.lower() or '✗' in highlight %}
-                                        <i class="bi bi-x-circle text-danger"></i> 
+                                        <i class="bi bi-x-circle"></i>
                                     {% else %}
-                                        <i class="bi bi-check-circle text-success"></i>
+                                        <i class="bi bi-check-circle-fill"></i>
                                     {% endif %}
                                     {{ highlight }}
                                 </li>
@@ -252,33 +165,61 @@
                         </ul>
                     </div>
                     
+                    <!-- Upgrade Buttons -->
                     {% if user.subscription_plan == 'free' %}
-                    <a href="{{ url_for('pricing') }}" class="btn btn-warning w-100 mb-2">
+                    <a href="{{ url_for('pricing') }}" class="btn btn-primary-custom w-100 mb-2">
                         <i class="bi bi-arrow-up-circle"></i> Paket Yükselt
                     </a>
                     {% elif user.subscription_plan == 'standard' %}
-                    <a href="{{ url_for('pricing') }}" class="btn btn-warning w-100 mb-2">
+                    <a href="{{ url_for('pricing') }}" class="btn btn-primary-custom w-100 mb-2">
                         <i class="bi bi-star"></i> Premium'a Geç
                     </a>
-                    <button class="btn btn-success w-100" disabled>
-                        <i class="bi bi-check-circle"></i> Standart Üyesiniz
-                    </button>
                     {% else %}
                     <button class="btn btn-success w-100" disabled>
                         <i class="bi bi-check-circle"></i> Premium Üyesiniz
                     </button>
                     {% endif %}
                 </div>
+                
+                <!-- Kullanım İstatistikleri Card -->
+                <div class="profile-card">
+                    <h3><i class="bi bi-graph-up"></i> İstatistikler</h3>
+                    
+                    {% if stats %}
+                    <div class="stat-item">
+                        <span><i class="bi bi-file-earmark-text text-primary"></i> Bu Ay Yüklenen</span>
+                        <strong>{{ stats.current_month.uploads }}</strong>
+                    </div>
+                    <div class="stat-item">
+                        <span><i class="bi bi-lightning text-warning"></i> Cache Hit</span>
+                        <strong>{{ stats.current_month.cache_hits }}</strong>
+                    </div>
+                    <div class="stat-item">
+                        <span><i class="bi bi-piggy-bank text-success"></i> Token Tasarrufu</span>
+                        <strong>{{ stats.current_month.tokens_saved }}</strong>
+                    </div>
+                    <div class="stat-item">
+                        <span><i class="bi bi-collection text-info"></i> Toplam Döküman</span>
+                        <strong>{{ stats.total_documents }}</strong>
+                    </div>
+                    
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-outline-custom w-100 mt-3">
+                        <i class="bi bi-bar-chart"></i> Detaylı İstatistikler
+                    </a>
+                    {% else %}
+                    <p class="text-muted">İstatistik bilgisi yükleniyor...</p>
+                    {% endif %}
+                </div>
             </div>
             
             <!-- Ödeme Geçmişi Card -->
-            <div class="col-md-12">
+            <div class="col-lg-12">
                 <div class="profile-card">
-                    <h3 class="mb-4">Ödeme Geçmişi</h3>
+                    <h3><i class="bi bi-receipt"></i> Ödeme Geçmişi</h3>
                     
                     {% if payment_history and payment_history|length > 0 %}
                     <div class="table-responsive">
-                        <table class="table table-hover">
+                        <table class="payment-history-table table">
                             <thead>
                                 <tr>
                                     <th>Tarih</th>
@@ -302,16 +243,16 @@
                                     </td>
                                     <td>
                                         {% if payment.plan_type == 'premium' %}
-                                            <span class="badge bg-warning text-dark">Premium</span>
+                                            <span class="badge-plan premium">Premium</span>
                                         {% elif payment.plan_type == 'standard' %}
-                                            <span class="badge bg-success">Standart</span>
+                                            <span class="badge-plan standard">Standart</span>
                                         {% elif payment.plan_type == 'free' %}
-                                            <span class="badge bg-primary">Ücretsiz</span>
+                                            <span class="badge-plan free">Ücretsiz</span>
                                         {% else %}
                                             <span class="badge bg-secondary">{{ payment.plan_type }}</span>
                                         {% endif %}
                                     </td>
-                                    <td>{{ format_currency(payment.amount, payment.currency) }}</td>
+                                    <td><strong>{{ format_currency(payment.amount, payment.currency) }}</strong></td>
                                     <td>
                                         {% if payment.status == 'completed' %}
                                             <span class="badge bg-success">Tamamlandı</span>
@@ -326,9 +267,9 @@
                                     <td>
                                         {% if payment.invoice_pdf_path and payment.status == 'completed' %}
                                             <a href="{{ url_for('download_invoice', payment_id=payment.id) }}" 
-                                               class="btn btn-sm btn-outline-primary" 
+                                               class="btn btn-sm btn-outline-custom" 
                                                target="_blank">
-                                                <i class="bi bi-download"></i> Fatura İndir
+                                                <i class="bi bi-download"></i> İndir
                                             </a>
                                         {% else %}
                                             <span class="text-muted">-</span>
@@ -341,10 +282,10 @@
                     </div>
                     {% else %}
                     <div class="text-center py-5">
-                        <i class="bi bi-receipt" style="font-size: 3rem; color: #ccc;"></i>
-                        <p class="text-muted mt-3">Henüz ödeme geçmişiniz bulunmuyor.</p>
+                        <i class="bi bi-receipt" style="font-size: 4rem; color: var(--color-text-muted);"></i>
+                        <p class="text-muted mt-3 mb-3">Henüz ödeme geçmişiniz bulunmuyor.</p>
                         {% if user.subscription_plan == 'free' %}
-                        <a href="{{ url_for('pricing') }}" class="btn btn-warning mt-2">
+                        <a href="{{ url_for('pricing') }}" class="btn btn-primary-custom">
                             <i class="bi bi-star"></i> Premium'a Geçerek Sınırsız Özelliklerden Yararlanın
                         </a>
                         {% endif %}
@@ -356,4 +297,3 @@
     </div>
 </div>
 {% endblock %}
-

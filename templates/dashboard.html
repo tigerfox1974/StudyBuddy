@@ -2,156 +2,41 @@
 
 {% block title %}Dashboard - StudyBuddy{% endblock %}
 
-{% block extra_head %}
-<style>
-    body {
-        background: #f8f9fa;
-        min-height: 100vh;
-    }
-    
-    .dashboard-container {
-        padding: 40px 20px;
-    }
-    
-    .dashboard-header {
-        margin-bottom: 30px;
-    }
-    
-    .dashboard-header h1 {
-        font-size: 2.5rem;
-        font-weight: 700;
-        color: #333;
-        margin-bottom: 10px;
-    }
-    
-    .dashboard-header p {
-        color: #666;
-        font-size: 1.1rem;
-    }
-    
-    .stat-card {
-        background: white;
-        border-radius: 15px;
-        padding: 30px;
-        margin-bottom: 20px;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        transition: transform 0.2s, box-shadow 0.2s;
-    }
-    
-    .stat-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
-    }
-    
-    .stat-card h3 {
-        font-size: 1.3rem;
-        font-weight: 600;
-        margin-bottom: 20px;
-        color: #333;
-    }
-    
-    .stat-item {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 15px 0;
-        border-bottom: 1px solid #e0e0e0;
-    }
-    
-    .stat-item:last-child {
-        border-bottom: none;
-    }
-    
-    .stat-item i {
-        font-size: 1.5rem;
-        margin-right: 10px;
-    }
-    
-    .stat-item .label {
-        display: flex;
-        align-items: center;
-        color: #666;
-    }
-    
-    .stat-item .value {
-        font-weight: 700;
-        font-size: 1.2rem;
-        color: #333;
-    }
-    
-    .progress-container {
-        margin-top: 20px;
-    }
-    
-    .progress {
-        height: 30px;
-        border-radius: 15px;
-        background: #e0e0e0;
-        overflow: hidden;
-    }
-    
-    .progress-bar {
-        height: 100%;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-weight: 600;
-        transition: width 0.3s ease;
-    }
-    
-    .progress-info {
-        display: flex;
-        justify-content: space-between;
-        margin-top: 10px;
-        font-size: 0.9rem;
-        color: #666;
-    }
-    
-    .alert-limit {
-        margin-top: 15px;
-        padding: 15px;
-        border-radius: 10px;
-        background: #fff3cd;
-        border: 1px solid #ffc107;
-        color: #856404;
-    }
-    
-    .action-buttons {
-        margin-top: 30px;
-    }
-    
-    .action-buttons .btn {
-        margin-right: 10px;
-        margin-bottom: 10px;
-    }
-</style>
-{% endblock %}
-
 {% block content %}
-<div class="dashboard-container">
+<div class="dashboard-page">
     <div class="container">
         <!-- Breadcrumb -->
         <nav aria-label="breadcrumb" class="mb-4">
-            <ol class="breadcrumb" style="background: rgba(102, 126, 234, 0.1); padding: 12px 20px; border-radius: 10px;">
-                <li class="breadcrumb-item"><a href="{{ url_for('index') }}" style="text-decoration: none; color: #667eea; font-weight: 500;"><i class="bi bi-house"></i> Ana Sayfa</a></li>
-                <li class="breadcrumb-item active" aria-current="page" style="color: #333; font-weight: 600;"><i class="bi bi-bar-chart"></i> Dashboard</li>
+            <ol class="breadcrumb breadcrumb-light">
+                <li class="breadcrumb-item"><a href="{{ url_for('index') }}"><i class="bi bi-house"></i> Ana Sayfa</a></li>
+                <li class="breadcrumb-item active" aria-current="page"><i class="bi bi-bar-chart"></i> Dashboard</li>
             </ol>
         </nav>
         
         <div class="dashboard-header">
-            <h1>Dashboard</h1>
-            <p>Hoş geldiniz, {{ user.username }}! Kullanım istatistikleriniz aşağıda görüntülenmektedir.</p>
+            <h1>📊 Dashboard</h1>
+            <p>Hoş geldiniz, <strong>{{ user.username }}</strong>! Kullanım istatistikleriniz aşağıda görüntülenmektedir.</p>
         </div>
         
         <div class="row g-4">
             <!-- Aylık Kullanım Kartı -->
             <div class="col-md-6 col-lg-4">
                 <div class="stat-card">
-                    <h3><i class="bi bi-calendar-month"></i> Bu Ay</h3>
+                    <h3><i class="bi bi-calendar-month"></i> Bu Ay Kullanım</h3>
                     
                     {% if stats and stats.limit_info %}
+                    <div class="stat-value-display">
+                        <span class="stat-value-large">{{ stats.limit_info.used }}</span>
+                        <span class="stat-value-label">
+                            {% if stats.limit_info.limit %}
+                                / {{ stats.limit_info.limit }} Dosya
+                            {% else %}
+                                Dosya (Sınırsız)
+                            {% endif %}
+                        </span>
+                    </div>
+                    
+                    {% if stats.limit_info.limit %}
                     <div class="progress-container">
                         <div class="progress">
                             <div class="progress-bar" 
@@ -160,22 +45,15 @@
                                  aria-valuenow="{{ stats.limit_info.used }}" 
                                  aria-valuemin="0" 
                                  aria-valuemax="{{ stats.limit_info.limit }}">
-                                {% if stats.limit_info.limit %}
-                                    {{ stats.limit_info.used }}/{{ stats.limit_info.limit }}
-                                {% else %}
-                                    {{ stats.limit_info.used }} (Sınırsız)
-                                {% endif %}
+                                {{ stats.limit_info.percentage|round(0)|int }}%
                             </div>
                         </div>
                         <div class="progress-info">
                             <span>Kullanılan: {{ stats.limit_info.used }}</span>
-                            {% if stats.limit_info.limit %}
-                                <span>Kalan: {% if stats.limit_info.remaining is none %}Sınırsız{% else %}{{ stats.limit_info.remaining }}{% endif %}</span>
-                            {% else %}
-                                <span>Sınırsız</span>
-                            {% endif %}
+                            <span>Kalan: {% if stats.limit_info.remaining is none %}Sınırsız{% else %}{{ stats.limit_info.remaining }}{% endif %}</span>
                         </div>
                     </div>
+                    {% endif %}
                     
                     {% if stats.limit_info.remaining is not none and stats.limit_info.remaining <= 0 %}
                     <div class="alert-limit">
@@ -200,29 +78,22 @@
                     <h3><i class="bi bi-lightning-charge"></i> Cache Performansı</h3>
                     
                     {% if stats and stats.current_month %}
-                    <div class="stat-item">
-                        <span class="label">
-                            <i class="bi bi-check-circle text-success"></i>
-                            Cache Hit
-                        </span>
-                        <span class="value">{{ stats.current_month.cache_hits }}</span>
+                    <div class="stat-value-display">
+                        <span class="stat-value-large">{{ stats.current_month.cache_hits }}</span>
+                        <span class="stat-value-label">Cache Hit</span>
                     </div>
+                    
                     <div class="stat-item">
-                        <span class="label">
-                            <i class="bi bi-piggy-bank text-warning"></i>
-                            Token Tasarrufu
-                        </span>
-                        <span class="value">{{ stats.current_month.tokens_saved }}</span>
+                        <span><i class="bi bi-piggy-bank text-warning"></i> Token Tasarrufu</span>
+                        <strong>{{ stats.current_month.tokens_saved }}</strong>
                     </div>
+                    
                     {% if stats.current_month.uploads > 0 %}
                     <div class="stat-item">
-                        <span class="label">
-                            <i class="bi bi-percent text-info"></i>
-                            Hit Rate
-                        </span>
-                        <span class="value">
+                        <span><i class="bi bi-percent text-info"></i> Hit Rate</span>
+                        <strong>
                             {{ ((stats.current_month.cache_hits / (stats.current_month.cache_hits + stats.current_month.uploads)) * 100)|round(1) }}%
-                        </span>
+                        </strong>
                     </div>
                     {% endif %}
                     {% else %}
@@ -237,19 +108,14 @@
                     <h3><i class="bi bi-file-earmark-text"></i> Toplam İşlenen</h3>
                     
                     {% if stats %}
-                    <div class="stat-item">
-                        <span class="label">
-                            <i class="bi bi-collection text-primary"></i>
-                            Toplam Döküman
-                        </span>
-                        <span class="value">{{ stats.total_documents }}</span>
+                    <div class="stat-value-display">
+                        <span class="stat-value-large">{{ stats.total_documents }}</span>
+                        <span class="stat-value-label">Döküman</span>
                     </div>
                     
-                    <div class="action-buttons">
-                        <a href="{{ url_for('history') }}" class="btn btn-outline-primary">
-                            <i class="bi bi-clock-history"></i> Geçmişi Görüntüle
-                        </a>
-                    </div>
+                    <a href="{{ url_for('history') }}" class="btn btn-outline-custom w-100">
+                        <i class="bi bi-clock-history"></i> Geçmişi Görüntüle
+                    </a>
                     {% else %}
                     <p class="text-muted">İstatistik bilgisi yükleniyor...</p>
                     {% endif %}
@@ -262,16 +128,19 @@
             <div class="col-12">
                 <div class="stat-card">
                     <h3><i class="bi bi-lightning"></i> Hızlı İşlemler</h3>
-                    <div class="action-buttons">
-                        <a href="{{ url_for('index') }}" class="btn btn-primary">
+                    <div class="quick-actions">
+                        <a href="{{ url_for('upload') }}" class="btn btn-primary-custom">
                             <i class="bi bi-cloud-upload"></i> Yeni Döküman Yükle
                         </a>
+                        <a href="{{ url_for('history') }}" class="btn btn-outline-custom">
+                            <i class="bi bi-clock-history"></i> Geçmişi Görüntüle
+                        </a>
                         {% if user.subscription_plan == 'free' %}
-                        <a href="{{ url_for('pricing') }}" class="btn btn-warning">
+                        <a href="{{ url_for('pricing') }}" class="btn btn-primary-custom">
                             <i class="bi bi-star"></i> Planımı Yükselt
                         </a>
                         {% endif %}
-                        <a href="{{ url_for('profile') }}" class="btn btn-outline-secondary">
+                        <a href="{{ url_for('profile') }}" class="btn btn-outline-custom">
                             <i class="bi bi-person"></i> Profilim
                         </a>
                     </div>
@@ -281,4 +150,3 @@
     </div>
 </div>
 {% endblock %}
-

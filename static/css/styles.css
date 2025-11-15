@@ -3,27 +3,259 @@
    ========================================== */
 
 /* ==========================================
+   0. DESIGN TOKENS (Tasarım Sabitleri)
+   ========================================== */
+
+:root {
+    /* Renk Paleti */
+    --color-primary: #667eea;
+    --color-primary-dark: #764ba2;
+    --color-primary-light: #8a9fff;
+    --color-primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    
+    /* Text Renkleri */
+    --color-text-primary: #333333;
+    --color-text-secondary: #666666;
+    --color-text-muted: #999999;
+    --color-text-inverse: #ffffff;
+    
+    /* Background Renkleri */
+    --color-bg-primary: #ffffff;
+    --color-bg-secondary: #f8f9ff;
+    --color-bg-tertiary: #f0f2ff;
+    --color-bg-muted: #f8f9fa;
+    
+    /* Border Renkleri */
+    --color-border-light: #e9ecef;
+    --color-border-default: #dee2e6;
+    --color-border-focus: #667eea;
+    
+    /* Status Renkleri */
+    --color-success: #28a745;
+    --color-warning: #ffc107;
+    --color-danger: #dc3545;
+    --color-info: #17a2b8;
+    
+    /* Spacing Sistemi (8px tabanlı) */
+    --spacing-xs: 0.5rem;    /* 8px */
+    --spacing-sm: 1rem;       /* 16px */
+    --spacing-md: 1.5rem;     /* 24px */
+    --spacing-lg: 2rem;       /* 32px */
+    --spacing-xl: 2.5rem;     /* 40px */
+    --spacing-2xl: 3rem;      /* 48px */
+    --spacing-3xl: 4rem;      /* 64px */
+    --spacing-4xl: 5rem;      /* 80px */
+    
+    /* Typography */
+    --font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    --font-size-xs: 0.75rem;     /* 12px */
+    --font-size-sm: 0.875rem;    /* 14px */
+    --font-size-base: 1rem;      /* 16px */
+    --font-size-md: 1.125rem;    /* 18px */
+    --font-size-lg: 1.25rem;     /* 20px */
+    --font-size-xl: 1.5rem;      /* 24px */
+    --font-size-2xl: 2rem;       /* 32px */
+    --font-size-3xl: 2.5rem;     /* 40px */
+    --font-size-4xl: 3rem;       /* 48px */
+    
+    --font-weight-normal: 400;
+    --font-weight-medium: 500;
+    --font-weight-semibold: 600;
+    --font-weight-bold: 700;
+    
+    --line-height-tight: 1.25;
+    --line-height-normal: 1.5;
+    --line-height-relaxed: 1.75;
+    
+    /* Border Radius */
+    --radius-sm: 0.375rem;    /* 6px */
+    --radius-md: 0.5rem;      /* 8px */
+    --radius-lg: 0.75rem;     /* 12px */
+    --radius-xl: 1rem;        /* 16px */
+    --radius-2xl: 1.25rem;    /* 20px */
+    --radius-full: 9999px;
+    
+    /* Shadows */
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    
+    /* Transitions */
+    --transition-fast: 150ms ease;
+    --transition-base: 250ms ease;
+    --transition-slow: 350ms ease;
+    
+    /* Z-index Layers */
+    --z-dropdown: 1000;
+    --z-sticky: 1020;
+    --z-fixed: 1030;
+    --z-modal-backdrop: 1040;
+    --z-modal: 1050;
+    --z-popover: 1060;
+    --z-tooltip: 1070;
+}
+
+/* ==========================================
    1. GENEL STILLER
    ========================================== */
 
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    line-height: 1.6;
+    font-family: var(--font-family);
+    line-height: var(--line-height-normal);
+    color: var(--color-text-primary);
+}
+
+/* Global Focus Styles for Accessibility */
+*:focus-visible {
+    outline: 3px solid var(--color-primary-light);
+    outline-offset: 2px;
+}
+
+/* Links */
+a {
+    color: var(--color-primary);
+    text-decoration: none;
+    transition: color var(--transition-fast);
+}
+
+/* SADECE paragraf içindeki text linkler hover'da altı çizili olsun */
+p a:hover,
+.text-content a:hover,
+.auth-footer a:hover {
+    color: var(--color-primary-dark);
+    text-decoration: underline;
+}
+
+/* Buton görünümlü ve navigasyon linkleri - ASLA altı çizgi olmasın */
+.btn-primary-custom,
+.btn-outline-custom,
+.btn-hero,
+.navbar-brand-custom,
+.navbar-custom .nav-link,
+.dropdown-item,
+.breadcrumb-item a {
+    text-decoration: none !important;
+}
+
+.btn-primary-custom:hover,
+.btn-outline-custom:hover,
+.btn-hero:hover,
+.navbar-brand-custom:hover,
+.navbar-custom .nav-link:hover,
+.dropdown-item:hover,
+.breadcrumb-item a:hover {
+    text-decoration: none !important;
+}
+
+a:focus-visible {
+    outline: 3px solid var(--color-primary-light);
+    outline-offset: 2px;
+    border-radius: var(--radius-sm);
 }
 
 /* Gradient Background - Tüm sayfalar için */
 .page-gradient-bg {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: var(--color-primary-gradient);
     min-height: 100vh;
 }
 
 /* Container Stilleri */
 .content-wrapper {
-    padding: 20px;
+    padding: var(--spacing-lg);
+}
+
+@media (max-width: 768px) {
+    .content-wrapper {
+        padding: var(--spacing-md);
+    }
 }
 
 /* ==========================================
-   1.1. BREADCRUMB STİLLERİ
+   1.1. NAVBAR STİLLERİ
+   ========================================== */
+
+.navbar-custom {
+    background: var(--color-primary-gradient);
+    box-shadow: var(--shadow-md);
+}
+
+.navbar-brand-custom {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-lg);
+    color: var(--color-text-inverse) !important;
+}
+
+.navbar-brand-custom img {
+    height: 40px;
+    width: auto;
+}
+
+.navbar-brand-custom:hover {
+    opacity: 0.9;
+    text-decoration: none;
+}
+
+.navbar-brand-custom:focus-visible {
+    outline: 3px solid rgba(255, 255, 255, 0.5);
+    outline-offset: 4px;
+    border-radius: var(--radius-md);
+}
+
+.navbar-custom .nav-link {
+    color: rgba(255, 255, 255, 0.9) !important;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    margin: 0 var(--spacing-xs);
+    border-radius: var(--radius-md);
+    transition: all var(--transition-fast);
+}
+
+.navbar-custom .nav-link:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--color-text-inverse) !important;
+}
+
+.navbar-custom .nav-link:focus-visible {
+    outline: 2px solid rgba(255, 255, 255, 0.7);
+    outline-offset: 2px;
+}
+
+.navbar-custom .dropdown-menu {
+    background: var(--color-bg-primary);
+    border: 1px solid var(--color-border-light);
+    box-shadow: var(--shadow-lg);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-xs);
+}
+
+.navbar-custom .dropdown-item {
+    color: var(--color-text-primary);
+    padding: var(--spacing-xs) var(--spacing-md);
+    border-radius: var(--radius-md);
+    transition: all var(--transition-fast);
+}
+
+.navbar-custom .dropdown-item:hover {
+    background: var(--color-bg-secondary);
+    color: var(--color-primary);
+}
+
+.navbar-custom .dropdown-item:focus-visible {
+    outline: 2px solid var(--color-primary-light);
+    outline-offset: -2px;
+}
+
+.navbar-custom .dropdown-divider {
+    border-color: var(--color-border-light);
+    margin: var(--spacing-xs) 0;
+}
+
+/* ==========================================
+   1.2. BREADCRUMB STİLLERİ
    ========================================== */
 
 /* Breadcrumb - Gradient arka plan için (WCAG AA uyumlu) */
@@ -77,42 +309,64 @@ body {
    2. BUTON STİLLERİ
    ========================================== */
 
+/* Base Button */
+.btn-base {
+    padding: var(--spacing-sm) var(--spacing-lg);
+    border-radius: var(--radius-full);
+    font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-base);
+    transition: all var(--transition-base);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-xs);
+    cursor: pointer;
+    border: none;
+    line-height: 1;
+}
+
+.btn-base:focus-visible {
+    outline: 3px solid var(--color-primary-light);
+    outline-offset: 2px;
+}
+
 /* Primary Gradient Button - Ana CTA butonlar için */
 .btn-primary-custom {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: var(--color-primary-gradient);
+    color: var(--color-text-inverse);
     border: none;
-    color: white;
-    padding: 12px 30px;
-    border-radius: 50px;
-    font-weight: 600;
-    transition: all 0.3s;
-    text-decoration: none;
-    display: inline-block;
 }
 
 .btn-primary-custom:hover {
+    background: linear-gradient(135deg, #5568d3 0%, #6a3d91 100%);
     transform: translateY(-2px);
-    box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
-    color: white;
+    box-shadow: var(--shadow-lg);
+    color: var(--color-text-inverse);
+}
+
+.btn-primary-custom:active {
+    transform: translateY(0);
+    box-shadow: var(--shadow-md);
 }
 
 /* Secondary Outline Button */
 .btn-outline-custom {
-    background: white;
-    color: #667eea;
-    border: 2px solid #667eea;
-    padding: 12px 30px;
-    border-radius: 50px;
-    font-weight: 600;
-    transition: all 0.3s;
-    text-decoration: none;
-    display: inline-block;
+    background: var(--color-bg-primary);
+    color: var(--color-primary);
+    border: 2px solid var(--color-primary);
 }
 
 .btn-outline-custom:hover {
-    background: #f8f9fa;
-    color: #667eea;
+    background: var(--color-bg-secondary);
+    color: var(--color-primary-dark);
+    border-color: var(--color-primary-dark);
     transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.btn-outline-custom:active {
+    transform: translateY(0);
 }
 
 /* Small Button Variant */
@@ -129,34 +383,44 @@ body {
 
 /* Hero Buttons (Landing Page) */
 .btn-hero {
-    padding: 15px 40px;
-    font-size: 1.2rem;
-    font-weight: 600;
-    border-radius: 50px;
+    padding: var(--spacing-md) var(--spacing-xl);
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-semibold);
+    border-radius: var(--radius-full);
     border: none;
-    transition: all 0.3s;
+    transition: all var(--transition-base);
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+}
+
+.btn-hero:focus-visible {
+    outline: 3px solid rgba(255,255,255,0.5);
+    outline-offset: 2px;
 }
 
 .btn-hero-primary {
-    background: white;
-    color: #667eea;
+    background: var(--color-bg-primary);
+    color: var(--color-primary);
 }
 
 .btn-hero-primary:hover {
     transform: translateY(-3px);
     box-shadow: 0 10px 30px rgba(255,255,255,0.3);
-    background: #f8f9ff;
+    background: var(--color-bg-secondary);
+    color: var(--color-primary-dark);
 }
 
 .btn-hero-outline {
     background: transparent;
-    color: white;
-    border: 2px solid white;
+    color: var(--color-text-inverse);
+    border: 2px solid var(--color-text-inverse);
 }
 
 .btn-hero-outline:hover {
-    background: white;
-    color: #667eea;
+    background: var(--color-bg-primary);
+    color: var(--color-primary);
+    border-color: var(--color-bg-primary);
     transform: translateY(-3px);
     box-shadow: 0 10px 30px rgba(255,255,255,0.3);
 }
@@ -165,60 +429,92 @@ body {
    3. KART STİLLERİ
    ========================================== */
 
+/* Base Card */
+.card-base {
+    background: var(--color-bg-primary);
+    border-radius: var(--radius-xl);
+    padding: var(--spacing-lg);
+    box-shadow: var(--shadow-md);
+    transition: all var(--transition-base);
+}
+
 /* Standard Card */
 .card-custom {
-    background: white;
-    border-radius: 15px;
-    padding: 30px;
-    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
-    margin-bottom: 20px;
+    background: var(--color-bg-primary);
+    border-radius: var(--radius-xl);
+    padding: var(--spacing-lg);
+    box-shadow: var(--shadow-md);
+    margin-bottom: var(--spacing-lg);
 }
 
 .card-custom-header {
-    border-bottom: 2px solid #667eea;
-    padding-bottom: 15px;
-    margin-bottom: 20px;
+    border-bottom: 2px solid var(--color-primary);
+    padding-bottom: var(--spacing-md);
+    margin-bottom: var(--spacing-lg);
 }
 
 .card-custom-title {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: #333;
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text-primary);
     margin: 0;
+}
+
+@media (max-width: 768px) {
+    .card-custom {
+        padding: var(--spacing-md);
+        margin-bottom: var(--spacing-md);
+    }
+    
+    .card-custom-title {
+        font-size: var(--font-size-lg);
+    }
 }
 
 /* Feature Card (Landing Page) */
 .feature-card {
-    background: #f8f9ff;
-    border-radius: 20px;
-    padding: 40px 30px;
+    background: var(--color-bg-secondary);
+    border-radius: var(--radius-xl);
+    padding: var(--spacing-lg);
     text-align: center;
     height: 100%;
-    transition: all 0.3s;
+    transition: all var(--transition-base);
     border: 2px solid transparent;
 }
 
 .feature-card:hover {
-    transform: translateY(-10px);
-    box-shadow: 0 15px 40px rgba(102, 126, 234, 0.2);
-    border-color: #667eea;
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--color-primary);
 }
 
 .feature-card i {
-    font-size: 4rem;
-    color: #667eea;
-    margin-bottom: 20px;
+    font-size: var(--font-size-3xl);
+    color: var(--color-primary);
+    margin-bottom: var(--spacing-md);
 }
 
 .feature-card h4 {
-    color: #333;
-    font-weight: 600;
-    margin-bottom: 15px;
+    color: var(--color-text-primary);
+    font-weight: var(--font-weight-semibold);
+    margin-bottom: var(--spacing-sm);
+    font-size: var(--font-size-base);
 }
 
 .feature-card p {
-    color: #666;
-    line-height: 1.8;
+    color: var(--color-text-secondary);
+    line-height: var(--line-height-normal);
+    font-size: var(--font-size-sm);
+}
+
+@media (max-width: 768px) {
+    .feature-card {
+        padding: var(--spacing-md);
+    }
+    
+    .feature-card i {
+        font-size: var(--font-size-2xl);
+    }
 }
 
 /* Pricing Card */
@@ -361,6 +657,46 @@ body {
     background: #f8d7da;
     border: 1px solid #f5c6cb;
     color: #721c24;
+}
+
+/* ==========================================
+   5.5. ALERT & NOTIFICATION STİLLERİ
+   ========================================== */
+
+.alert {
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-md);
+    margin-bottom: var(--spacing-md);
+    border: 1px solid transparent;
+}
+
+.alert .btn-close:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
+}
+
+.alert-success {
+    background: rgba(40, 167, 69, 0.1);
+    border-color: var(--color-success);
+    color: #155724;
+}
+
+.alert-warning {
+    background: rgba(255, 193, 7, 0.1);
+    border-color: var(--color-warning);
+    color: #856404;
+}
+
+.alert-danger {
+    background: rgba(220, 53, 69, 0.1);
+    border-color: var(--color-danger);
+    color: #721c24;
+}
+
+.alert-info {
+    background: rgba(23, 162, 184, 0.1);
+    border-color: var(--color-info);
+    color: #0c5460;
 }
 
 /* ==========================================
@@ -691,6 +1027,1177 @@ body {
         height: 34px;
     }
 }
+
+/* ==========================================
+   6.5. LANDING PAGE STİLLERİ
+   ========================================== */
+
+/* Hero Section */
+.hero-section {
+    padding: var(--spacing-3xl) var(--spacing-lg);
+    text-align: center;
+    color: var(--color-text-inverse);
+}
+
+.hero-section h1 {
+    font-size: var(--font-size-4xl);
+    font-weight: var(--font-weight-bold);
+    margin-bottom: var(--spacing-md);
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+    line-height: var(--line-height-tight);
+}
+
+.hero-section .logo {
+    max-width: 180px;
+    height: auto;
+    margin-bottom: var(--spacing-lg);
+    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
+}
+
+.hero-section p {
+    font-size: var(--font-size-md);
+    margin-bottom: var(--spacing-lg);
+    opacity: 0.95;
+    max-width: 700px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.cta-buttons {
+    display: flex;
+    gap: var(--spacing-md);
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: var(--spacing-xl);
+}
+
+/* Features Section */
+.features-section {
+    background: var(--color-bg-primary);
+    padding: var(--spacing-3xl) var(--spacing-lg);
+}
+
+.section-title {
+    text-align: center;
+    font-size: var(--font-size-3xl);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text-primary);
+    margin-bottom: var(--spacing-2xl);
+    line-height: var(--line-height-tight);
+}
+
+/* How It Works */
+.how-it-works {
+    background: linear-gradient(135deg, var(--color-bg-secondary) 0%, var(--color-bg-tertiary) 100%);
+    padding: var(--spacing-3xl) var(--spacing-lg);
+}
+
+.step-card {
+    background: var(--color-bg-primary);
+    border-radius: var(--radius-xl);
+    padding: var(--spacing-md);
+    text-align: center;
+    margin-bottom: var(--spacing-md);
+    box-shadow: var(--shadow-md);
+    transition: all var(--transition-base);
+}
+
+.step-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-lg);
+}
+
+.step-card h4 {
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text-primary);
+    margin-bottom: var(--spacing-xs);
+}
+
+.step-card p {
+    color: var(--color-text-secondary);
+    line-height: var(--line-height-normal);
+    font-size: var(--font-size-sm);
+}
+
+.step-number {
+    width: 50px;
+    height: 50px;
+    background: var(--color-primary-gradient);
+    color: var(--color-text-inverse);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-bold);
+    margin: 0 auto var(--spacing-md);
+}
+
+/* Pricing Preview */
+.pricing-preview {
+    background: var(--color-bg-primary);
+    padding: var(--spacing-3xl) var(--spacing-lg);
+}
+
+/* Landing Page Pricing Cards - Pricing sayfasıyla aynı tasarım */
+.pricing-card-landing {
+    width: 100%;
+    min-height: 500px;
+    border-radius: 20px;
+    position: relative;
+    box-shadow: 0 25px 50px rgba(0,0,0,0.55);
+    transition: all 0.3s ease;
+    padding: 50px 40px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+}
+
+.pricing-card-landing:hover {
+    transform: scale(0.98);
+    box-shadow: 0 30px 60px rgba(0,0,0,0.65);
+}
+
+/* Free Plan - Mavi Gradient */
+.pricing-card-landing.free {
+    background: linear-gradient(170deg, rgba(13, 110, 253, 0.9) 0%, rgba(0, 86, 179, 1) 100%);
+    color: white;
+}
+
+/* Premium Plan - Sarı/Altın Gradient */
+.pricing-card-landing.premium {
+    background: linear-gradient(170deg, rgba(255, 215, 0, 0.9) 0%, rgba(255, 193, 7, 1) 100%);
+    color: #333;
+}
+
+/* Plan Title */
+.pricing-card-landing .plan-title {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 20px;
+}
+
+.pricing-card-landing.premium .plan-title {
+    color: #333;
+}
+
+/* Plan Price */
+.pricing-card-landing .plan-price {
+    font-size: 4.5rem;
+    font-weight: 700;
+    line-height: 1;
+    margin: 20px 0 10px;
+    color: rgba(255, 255, 255, 0.95);
+}
+
+.pricing-card-landing.premium .plan-price {
+    color: #1a5490;
+}
+
+/* Plan Period */
+.pricing-card-landing .plan-period {
+    font-size: 1.1rem;
+    margin-bottom: 30px;
+    opacity: 0.9;
+}
+
+.pricing-card-landing.premium .plan-period {
+    color: #555;
+}
+
+/* Plan Features List */
+.pricing-card-landing .plan-features {
+    list-style: none;
+    padding: 0;
+    margin: 30px 0;
+    text-align: left;
+    flex-grow: 1;
+}
+
+.pricing-card-landing .plan-features li {
+    padding: 15px 0;
+    font-size: 1.15rem;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.pricing-card-landing .plan-features li i {
+    font-size: 1.3rem;
+    color: #4caf50;
+    flex-shrink: 0;
+}
+
+.pricing-card-landing.premium .plan-features li {
+    color: #333;
+}
+
+/* Plan Buttons */
+.plan-btn {
+    display: block;
+    width: 100%;
+    padding: 18px 40px;
+    font-size: 1.3rem;
+    font-weight: 700;
+    border-radius: 50px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none !important;
+    margin-top: auto;
+}
+
+.plan-btn-free {
+    background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+    color: white;
+}
+
+.plan-btn-free:hover {
+    background: linear-gradient(135deg, #6a3d91 0%, #5568d3 100%);
+    transform: translateY(-3px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+    color: white;
+}
+
+.plan-btn-premium {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.plan-btn-premium:hover {
+    background: linear-gradient(135deg, #5568d3 0%, #6a3d91 100%);
+    transform: translateY(-3px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+    color: white;
+}
+
+/* Premium Badge - Turuncu Şerit */
+.premium-badge {
+    position: absolute;
+    overflow: hidden;
+    width: 150px;
+    height: 150px;
+    top: -10px;
+    left: -10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.premium-badge::before {
+    content: 'Premium';
+    position: absolute;
+    width: 200%;
+    height: 40px;
+    background-image: linear-gradient(45deg, #ff6547 0%, #ffb144 51%, #ff7053 100%);
+    transform: rotate(-45deg) translateY(-20px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    box-shadow: 0 5px 10px rgba(0,0,0,0.3);
+}
+
+.premium-badge::after {
+    content: '';
+    position: absolute;
+    width: 10px;
+    bottom: 0;
+    left: 0;
+    height: 10px;
+    z-index: -1;
+    box-shadow: 140px -140px #cc3f47;
+    background-image: linear-gradient(45deg, #FF512F 0%, #F09819 51%, #FF512F 100%);
+}
+
+/* Responsive Landing */
+@media (max-width: 768px) {
+    .hero-section {
+        padding: var(--spacing-2xl) var(--spacing-md);
+    }
+    
+    .hero-section h1 {
+        font-size: var(--font-size-3xl);
+    }
+    
+    .hero-section p {
+        font-size: var(--font-size-base);
+    }
+    
+    .hero-section .logo {
+        max-width: 150px;
+    }
+    
+    .cta-buttons {
+        flex-direction: column;
+        align-items: center;
+        gap: var(--spacing-sm);
+    }
+    
+    .btn-hero {
+        width: 100%;
+        max-width: 280px;
+        padding: var(--spacing-sm) var(--spacing-lg);
+    }
+    
+    .section-title {
+        font-size: var(--font-size-2xl);
+        margin-bottom: var(--spacing-lg);
+    }
+    
+    .features-section, .how-it-works, .pricing-preview {
+        padding: var(--spacing-2xl) var(--spacing-md);
+    }
+    
+    /* Landing Page Pricing Cards - Mobile */
+    .pricing-card-landing {
+        min-height: 450px;
+        padding: 40px 30px;
+    }
+    
+    .pricing-card-landing .plan-price {
+        font-size: 3.5rem;
+    }
+    
+    .pricing-card-landing .plan-title {
+        font-size: 1.75rem;
+    }
+    
+    .pricing-card-landing .plan-features li {
+        font-size: 1rem;
+        padding: 12px 0;
+    }
+    
+    .plan-btn {
+        padding: 15px 30px;
+        font-size: 1.1rem;
+    }
+}
+
+/* ==========================================
+   6.8. UPLOAD PAGE STİLLERİ
+   ========================================== */
+
+/* Upload Page Container */
+.upload-page {
+    background: var(--color-primary-gradient);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    padding: var(--spacing-lg);
+}
+
+.upload-container {
+    background: var(--color-bg-primary);
+    border-radius: var(--radius-2xl);
+    box-shadow: var(--shadow-2xl);
+    padding: var(--spacing-xl);
+    max-width: 700px;
+    width: 100%;
+    margin: var(--spacing-xl) auto;
+}
+
+.upload-logo {
+    text-align: center;
+    margin-bottom: var(--spacing-lg);
+}
+
+.upload-logo img {
+    max-width: 150px;
+    height: auto;
+    margin-bottom: var(--spacing-sm);
+}
+
+.welcome-badge {
+    background: rgba(102, 126, 234, 0.1);
+    padding: var(--spacing-xs) var(--spacing-md);
+    border-radius: var(--radius-full);
+    color: var(--color-primary);
+    font-size: var(--font-size-sm);
+    margin-bottom: var(--spacing-md);
+    display: inline-block;
+}
+
+/* About Section (Collapsible) */
+.about-section {
+    background: var(--color-bg-secondary);
+    border-radius: var(--radius-xl);
+    padding: var(--spacing-lg);
+    margin-bottom: var(--spacing-lg);
+    border: 2px solid var(--color-border-light);
+}
+
+.about-toggle {
+    background: none;
+    border: none;
+    width: 100%;
+    text-align: left;
+    padding: var(--spacing-md);
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-primary);
+    font-size: var(--font-size-md);
+    transition: color var(--transition-fast);
+}
+
+.about-toggle:hover {
+    color: var(--color-primary-dark);
+}
+
+.about-toggle i.bi-chevron-down {
+    transition: transform var(--transition-base);
+}
+
+.about-toggle[aria-expanded="true"] i.bi-chevron-down {
+    transform: rotate(180deg);
+}
+
+.about-content {
+    padding: var(--spacing-lg);
+    color: var(--color-text-secondary);
+    line-height: var(--line-height-relaxed);
+}
+
+.about-content h4 {
+    color: var(--color-primary);
+    margin-bottom: var(--spacing-md);
+    font-weight: var(--font-weight-semibold);
+}
+
+.about-content ul {
+    list-style: none;
+    padding-left: 0;
+}
+
+.about-content ul li {
+    padding: var(--spacing-xs) 0;
+    padding-left: 30px;
+    position: relative;
+}
+
+.about-content ul li:before {
+    content: "✓";
+    position: absolute;
+    left: 0;
+    color: var(--color-success);
+    font-weight: var(--font-weight-bold);
+    font-size: var(--font-size-lg);
+}
+
+.feature-box {
+    background: var(--color-bg-primary);
+    padding: var(--spacing-md);
+    border-radius: var(--radius-lg);
+    margin: var(--spacing-sm) 0;
+    border-left: 4px solid var(--color-primary);
+}
+
+.feature-box h5 {
+    color: var(--color-text-primary);
+    margin-bottom: var(--spacing-xs);
+    font-weight: var(--font-weight-semibold);
+}
+
+.feature-box p {
+    margin: 0;
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-sm);
+}
+
+/* Upload Area */
+.upload-area {
+    border: 3px dashed var(--color-primary);
+    border-radius: var(--radius-xl);
+    padding: var(--spacing-xl);
+    text-align: center;
+    background: var(--color-bg-secondary);
+    transition: all var(--transition-base);
+    cursor: pointer;
+}
+
+.upload-area:hover {
+    background: var(--color-bg-tertiary);
+    border-color: var(--color-primary-dark);
+    transform: scale(1.02);
+}
+
+.upload-area i {
+    font-size: 3rem;
+    color: var(--color-primary);
+    margin-bottom: var(--spacing-lg);
+    display: block;
+}
+
+.upload-area h4 {
+    color: var(--color-text-primary);
+    margin-bottom: var(--spacing-sm);
+}
+
+.upload-area .text-muted {
+    color: var(--color-text-muted);
+}
+
+/* File Info Display */
+.file-info {
+    display: none;
+    margin-top: var(--spacing-lg);
+    padding: var(--spacing-md);
+    background: rgba(40, 167, 69, 0.1);
+    border-radius: var(--radius-lg);
+    color: var(--color-success);
+    border: 1px solid var(--color-success);
+}
+
+.file-info i {
+    color: var(--color-success);
+    margin-right: var(--spacing-xs);
+}
+
+/* Profile & Level Selection */
+.profile-selection,
+.level-selection {
+    margin-bottom: var(--spacing-lg);
+}
+
+.profile-selection h5,
+.level-selection h5 {
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text-primary);
+    margin-bottom: var(--spacing-sm);
+}
+
+/* Upload Button */
+.btn-upload {
+    background: var(--color-primary-gradient);
+    border: none;
+    padding: var(--spacing-md) var(--spacing-xl);
+    font-size: var(--font-size-lg);
+    border-radius: var(--radius-full);
+    margin-top: var(--spacing-lg);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text-inverse);
+    transition: all var(--transition-base);
+}
+
+.btn-upload:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+    color: var(--color-text-inverse);
+}
+
+.btn-upload:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.btn-upload .spinner-border {
+    display: none;
+}
+
+.btn-upload.loading .spinner-border {
+    display: inline-block;
+    margin-left: var(--spacing-xs);
+}
+
+/* Progress Container */
+.progress-container {
+    display: none;
+    margin-top: var(--spacing-lg);
+    padding: var(--spacing-lg);
+    background: var(--color-bg-secondary);
+    border-radius: var(--radius-lg);
+}
+
+.progress-container.active {
+    display: block;
+}
+
+.progress {
+    height: 30px;
+    border-radius: var(--radius-full);
+    background: var(--color-border-light);
+    overflow: hidden;
+}
+
+.progress-bar {
+    height: 100%;
+    background: var(--color-primary-gradient);
+    transition: width 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-text-inverse);
+    font-weight: var(--font-weight-semibold);
+}
+
+.progress-text {
+    text-align: center;
+    margin-top: var(--spacing-sm);
+    color: var(--color-text-secondary);
+    font-weight: var(--font-weight-medium);
+}
+
+/* Features List */
+.upload-features {
+    margin-top: var(--spacing-lg);
+    padding-top: var(--spacing-lg);
+    border-top: 1px solid var(--color-border-light);
+}
+
+.upload-features h5 {
+    margin-bottom: var(--spacing-md);
+    font-weight: var(--font-weight-semibold);
+}
+
+.feature-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: var(--spacing-md);
+    color: var(--color-text-secondary);
+    transition: color var(--transition-fast);
+}
+
+.feature-item:hover {
+    color: var(--color-text-primary);
+}
+
+.feature-item i {
+    color: var(--color-primary);
+    margin-right: var(--spacing-sm);
+    font-size: var(--font-size-lg);
+}
+
+/* Responsive Upload Page */
+@media (max-width: 768px) {
+    .upload-page {
+        padding: var(--spacing-md);
+    }
+    
+    .upload-container {
+        padding: var(--spacing-lg);
+        margin: var(--spacing-md) auto;
+    }
+    
+    .upload-area {
+        padding: var(--spacing-lg);
+    }
+    
+    .upload-area i {
+        font-size: 2.5rem;
+    }
+}
+
+/* ==========================================
+   6.9. PROFILE PAGE STİLLERİ
+   ========================================== */
+
+/* Profile Container */
+.profile-page {
+    background: var(--color-bg-light);
+    min-height: 100vh;
+    padding: var(--spacing-xl) var(--spacing-lg);
+}
+
+.profile-card {
+    background: var(--color-bg-primary);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-lg);
+    padding: var(--spacing-xl);
+    margin-bottom: var(--spacing-lg);
+    transition: box-shadow var(--transition-base);
+}
+
+.profile-card:hover {
+    box-shadow: var(--shadow-xl);
+}
+
+.profile-card h3 {
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-semibold);
+    margin-bottom: var(--spacing-lg);
+    color: var(--color-text-primary);
+}
+
+/* Profile Avatar */
+.profile-avatar {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: var(--color-primary-gradient);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-text-inverse);
+    font-size: 2.5rem;
+    font-weight: var(--font-weight-bold);
+    margin: 0 auto var(--spacing-lg);
+    box-shadow: var(--shadow-lg);
+}
+
+/* Plan Badges */
+.badge-plan {
+    padding: var(--spacing-xs) var(--spacing-md);
+    border-radius: var(--radius-full);
+    font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-sm);
+    display: inline-block;
+}
+
+.badge-plan.free {
+    background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+    color: var(--color-text-inverse);
+}
+
+.badge-plan.standard {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    color: var(--color-text-inverse);
+}
+
+.badge-plan.premium {
+    background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+    color: #333;
+}
+
+.badge-trial {
+    background: linear-gradient(135deg, #ff6b6b 0%, #ff8e53 100%);
+    color: var(--color-text-inverse);
+}
+
+/* Token Info Section */
+.token-info-card {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+    border: 2px solid var(--color-primary);
+    border-radius: var(--radius-xl);
+    padding: var(--spacing-lg);
+    margin-bottom: var(--spacing-lg);
+}
+
+.token-display {
+    text-align: center;
+    margin: var(--spacing-lg) 0;
+}
+
+.token-count {
+    font-size: 3rem;
+    font-weight: var(--font-weight-bold);
+    color: var(--color-primary);
+    display: block;
+}
+
+.token-label {
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-sm);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* Stats Section */
+.stat-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-md) 0;
+    border-bottom: 1px solid var(--color-border-light);
+}
+
+.stat-item:last-child {
+    border-bottom: none;
+}
+
+.stat-item i {
+    margin-right: var(--spacing-xs);
+}
+
+.stat-item strong {
+    color: var(--color-text-primary);
+    font-weight: var(--font-weight-semibold);
+}
+
+/* Payment History Table */
+.payment-history-table {
+    width: 100%;
+    margin-top: var(--spacing-md);
+}
+
+.payment-history-table th {
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-sm);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: var(--spacing-sm);
+    border-bottom: 2px solid var(--color-border-light);
+}
+
+.payment-history-table td {
+    padding: var(--spacing-md) var(--spacing-sm);
+    border-bottom: 1px solid var(--color-border-light);
+}
+
+.payment-history-table tr:last-child td {
+    border-bottom: none;
+}
+
+.payment-history-table tr:hover {
+    background: var(--color-bg-secondary);
+}
+
+/* Plan Features List */
+.plan-features-list {
+    list-style: none;
+    padding: 0;
+    margin: var(--spacing-md) 0;
+}
+
+.plan-features-list li {
+    padding: var(--spacing-sm) 0;
+    display: flex;
+    align-items: center;
+    color: var(--color-text-secondary);
+}
+
+.plan-features-list li i {
+    margin-right: var(--spacing-sm);
+    font-size: var(--font-size-lg);
+}
+
+.plan-features-list li.included i {
+    color: var(--color-success);
+}
+
+.plan-features-list li.excluded {
+    opacity: 0.5;
+}
+
+.plan-features-list li.excluded i {
+    color: var(--color-text-muted);
+}
+
+/* Profile Responsive */
+@media (max-width: 768px) {
+    .profile-page {
+        padding: var(--spacing-lg) var(--spacing-sm);
+    }
+    
+    .profile-card {
+        padding: var(--spacing-lg);
+    }
+    
+    .token-count {
+        font-size: 2rem;
+    }
+}
+
+/* ==========================================
+   6.10. DASHBOARD PAGE STİLLERİ
+   ========================================== */
+
+/* Dashboard Container */
+.dashboard-page {
+    background: var(--color-bg-light);
+    min-height: 100vh;
+    padding: var(--spacing-xl) var(--spacing-lg);
+}
+
+.dashboard-header {
+    margin-bottom: var(--spacing-xl);
+}
+
+.dashboard-header h1 {
+    font-size: 2.5rem;
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text-primary);
+    margin-bottom: var(--spacing-sm);
+}
+
+.dashboard-header p {
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-lg);
+}
+
+/* Stat Cards */
+.stat-card {
+    background: var(--color-bg-primary);
+    border-radius: var(--radius-xl);
+    padding: var(--spacing-xl);
+    margin-bottom: var(--spacing-lg);
+    box-shadow: var(--shadow-lg);
+    transition: all var(--transition-base);
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-xl);
+}
+
+.stat-card h3 {
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-semibold);
+    margin-bottom: var(--spacing-lg);
+    color: var(--color-text-primary);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.stat-card h3 i {
+    color: var(--color-primary);
+}
+
+/* Stat Card Value Display */
+.stat-value-display {
+    text-align: center;
+    padding: var(--spacing-lg);
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+    border-radius: var(--radius-lg);
+    margin-bottom: var(--spacing-md);
+}
+
+.stat-value-large {
+    font-size: 3.5rem;
+    font-weight: var(--font-weight-bold);
+    color: var(--color-primary);
+    line-height: 1;
+    display: block;
+}
+
+.stat-value-label {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-top: var(--spacing-xs);
+}
+
+/* Progress Container */
+.progress-container {
+    margin-top: var(--spacing-lg);
+}
+
+.progress-info {
+    display: flex;
+    justify-content: space-between;
+    margin-top: var(--spacing-sm);
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+}
+
+/* Alert Limit */
+.alert-limit {
+    margin-top: var(--spacing-md);
+    padding: var(--spacing-md);
+    border-radius: var(--radius-lg);
+    background: rgba(255, 193, 7, 0.1);
+    border: 2px solid var(--color-warning);
+    color: #856404;
+}
+
+.alert-limit i {
+    margin-right: var(--spacing-xs);
+}
+
+/* Quick Actions */
+.quick-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-sm);
+    margin-top: var(--spacing-lg);
+}
+
+.quick-actions .btn {
+    flex: 0 1 auto;
+}
+
+/* Dashboard Responsive */
+@media (max-width: 768px) {
+    .dashboard-page {
+        padding: var(--spacing-lg) var(--spacing-sm);
+    }
+    
+    .dashboard-header h1 {
+        font-size: 2rem;
+    }
+    
+    .stat-card {
+        padding: var(--spacing-lg);
+    }
+    
+    .stat-value-large {
+        font-size: 2.5rem;
+    }
+    
+    .quick-actions {
+        flex-direction: column;
+    }
+    
+    .quick-actions .btn {
+        width: 100%;
+    }
+}
+
+/* ==========================================
+   6.11. HISTORY PAGE STİLLERİ
+   ========================================== */
+
+/* History Page Container */
+.history-page {
+    background: var(--color-primary-gradient);
+    min-height: 100vh;
+    padding: var(--spacing-xl) var(--spacing-lg);
+}
+
+.history-header {
+    margin-bottom: var(--spacing-xl);
+    color: var(--color-text-inverse);
+}
+
+.history-header h1 {
+    font-size: 2.5rem;
+    font-weight: var(--font-weight-bold);
+    margin-bottom: var(--spacing-sm);
+}
+
+.history-header p {
+    font-size: var(--font-size-lg);
+    opacity: 0.9;
+}
+
+/* Document Card */
+.document-card {
+    background: var(--color-bg-primary);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-lg);
+    transition: all var(--transition-base);
+    overflow: hidden;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.document-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-2xl);
+}
+
+.document-card-header {
+    background: var(--color-bg-primary);
+    padding: var(--spacing-md);
+    border-bottom: 1px solid var(--color-border-light);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.document-card-header i {
+    font-size: 1.5rem;
+}
+
+.document-card-header h6 {
+    margin: 0;
+    font-weight: var(--font-weight-semibold);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.document-card-body {
+    padding: var(--spacing-lg);
+    flex: 1;
+}
+
+.document-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-xs);
+    margin-bottom: var(--spacing-md);
+}
+
+.document-meta {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+
+.document-meta-item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-sm);
+}
+
+.document-meta-item i {
+    color: var(--color-text-muted);
+}
+
+.document-card-footer {
+    padding: var(--spacing-md);
+    border-top: 1px solid var(--color-border-light);
+    background: var(--color-bg-secondary);
+}
+
+/* Empty State */
+.empty-state {
+    background: var(--color-bg-primary);
+    border-radius: var(--radius-2xl);
+    padding: var(--spacing-3xl);
+    text-align: center;
+    box-shadow: var(--shadow-xl);
+}
+
+.empty-state-icon {
+    font-size: 4rem;
+    color: var(--color-primary);
+    margin-bottom: var(--spacing-lg);
+}
+
+.empty-state h3 {
+    color: var(--color-text-secondary);
+    margin-bottom: var(--spacing-md);
+}
+
+.empty-state p {
+    color: var(--color-text-muted);
+    margin-bottom: var(--spacing-lg);
+}
+
+/* History Responsive */
+@media (max-width: 768px) {
+    .history-page {
+        padding: var(--spacing-lg) var(--spacing-sm);
+    }
+    
+    .history-header h1 {
+        font-size: 2rem;
+    }
+    
+    .document-card-header h6 {
+        font-size: var(--font-size-sm);
+    }
+}
+
+/* ==========================================
+   6.12. RESULT PAGE WRAPPER
+   ========================================== */
+
+.result-page-wrapper {
+    background: var(--color-primary-gradient);
+    min-height: 100vh;
+    padding: var(--spacing-lg);
+}
+
+/* Result sayfası için mevcut inline CSS'ler korunmuştur */
+/* Quiz modal ve tab yapısı değiştirilmemiştir */
 
 /* ==========================================
    7. QUIZ & INTERACTIVE STİLLERİ

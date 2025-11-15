@@ -2,262 +2,9 @@
 
 {% block title %}StudyBuddy - Yapay Zeka Destekli Öğrenme Asistanı{% endblock %}
 
-{% block extra_head %}
-<style>
-    body {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        min-height: 100vh;
-    }
-    
-    .hero-section {
-        padding: 80px 20px;
-        text-align: center;
-        color: white;
-    }
-    
-    .hero-section h1 {
-        font-size: 3.5rem;
-        font-weight: 700;
-        margin-bottom: 20px;
-        text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
-    }
-    
-    .hero-section .logo {
-        max-width: 200px;
-        height: auto;
-        margin-bottom: 30px;
-        filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
-    }
-    
-    .hero-section p {
-        font-size: 1.3rem;
-        margin-bottom: 40px;
-        opacity: 0.95;
-    }
-    
-    .cta-buttons {
-        display: flex;
-        gap: 20px;
-        justify-content: center;
-        flex-wrap: wrap;
-        margin-bottom: 60px;
-    }
-    
-    .btn-hero {
-        padding: 15px 40px;
-        font-size: 1.2rem;
-        font-weight: 600;
-        border-radius: 50px;
-        border: none;
-        transition: all 0.3s;
-    }
-    
-    .btn-hero-primary {
-        background: white;
-        color: #667eea;
-    }
-    
-    .btn-hero-primary:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 10px 30px rgba(255,255,255,0.3);
-        background: #f8f9ff;
-    }
-    
-    .btn-hero-outline {
-        background: transparent;
-        color: white;
-        border: 2px solid white;
-    }
-    
-    .btn-hero-outline:hover {
-        background: white;
-        color: #667eea;
-        transform: translateY(-3px);
-        box-shadow: 0 10px 30px rgba(255,255,255,0.3);
-    }
-    
-    .features-section {
-        background: white;
-        padding: 80px 20px;
-    }
-    
-    .section-title {
-        text-align: center;
-        font-size: 2.5rem;
-        font-weight: 700;
-        color: #333;
-        margin-bottom: 60px;
-    }
-    
-    .feature-card {
-        background: #f8f9ff;
-        border-radius: 20px;
-        padding: 40px 30px;
-        text-align: center;
-        height: 100%;
-        transition: all 0.3s;
-        border: 2px solid transparent;
-    }
-    
-    .feature-card:hover {
-        transform: translateY(-10px);
-        box-shadow: 0 15px 40px rgba(102, 126, 234, 0.2);
-        border-color: #667eea;
-    }
-    
-    .feature-card i {
-        font-size: 4rem;
-        color: #667eea;
-        margin-bottom: 20px;
-    }
-    
-    .feature-card h4 {
-        color: #333;
-        font-weight: 600;
-        margin-bottom: 15px;
-    }
-    
-    .feature-card p {
-        color: #666;
-        line-height: 1.8;
-    }
-    
-    .how-it-works {
-        background: linear-gradient(135deg, #f8f9ff 0%, #e0e7ff 100%);
-        padding: 80px 20px;
-    }
-    
-    .step-card {
-        background: white;
-        border-radius: 15px;
-        padding: 30px;
-        text-align: center;
-        margin-bottom: 30px;
-        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
-    }
-    
-    .step-number {
-        width: 60px;
-        height: 60px;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.5rem;
-        font-weight: 700;
-        margin: 0 auto 20px;
-    }
-    
-    .pricing-preview {
-        background: white;
-        padding: 80px 20px;
-    }
-    
-    .pricing-card {
-        width: 100%;
-        min-height: 400px;
-        border-radius: 20px;
-        background: linear-gradient(170deg, rgba(58, 56, 56, 0.623) 0%, rgb(31, 31, 31) 100%);
-        position: relative;
-        box-shadow: 0 25px 50px rgba(0,0,0,0.55);
-        cursor: pointer;
-        transition: all .3s;
-        padding: 40px 30px;
-        text-align: center;
-        height: 100%;
-        color: white;
-        display: flex;
-        flex-direction: column;
-    }
-    
-    .pricing-card:hover {
-        transform: scale(0.95);
-    }
-    
-    .pricing-card.featured {
-        background: linear-gradient(170deg, rgba(255, 215, 0, 0.8) 0%, rgba(255, 193, 7, 0.9) 100%);
-        color: #333;
-    }
-    
-    .pricing-card.featured .card_badge {
-        position: absolute;
-        overflow: hidden;
-        width: 150px;
-        height: 150px;
-        top: -10px;
-        left: -10px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-    
-    .pricing-card.featured .card_badge::before {
-        content: 'Premium';
-        position: absolute;
-        width: 150%;
-        height: 40px;
-        background-image: linear-gradient(45deg, #ff6547 0%, #ffb144  51%, #ff7053  100%);
-        transform: rotate(-45deg) translateY(-20px);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: #fff;
-        font-weight: 600;
-        letter-spacing: 0.1em;
-        text-transform: uppercase;
-        box-shadow: 0 5px 10px rgba(0,0,0,0.23);
-    }
-    
-    .pricing-card.featured .card_badge::after {
-        content: '';
-        position: absolute;
-        width: 10px;
-        bottom: 0;
-        left: 0;
-        height: 10px;
-        z-index: -1;
-        box-shadow: 140px -140px #cc3f47;
-        background-image: linear-gradient(45deg, #FF512F 0%, #F09819  51%, #FF512F  100%);
-    }
-    
-    .price {
-        font-size: 2.5rem;
-        font-weight: 700;
-        color: inherit;
-        margin: 20px 0;
-    }
-    
-    .price-featured {
-        color: inherit;
-    }
-    
-    @media (max-width: 768px) {
-        .hero-section h1 {
-            font-size: 2.5rem;
-        }
-        
-        .hero-section p {
-            font-size: 1.1rem;
-        }
-        
-        .cta-buttons {
-            flex-direction: column;
-            align-items: center;
-        }
-        
-        .btn-hero {
-            width: 100%;
-            max-width: 300px;
-        }
-    }
-</style>
-{% endblock %}
-
 {% block content %}
 <!-- Hero Section -->
-<section class="hero-section">
+<section class="page-gradient-bg hero-section">
     <div class="container">
         <img src="{{ url_for('static', filename='img/studybuddy-owl.png') }}" alt="StudyBuddy Logo" class="logo">
         <h1>StudyBuddy</h1>
@@ -376,38 +123,38 @@
     <div class="container">
         <h2 class="section-title">Planlarımız</h2>
         <div class="row g-4 justify-content-center">
-            <div class="col-md-4">
-                <div class="pricing-card" style="background: linear-gradient(170deg, rgba(13, 110, 253, 0.8) 0%, rgba(0, 86, 179, 0.9) 100%);">
-                    <h3>Ücretsiz</h3>
-                    <div class="price">0₺</div>
-                    <p style="opacity: 0.9;">Aylık</p>
-                    <ul class="list-unstyled mt-4">
-                        <li class="mb-2"><i class="bi bi-check-circle" style="color: #4caf50;"></i> 3 fiş/ay</li>
-                        <li class="mb-2"><i class="bi bi-check-circle" style="color: #4caf50;"></i> Her soru türünden 5 soru</li>
-                        <li class="mb-2"><i class="bi bi-check-circle" style="color: #4caf50;"></i> 10 MB dosya boyutu</li>
-                        <li class="mb-2"><i class="bi bi-check-circle" style="color: #4caf50;"></i> 7 günlük deneme (10 fiş)</li>
+            <div class="col-md-6 col-lg-5">
+                <div class="pricing-card-landing free">
+                    <h3 class="plan-title">Ücretsiz</h3>
+                    <div class="plan-price">0₺</div>
+                    <p class="plan-period">Aylık</p>
+                    <ul class="plan-features">
+                        <li><i class="bi bi-check-circle-fill"></i> 3 fiş/ay</li>
+                        <li><i class="bi bi-check-circle-fill"></i> 5 soru/tür</li>
+                        <li><i class="bi bi-check-circle-fill"></i> 10 MB dosya</li>
+                        <li><i class="bi bi-check-circle-fill"></i> 7 gün deneme</li>
                     </ul>
-                    <a href="{{ url_for('register') }}" class="btn btn-light w-100 mt-4" style="background: white; color: #0d6efd; border: none;">Başla</a>
+                    <a href="{{ url_for('register') }}" class="plan-btn plan-btn-free">Başla</a>
                 </div>
             </div>
-            <div class="col-md-4">
-                <div class="pricing-card featured">
-                    <span class="card_badge"></span>
-                    <h3>Premium</h3>
-                    <div class="price price-featured">99₺</div>
-                    <p style="opacity: 0.9;">Aylık</p>
-                    <ul class="list-unstyled mt-4">
-                        <li class="mb-2"><i class="bi bi-check-circle" style="color: #28a745;"></i> 60 fiş/ay</li>
-                        <li class="mb-2"><i class="bi bi-check-circle" style="color: #28a745;"></i> Sınırsız soru</li>
-                        <li class="mb-2"><i class="bi bi-check-circle" style="color: #28a745;"></i> 24 MB dosya boyutu</li>
-                        <li class="mb-2"><i class="bi bi-check-circle" style="color: #28a745;"></i> Ücretsiz export</li>
+            <div class="col-md-6 col-lg-5">
+                <div class="pricing-card-landing premium">
+                    <span class="premium-badge"></span>
+                    <h3 class="plan-title">Premium</h3>
+                    <div class="plan-price">99₺</div>
+                    <p class="plan-period">Aylık</p>
+                    <ul class="plan-features">
+                        <li><i class="bi bi-check-circle-fill"></i> 60 fiş/ay</li>
+                        <li><i class="bi bi-check-circle-fill"></i> Sınırsız soru</li>
+                        <li><i class="bi bi-check-circle-fill"></i> 24 MB dosya</li>
+                        <li><i class="bi bi-check-circle-fill"></i> Export ücretsiz</li>
                     </ul>
-                    <a href="{{ url_for('pricing') }}" class="btn btn-light w-100 mt-4" style="background: white; color: #333; border: none;">Seç</a>
+                    <a href="{{ url_for('pricing') }}" class="plan-btn plan-btn-premium">Seç</a>
                 </div>
             </div>
         </div>
         <div class="text-center mt-5">
-            <a href="{{ url_for('pricing') }}" class="btn btn-outline-primary btn-lg">
+            <a href="{{ url_for('pricing') }}" class="btn-outline-custom btn-lg">
                 Tüm Planları İncele <i class="bi bi-arrow-right"></i>
             </a>
         </div>
