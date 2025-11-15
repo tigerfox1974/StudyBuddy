@@ -288,6 +288,12 @@ class Config:
     INVOICE_TAX_RATE = float(os.environ.get('INVOICE_TAX_RATE', '0'))
     INVOICE_STORAGE_PATH = os.environ.get('INVOICE_STORAGE_PATH', 'invoices')
     
+    # Export Ayarları
+    EXPORT_STORAGE_PATH = os.environ.get('EXPORT_STORAGE_PATH', 'exports')
+    EXPORT_FILENAME_FORMAT = 'export_{result_id}_{timestamp}'
+    EXPORT_INCLUDE_ANSWER_KEY = True
+    EXPORT_FORMATS = ['pdf', 'docx']
+    
     @staticmethod
     def allowed_file(filename):
         """Dosya uzantısının izin verilen listede olup olmadığını kontrol eder"""

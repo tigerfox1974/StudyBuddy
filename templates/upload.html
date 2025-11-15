@@ -7,11 +7,6 @@
     <div class="upload-container">
         <div class="upload-logo">
             <img src="{{ url_for('static', filename='img/studybuddy-owl.png') }}" alt="StudyBuddy Logo">
-            {% if current_user and current_user.is_authenticated %}
-            <div class="welcome-badge">
-                <i class="bi bi-person-check"></i> Hoş geldiniz, {{ current_user.username }}!
-            </div>
-            {% endif %}
         </div>
         
         <!-- Program Hakkında Bölümü -->
@@ -115,14 +110,14 @@
             <!-- Profil Seçimi -->
             <div class="profile-selection">
                 <h5><i class="bi bi-person-circle"></i> Kimsiniz?</h5>
-                <div class="btn-group w-100" role="group">
+                <div class="btn-group w-100 profile-toggle-group" role="group">
                     <input type="radio" class="btn-check" name="user_type" id="student" value="student" checked>
-                    <label class="btn btn-outline-primary" for="student">
+                    <label class="btn" for="student">
                         <i class="bi bi-mortarboard"></i> Öğrenci
                     </label>
                     
                     <input type="radio" class="btn-check" name="user_type" id="teacher" value="teacher">
-                    <label class="btn btn-outline-primary" for="teacher">
+                    <label class="btn" for="teacher">
                         <i class="bi bi-person-workspace"></i> Öğretmen
                     </label>
                 </div>

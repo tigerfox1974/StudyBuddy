@@ -7,7 +7,7 @@ import os
 import time
 from datetime import datetime
 from urllib.parse import urlparse
-from flask import Flask, render_template, request, redirect, url_for, flash, abort
+from flask import Flask, render_template, request, redirect, url_for, flash, abort, send_file
 from flask_socketio import SocketIO, emit
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from flask_mail import Mail, Message
@@ -26,7 +26,8 @@ from utils import (
     generate_invoice_pdf, send_payment_confirmation_email, activate_user_subscription, 
     get_user_payment_history, format_currency,
     initialize_user_tokens, is_trial_active, calculate_token_cost, check_user_tokens, 
-    deduct_tokens, can_user_export, get_user_token_info
+    deduct_tokens, can_user_export, get_user_token_info,
+    generate_export_pdf, generate_export_docx
 )
 import markdown
 import stripe
@@ -479,7 +480,8 @@ def process():
                                    user_level=user_level,
                                    user_type=user_type,
                                    short_answer_max_words=short_answer_max_words,
-                                   user=current_user)
+                                   user=current_user,
+                                   result_id=cached_result.id)
         
         # CACHE MISS - Ilk defa isleniyor
         print(f"[CACHE MISS] Isleniyor: {filename}")
@@ -628,7 +630,8 @@ def process():
                                    plan_config=plan_config,
                                    original_counts=original_counts,
                                    plan_limit_info=plan_limit_info,
-                                   token_info=token_info)
+                                   token_info=token_info,
+                                   result_id=result.id)
         
         except ValueError as e:
             if os.path.exists(file_path):
@@ -841,7 +844,6 @@ def download_invoice(payment_id):
         flash('Fatura bulunamadı.', 'error')
         return redirect(url_for('profile'))
     
-    from flask import send_file
     return send_file(
         payment.invoice_pdf_path,
         as_attachment=True,
@@ -1014,7 +1016,71 @@ def view_result(result_id):
                           user_level=result.document.user_level,
                           user_type=result.document.user_type,
                           short_answer_max_words=short_answer_max_words,
-                          user=current_user)
+                          user=current_user,
+                          result_id=result_id)
+
+
+@app.route('/export/<int:result_id>')
+@login_required
+def export(result_id):
+    """Result'u PDF veya DOCX formatında export et"""
+    # Result'u getir
+    result = Result.query.get_or_404(result_id)
+    
+    # Yetkilendirme kontrolü - kullanıcı sadece kendi dökümanlarının sonuçlarını export edebilir
+    # Legacy veriler için: user_id None olabilir, bu durumda erişim engellenir
+    document_user_id = result.document.user_id
+    if document_user_id is None:
+        # Legacy veri: user_id yok, erişim engellenir
+        flash('Bu sonuç eski bir kayıttan geliyor ve artık erişilebilir değil.', 'error')
+        abort(403)
+    
+    if document_user_id != current_user.id:
+        abort(403)
+    
+    # Format validasyonu
+    format_param = request.args.get('format', 'pdf').lower()
+    if format_param not in Config.EXPORT_FORMATS:
+        flash(f'Geçersiz export formatı. Desteklenen formatlar: {", ".join(Config.EXPORT_FORMATS)}', 'error')
+        return redirect(url_for('view_result', result_id=result_id))
+    
+    # Format type parametresi (full, questions_only, summary_only)
+    type_param = request.args.get('type', 'full').lower()
+    if type_param not in ['full', 'questions_only', 'summary_only']:
+        type_param = 'full'
+    
+    # Plan ve fiş kontrolü
+    can_export, error_msg, required_tokens = can_user_export(current_user)
+    if not can_export:
+        flash(error_msg, 'error')
+        return redirect(url_for('view_result', result_id=result_id))
+    
+    # Export dosyası oluşturma
+    try:
+        if format_param == 'pdf':
+            file_path = generate_export_pdf(result, current_user, format_type=type_param)
+            mimetype = 'application/pdf'
+        elif format_param == 'docx':
+            file_path = generate_export_docx(result, current_user, format_type=type_param)
+            mimetype = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+        else:
+            flash('Desteklenmeyen export formatı.', 'error')
+            return redirect(url_for('view_result', result_id=result_id))
+    except ImportError as e:
+        flash(f'Export için gerekli kütüphane yüklü değil: {str(e)}', 'error')
+        return redirect(url_for('view_result', result_id=result_id))
+    except Exception as e:
+        flash(f'Export oluşturulurken hata oluştu: {str(e)}', 'error')
+        return redirect(url_for('view_result', result_id=result_id))
+    
+    # Token düşme (sadece required_tokens > 0 ise)
+    if required_tokens > 0:
+        deduct_tokens(current_user, required_tokens)
+        db.session.commit()
+    
+    # Dosya indirme
+    download_name = f"{result.document.original_filename.rsplit('.', 1)[0]}_export.{format_param}"
+    return send_file(file_path, as_attachment=True, download_name=download_name, mimetype=mimetype)
 
 
 @app.errorhandler(CSRFError)

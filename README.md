@@ -698,3 +698,79 @@ Eğer bu proje işinize yaradıysa, lütfen ⭐ vererek destekleyin!
 
 **Not**: Bu uygulama OpenAI API kullanmaktadır. Kullanım ücretleri [OpenAI fiyatlandırma sayfasında](https://openai.com/pricing) belirtilmiştir.
 
+## Testing
+
+### Test Suite Kurulumu
+
+1. Test bağımlılıklarını yükleyin:
+
+```bash
+pip install -r requirements.txt
+```
+
+2. Test veritabanını oluşturun (otomatik olarak in-memory SQLite kullanılır)
+
+### Testleri Çalıştırma
+
+**Tüm testleri çalıştır:**
+
+```bash
+pytest
+```
+
+**Verbose mode ile çalıştır:**
+
+```bash
+pytest -v
+```
+
+**Belirli bir test dosyasını çalıştır:**
+
+```bash
+pytest tests/test_document_reader.py
+```
+
+**Belirli bir test fonksiyonunu çalıştır:**
+
+```bash
+pytest tests/test_document_reader.py::test_extract_text_from_pdf
+```
+
+**Coverage raporu ile çalıştır:**
+
+```bash
+pytest --cov=. --cov-report=html
+```
+
+HTML raporu `htmlcov/index.html` dosyasında oluşur.
+
+**Sadece unit testleri çalıştır:**
+
+```bash
+pytest -m unit
+```
+
+**Sadece integration testleri çalıştır:**
+
+```bash
+pytest -m integration
+```
+
+### Test Yapısı
+
+- `tests/test_document_reader.py`: Dosya okuma testleri
+- `tests/test_ai_generator.py`: AI içerik üretimi testleri
+- `tests/test_routes.py`: Flask route testleri
+- `tests/test_utils.py`: Utility fonksiyon testleri
+- `tests/conftest.py`: Merkezi fixture'lar
+- `tests/data/`: Test dosyaları (PDF, DOCX, PPTX, TXT)
+
+### Test Konfigürasyonu
+
+Testler otomatik olarak:
+
+- In-memory SQLite database kullanır
+- Demo mode'da çalışır (OpenAI API gerektirmez)
+- CSRF ve rate limiting'i devre dışı bırakır
+- Mock'lanmış email ve payment servisleri kullanır
+

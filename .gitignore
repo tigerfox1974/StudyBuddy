@@ -61,6 +61,13 @@ logs/
 .pytest_cache/
 .coverage
 htmlcov/
+*.pyc
+__pycache__/
+
+# Test data (opsiyonel - test dosyalarını commit etmek istiyorsanız bu satırı eklemeyin)
+# tests/data/*.pdf
+# tests/data/*.docx
+# tests/data/*.pptx
 
 # Security
 *.pem

@@ -497,6 +497,35 @@
                 <button onclick="printContent()" class="btn btn-outline-secondary">
                     <i class="bi bi-printer"></i> Yazdır
                 </button>
+                {% if user and user.is_authenticated and result_id %}
+                    {% if user.subscription_plan == 'premium' or user.tokens_remaining >= 2 %}
+                    <a href="{{ url_for('export', result_id=result_id, format='pdf') }}" class="btn btn-outline-primary position-relative">
+                        <i class="bi bi-file-pdf"></i> PDF Olarak İndir
+                        {% if user.subscription_plan == 'premium' %}
+                        <span class="badge bg-success position-absolute top-0 start-100 translate-middle" style="font-size: 0.65rem;">Ücretsiz</span>
+                        {% else %}
+                        <span class="badge bg-primary position-absolute top-0 start-100 translate-middle" style="font-size: 0.65rem;">2 Fiş</span>
+                        {% endif %}
+                    </a>
+                    <a href="{{ url_for('export', result_id=result_id, format='docx') }}" class="btn btn-outline-primary position-relative">
+                        <i class="bi bi-file-word"></i> Word Olarak İndir
+                        {% if user.subscription_plan == 'premium' %}
+                        <span class="badge bg-success position-absolute top-0 start-100 translate-middle" style="font-size: 0.65rem;">Ücretsiz</span>
+                        {% else %}
+                        <span class="badge bg-primary position-absolute top-0 start-100 translate-middle" style="font-size: 0.65rem;">2 Fiş</span>
+                        {% endif %}
+                    </a>
+                    {% else %}
+                    <button class="btn btn-outline-primary position-relative" disabled>
+                        <i class="bi bi-file-pdf"></i> PDF Olarak İndir
+                        <span class="badge bg-secondary position-absolute top-0 start-100 translate-middle" style="font-size: 0.65rem;">2 Fiş</span>
+                    </button>
+                    <button class="btn btn-outline-primary position-relative" disabled>
+                        <i class="bi bi-file-word"></i> Word Olarak İndir
+                        <span class="badge bg-secondary position-absolute top-0 start-100 translate-middle" style="font-size: 0.65rem;">2 Fiş</span>
+                    </button>
+                    {% endif %}
+                {% endif %}
                 <a href="{{ url_for('history') }}" class="btn btn-outline-secondary">
                     <i class="bi bi-clock-history"></i> Geçmiş
                 </a>
@@ -504,6 +533,11 @@
                     <i class="bi bi-cloud-upload"></i> Yeni Dosya Yükle
                 </a>
             </div>
+            {% if user and user.is_authenticated and user.tokens_remaining < 2 and user.subscription_plan != 'premium' %}
+            <div class="alert alert-warning mt-3 mb-0" style="font-size: 0.875rem;">
+                <i class="bi bi-exclamation-triangle"></i> Export için yeterli fişiniz yok. Lütfen <a href="{{ url_for('pricing') }}" class="alert-link">paket yükseltin</a> veya fiş satın alın.
+            </div>
+            {% endif %}
         </div>
     </div>
     

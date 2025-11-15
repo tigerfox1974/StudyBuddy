@@ -252,8 +252,11 @@ def validate_email_address(email):
     
     try:
         from email_validator import validate_email, EmailNotValidError  # type: ignore
-        validated = validate_email(email)
-        return validated.email.lower().strip()
+        # Test ortamında DNS kontrolü yapma (check_deliverability=False)
+        # Production'da DNS kontrolü yapılabilir ama test ortamında sorun çıkarabilir
+        validated = validate_email(email, check_deliverability=False)
+        # validated.email deprecated, validated.normalized kullan
+        return validated.normalized.lower().strip()
     except (EmailNotValidError, ImportError):
         return None
 
@@ -1051,5 +1054,425 @@ def get_user_token_info(user):
         'last_refresh': user.last_token_refresh.isoformat() if user.last_token_refresh else None,
         'plan': user.subscription_plan or 'free'
     }
+
+
+def generate_export_pdf(result, user, format_type='full'):
+    """
+    Result nesnesini PDF formatında sınav kağıdı olarak export et
+    
+    Args:
+        result: Result model nesnesi (sorular, özet, flashcard'lar içerir)
+        user: User model nesnesi (kullanıcı bilgileri için)
+        format_type: 'full' (tüm içerik), 'questions_only' (sadece sorular), 'summary_only' (sadece özet)
+        
+    Returns:
+        str: Oluşturulan PDF dosyasının yolu
+    """
+    try:
+        from reportlab.lib.pagesizes import A4  # type: ignore
+        from reportlab.lib import colors  # type: ignore
+        from reportlab.lib.units import cm  # type: ignore
+        from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, PageBreak  # type: ignore
+        from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle  # type: ignore
+        from reportlab.lib.enums import TA_CENTER, TA_RIGHT, TA_LEFT  # type: ignore
+    except ImportError:
+        raise ImportError("reportlab paketi yüklü değil. Lütfen 'pip install reportlab' komutu ile yükleyin.")
+    
+    # Export storage klasörünü oluştur
+    export_dir = Config.EXPORT_STORAGE_PATH
+    os.makedirs(export_dir, exist_ok=True)
+    
+    # Dosya adı oluştur
+    timestamp = datetime.utcnow().strftime('%Y%m%d_%H%M%S')
+    base_filename = Config.EXPORT_FILENAME_FORMAT.format(result_id=result.id, timestamp=timestamp)
+    pdf_filename = f"{base_filename}.pdf"
+    pdf_path = os.path.join(export_dir, pdf_filename)
+    
+    # PDF dokümanı oluştur
+    doc = SimpleDocTemplate(pdf_path, pagesize=A4)
+    story = []
+    styles = getSampleStyleSheet()
+    
+    # Özel stiller
+    title_style = ParagraphStyle(
+        'ExportTitle',
+        parent=styles['Heading1'],
+        fontSize=20,
+        textColor=colors.HexColor('#2563EB'),
+        spaceAfter=20,
+        alignment=TA_CENTER
+    )
+    
+    heading_style = ParagraphStyle(
+        'ExportHeading',
+        parent=styles['Heading2'],
+        fontSize=14,
+        textColor=colors.HexColor('#0F172A'),
+        spaceAfter=12,
+        spaceBefore=12
+    )
+    
+    normal_style = ParagraphStyle(
+        'ExportNormal',
+        parent=styles['Normal'],
+        fontSize=11,
+        textColor=colors.HexColor('#0F172A'),
+        spaceAfter=8
+    )
+    
+    # Başlık
+    story.append(Paragraph('StudyBuddy - Sınav Kağıdı', title_style))
+    story.append(Spacer(1, 0.3*cm))
+    
+    # Dosya bilgileri
+    info_data = [
+        ['Dosya Adı:', result.document.original_filename],
+        ['Oluşturulma Tarihi:', result.created_at.strftime('%d %B %Y, %H:%M')],
+        ['Kullanıcı:', user.username]
+    ]
+    
+    info_table = Table(info_data, colWidths=[4*cm, 10*cm])
+    info_table.setStyle(TableStyle([
+        ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
+        ('FONTNAME', (1, 0), (1, -1), 'Helvetica'),
+        ('FONTSIZE', (0, 0), (-1, -1), 10),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+        ('TOPPADDING', (0, 0), (-1, -1), 6),
+    ]))
+    story.append(info_table)
+    story.append(Spacer(1, 0.8*cm))
+    
+    # Özet bölümü (format_type'a göre)
+    if format_type in ('full', 'summary_only'):
+        story.append(Paragraph('Doküman Özeti', heading_style))
+        summary_text = result.summary or 'Özet bulunamadı.'
+        # Markdown formatını temizle (basit)
+        summary_clean = summary_text.replace('**', '').replace('*', '').replace('#', '')
+        story.append(Paragraph(summary_clean, normal_style))
+        story.append(Spacer(1, 0.5*cm))
+        story.append(PageBreak())
+    
+    if format_type == 'summary_only':
+        doc.build(story)
+        return pdf_path
+    
+    # Soru türlerini parse et
+    try:
+        multiple_choice = json.loads(result.multiple_choice) if result.multiple_choice else []
+        short_answer = json.loads(result.short_answer) if result.short_answer else []
+        fill_blank = json.loads(result.fill_blank) if result.fill_blank else []
+        true_false = json.loads(result.true_false) if result.true_false else []
+        flashcards = json.loads(result.flashcards) if result.flashcards else []
+    except (json.JSONDecodeError, TypeError):
+        multiple_choice = []
+        short_answer = []
+        fill_blank = []
+        true_false = []
+        flashcards = []
+    
+    # Çoktan Seçmeli Sorular
+    if multiple_choice and format_type in ('full', 'questions_only'):
+        story.append(Paragraph('Çoktan Seçmeli Sorular', heading_style))
+        for idx, q in enumerate(multiple_choice, 1):
+            question_text = q.get('question', 'Soru bulunamadı.')
+            story.append(Paragraph(f"{idx}. {question_text}", normal_style))
+            
+            options = q.get('options', [])
+            for opt_idx, option in enumerate(options, 1):
+                option_label = chr(64 + opt_idx)  # A, B, C, D
+                story.append(Paragraph(f"   {option_label}) {option}", normal_style))
+            
+            story.append(Spacer(1, 0.3*cm))
+        story.append(Spacer(1, 0.5*cm))
+    
+    # Kısa Cevap Soruları
+    if short_answer and format_type in ('full', 'questions_only'):
+        story.append(Paragraph('Kısa Cevap Soruları', heading_style))
+        for idx, q in enumerate(short_answer, 1):
+            question_text = q.get('question', 'Soru bulunamadı.')
+            story.append(Paragraph(f"{idx}. {question_text}", normal_style))
+            story.append(Spacer(1, 0.3*cm))
+        story.append(Spacer(1, 0.5*cm))
+    
+    # Boş Doldurma Soruları
+    if fill_blank and format_type in ('full', 'questions_only'):
+        story.append(Paragraph('Boş Doldurma Soruları', heading_style))
+        for idx, q in enumerate(fill_blank, 1):
+            question_text = q.get('question', 'Soru bulunamadı.')
+            story.append(Paragraph(f"{idx}. {question_text}", normal_style))
+            story.append(Spacer(1, 0.3*cm))
+        story.append(Spacer(1, 0.5*cm))
+    
+    # Doğru-Yanlış Soruları
+    if true_false and format_type in ('full', 'questions_only'):
+        story.append(Paragraph('Doğru-Yanlış Soruları', heading_style))
+        for idx, q in enumerate(true_false, 1):
+            question_text = q.get('question', 'Soru bulunamadı.')
+            story.append(Paragraph(f"{idx}. {question_text}", normal_style))
+            story.append(Paragraph("   ( ) Doğru   ( ) Yanlış", normal_style))
+            story.append(Spacer(1, 0.3*cm))
+        story.append(Spacer(1, 0.5*cm))
+    
+    # Flashcard'lar
+    if flashcards and format_type == 'full':
+        story.append(PageBreak())
+        story.append(Paragraph('Flashcard Seti', heading_style))
+        
+        # Flashcard'ları tablo halinde göster
+        flashcard_data = [['Ön Yüz', 'Arka Yüz']]
+        for card in flashcards:
+            front = card.get('front', 'Ön yüz bulunamadı.')
+            back = card.get('back', 'Arka yüz bulunamadı.')
+            flashcard_data.append([front, back])
+        
+        flashcard_table = Table(flashcard_data, colWidths=[9*cm, 9*cm])
+        flashcard_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#2563EB')),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+            ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, 0), 11),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 10),
+            ('TOPPADDING', (0, 0), (-1, 0), 10),
+            ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+            ('FONTSIZE', (0, 1), (-1, -1), 10),
+            ('BOTTOMPADDING', (0, 1), (-1, -1), 8),
+            ('TOPPADDING', (0, 1), (-1, -1), 8),
+            ('GRID', (0, 0), (-1, -1), 1, colors.grey),
+        ]))
+        story.append(flashcard_table)
+        story.append(Spacer(1, 0.5*cm))
+    
+    # Cevap Anahtarı (opsiyonel)
+    if Config.EXPORT_INCLUDE_ANSWER_KEY and format_type in ('full', 'questions_only'):
+        story.append(PageBreak())
+        story.append(Paragraph('Cevap Anahtarı', heading_style))
+        
+        answer_key_data = []
+        
+        # Çoktan Seçmeli cevapları
+        if multiple_choice:
+            answer_key_data.append(['Çoktan Seçmeli Sorular', ''])
+            for idx, q in enumerate(multiple_choice, 1):
+                correct_answer = q.get('correct_answer', 'N/A')
+                answer_key_data.append([f"{idx}.", correct_answer])
+            answer_key_data.append(['', ''])  # Boş satır
+        
+        # Kısa Cevap cevapları
+        if short_answer:
+            answer_key_data.append(['Kısa Cevap Soruları', ''])
+            for idx, q in enumerate(short_answer, 1):
+                answer = q.get('answer', 'Cevap bulunamadı.')
+                answer_key_data.append([f"{idx}.", answer])
+            answer_key_data.append(['', ''])  # Boş satır
+        
+        # Boş Doldurma cevapları
+        if fill_blank:
+            answer_key_data.append(['Boş Doldurma Soruları', ''])
+            for idx, q in enumerate(fill_blank, 1):
+                answer = q.get('answer', 'Cevap bulunamadı.')
+                answer_key_data.append([f"{idx}.", answer])
+            answer_key_data.append(['', ''])  # Boş satır
+        
+        # Doğru-Yanlış cevapları
+        if true_false:
+            answer_key_data.append(['Doğru-Yanlış Soruları', ''])
+            for idx, q in enumerate(true_false, 1):
+                answer = 'Doğru' if q.get('answer', False) else 'Yanlış'
+                answer_key_data.append([f"{idx}.", answer])
+        
+        if answer_key_data:
+            answer_table = Table(answer_key_data, colWidths=[4*cm, 14*cm])
+            answer_table.setStyle(TableStyle([
+                ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
+                ('FONTNAME', (1, 0), (1, -1), 'Helvetica'),
+                ('FONTSIZE', (0, 0), (-1, -1), 10),
+                ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+                ('TOPPADDING', (0, 0), (-1, -1), 6),
+                ('GRID', (0, 0), (-1, -1), 1, colors.lightgrey),
+            ]))
+            story.append(answer_table)
+    
+    # PDF'i oluştur
+    doc.build(story)
+    
+    return pdf_path
+
+
+def generate_export_docx(result, user, format_type='full'):
+    """
+    Result nesnesini DOCX formatında sınav kağıdı olarak export et
+    
+    Args:
+        result: Result model nesnesi (sorular, özet, flashcard'lar içerir)
+        user: User model nesnesi (kullanıcı bilgileri için)
+        format_type: 'full' (tüm içerik), 'questions_only' (sadece sorular), 'summary_only' (sadece özet)
+        
+    Returns:
+        str: Oluşturulan DOCX dosyasının yolu
+    """
+    try:
+        from docx import Document  # type: ignore
+        from docx.shared import Pt, RGBColor, Inches  # type: ignore
+        from docx.enum.text import WD_ALIGN_PARAGRAPH  # type: ignore
+    except ImportError:
+        raise ImportError("python-docx paketi yüklü değil. Lütfen 'pip install python-docx' komutu ile yükleyin.")
+    
+    # Export storage klasörünü oluştur
+    export_dir = Config.EXPORT_STORAGE_PATH
+    os.makedirs(export_dir, exist_ok=True)
+    
+    # Dosya adı oluştur
+    timestamp = datetime.utcnow().strftime('%Y%m%d_%H%M%S')
+    base_filename = Config.EXPORT_FILENAME_FORMAT.format(result_id=result.id, timestamp=timestamp)
+    docx_filename = f"{base_filename}.docx"
+    docx_path = os.path.join(export_dir, docx_filename)
+    
+    # DOCX dokümanı oluştur
+    doc = Document()
+    
+    # Başlık
+    title = doc.add_heading('StudyBuddy - Sınav Kağıdı', 0)
+    title.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    
+    # Dosya bilgileri
+    info_para = doc.add_paragraph()
+    info_para.add_run('Dosya Adı: ').bold = True
+    info_para.add_run(result.document.original_filename)
+    info_para.add_run('\nOluşturulma Tarihi: ').bold = True
+    info_para.add_run(result.created_at.strftime('%d %B %Y, %H:%M'))
+    info_para.add_run('\nKullanıcı: ').bold = True
+    info_para.add_run(user.username)
+    
+    doc.add_paragraph()  # Boş satır
+    
+    # Özet bölümü (format_type'a göre)
+    if format_type in ('full', 'summary_only'):
+        doc.add_heading('Doküman Özeti', 1)
+        summary_text = result.summary or 'Özet bulunamadı.'
+        # Markdown formatını temizle (basit)
+        summary_clean = summary_text.replace('**', '').replace('*', '').replace('#', '')
+        doc.add_paragraph(summary_clean)
+        doc.add_page_break()
+    
+    if format_type == 'summary_only':
+        doc.save(docx_path)
+        return docx_path
+    
+    # Soru türlerini parse et
+    try:
+        multiple_choice = json.loads(result.multiple_choice) if result.multiple_choice else []
+        short_answer = json.loads(result.short_answer) if result.short_answer else []
+        fill_blank = json.loads(result.fill_blank) if result.fill_blank else []
+        true_false = json.loads(result.true_false) if result.true_false else []
+        flashcards = json.loads(result.flashcards) if result.flashcards else []
+    except (json.JSONDecodeError, TypeError):
+        multiple_choice = []
+        short_answer = []
+        fill_blank = []
+        true_false = []
+        flashcards = []
+    
+    # Çoktan Seçmeli Sorular
+    if multiple_choice and format_type in ('full', 'questions_only'):
+        doc.add_heading('Çoktan Seçmeli Sorular', 1)
+        for idx, q in enumerate(multiple_choice, 1):
+            question_text = q.get('question', 'Soru bulunamadı.')
+            para = doc.add_paragraph(f"{idx}. {question_text}", style='List Number')
+            
+            options = q.get('options', [])
+            for opt_idx, option in enumerate(options, 1):
+                option_label = chr(64 + opt_idx)  # A, B, C, D
+                doc.add_paragraph(f"   {option_label}) {option}", style='List Bullet')
+        doc.add_paragraph()  # Boş satır
+    
+    # Kısa Cevap Soruları
+    if short_answer and format_type in ('full', 'questions_only'):
+        doc.add_heading('Kısa Cevap Soruları', 1)
+        for idx, q in enumerate(short_answer, 1):
+            question_text = q.get('question', 'Soru bulunamadı.')
+            doc.add_paragraph(f"{idx}. {question_text}", style='List Number')
+        doc.add_paragraph()  # Boş satır
+    
+    # Boş Doldurma Soruları
+    if fill_blank and format_type in ('full', 'questions_only'):
+        doc.add_heading('Boş Doldurma Soruları', 1)
+        for idx, q in enumerate(fill_blank, 1):
+            question_text = q.get('question', 'Soru bulunamadı.')
+            doc.add_paragraph(f"{idx}. {question_text}", style='List Number')
+        doc.add_paragraph()  # Boş satır
+    
+    # Doğru-Yanlış Soruları
+    if true_false and format_type in ('full', 'questions_only'):
+        doc.add_heading('Doğru-Yanlış Soruları', 1)
+        for idx, q in enumerate(true_false, 1):
+            question_text = q.get('question', 'Soru bulunamadı.')
+            para = doc.add_paragraph(f"{idx}. {question_text}", style='List Number')
+            doc.add_paragraph("   ( ) Doğru   ( ) Yanlış")
+        doc.add_paragraph()  # Boş satır
+    
+    # Flashcard'lar
+    if flashcards and format_type == 'full':
+        doc.add_page_break()
+        doc.add_heading('Flashcard Seti', 1)
+        
+        # Flashcard'ları tablo halinde göster
+        table = doc.add_table(rows=1, cols=2)
+        table.style = 'Light Grid Accent 1'
+        
+        # Header
+        header_cells = table.rows[0].cells
+        header_cells[0].text = 'Ön Yüz'
+        header_cells[1].text = 'Arka Yüz'
+        header_cells[0].paragraphs[0].runs[0].bold = True
+        header_cells[1].paragraphs[0].runs[0].bold = True
+        
+        # Data rows
+        for card in flashcards:
+            row_cells = table.add_row().cells
+            row_cells[0].text = card.get('front', 'Ön yüz bulunamadı.')
+            row_cells[1].text = card.get('back', 'Arka yüz bulunamadı.')
+    
+    # Cevap Anahtarı (opsiyonel)
+    if Config.EXPORT_INCLUDE_ANSWER_KEY and format_type in ('full', 'questions_only'):
+        doc.add_page_break()
+        doc.add_heading('Cevap Anahtarı', 1)
+        
+        # Çoktan Seçmeli cevapları
+        if multiple_choice:
+            doc.add_heading('Çoktan Seçmeli Sorular', 2)
+            for idx, q in enumerate(multiple_choice, 1):
+                correct_answer = q.get('correct_answer', 'N/A')
+                doc.add_paragraph(f"{idx}. {correct_answer}", style='List Number')
+            doc.add_paragraph()  # Boş satır
+        
+        # Kısa Cevap cevapları
+        if short_answer:
+            doc.add_heading('Kısa Cevap Soruları', 2)
+            for idx, q in enumerate(short_answer, 1):
+                answer = q.get('answer', 'Cevap bulunamadı.')
+                doc.add_paragraph(f"{idx}. {answer}", style='List Number')
+            doc.add_paragraph()  # Boş satır
+        
+        # Boş Doldurma cevapları
+        if fill_blank:
+            doc.add_heading('Boş Doldurma Soruları', 2)
+            for idx, q in enumerate(fill_blank, 1):
+                answer = q.get('answer', 'Cevap bulunamadı.')
+                doc.add_paragraph(f"{idx}. {answer}", style='List Number')
+            doc.add_paragraph()  # Boş satır
+        
+        # Doğru-Yanlış cevapları
+        if true_false:
+            doc.add_heading('Doğru-Yanlış Soruları', 2)
+            for idx, q in enumerate(true_false, 1):
+                answer = 'Doğru' if q.get('answer', False) else 'Yanlış'
+                doc.add_paragraph(f"{idx}. {answer}", style='List Number')
+    
+    # DOCX'i kaydet
+    doc.save(docx_path)
+    
+    return docx_path
 
 

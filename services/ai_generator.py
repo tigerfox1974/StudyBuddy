@@ -391,6 +391,8 @@ Lütfen sadece JSON formatında yanıt ver."""
         """
         level_config = Config.LEVEL_SETTINGS.get(level, Config.LEVEL_SETTINGS['high_school'])
         level_name = level_config['name']
+        short_cfg = level_config.get('short_answer', {'max_words': 4})
+        max_words = short_cfg.get('max_words', 4)
         
         prompt = f"""Aşağıdaki metinden {level_name} seviyesine uygun {count} adet kısa cevap sorusu üret.
 
