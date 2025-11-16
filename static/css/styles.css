@@ -2931,3 +2931,177 @@ body {
         border: 1px solid #ddd;
     }
 }
+
+/* ==========================================
+   A. STUDYBUDDY BRAND OVERRIDES (Centralized)
+   - Later in file to safely override older styles
+   ========================================== */
+:root {
+    /* Brand Tokens */
+    --sb-color-primary: #2563EB;
+    --sb-color-secondary: #22C55E;
+    --sb-color-accent: #FACC15;
+    --sb-color-bg: #F9FAFB;
+    --sb-color-surface: #FFFFFF;
+    --sb-color-border: #E5E7EB;
+    --sb-color-text-main: #0F172A;
+    --sb-color-text-muted: #6B7280;
+    --sb-primary-dark: #1D4ED8;
+    --sb-primary-darker: #1E40AF;
+    /* Map legacy variables to brand where possible */
+    --color-primary: var(--sb-color-primary);
+    --color-primary-dark: var(--sb-primary-dark);
+    --color-primary-light: #93C5FD;
+    --color-primary-gradient: linear-gradient(135deg, var(--sb-color-primary) 0%, var(--sb-primary-dark) 100%);
+    --color-text-primary: var(--sb-color-text-main);
+    --color-text-secondary: var(--sb-color-text-muted);
+    --color-bg-primary: var(--sb-color-surface);
+    --color-bg-muted: var(--sb-color-bg);
+    --color-border-light: var(--sb-color-border);
+}
+
+body {
+    background: var(--sb-color-bg);
+    color: var(--sb-color-text-main);
+}
+
+/* Navbar - brand primary */
+.navbar-custom {
+    background: var(--sb-color-primary);
+    box-shadow: var(--shadow-md);
+}
+.navbar-custom .nav-link:hover {
+    background: rgba(255,255,255,0.12);
+}
+
+/* Links in light breadcrumb using brand */
+.breadcrumb-light .breadcrumb-item a { color: var(--sb-color-primary) !important; }
+.breadcrumb-light .breadcrumb-item a:hover { color: var(--sb-primary-dark) !important; }
+
+/* Buttons - brand primary and outline */
+.btn-primary,
+.btn-primary-custom,
+.btn-hero-primary,
+.plan-button.select,
+.token-card .plan-button,
+.plan-btn-free {
+    background: var(--sb-color-primary) !important;
+    border-color: var(--sb-primary-dark) !important;
+    color: #fff !important;
+}
+.btn-primary:hover,
+.btn-primary-custom:hover,
+.btn-hero-primary:hover,
+.plan-button.select:hover,
+.token-card .plan-button:hover,
+.plan-btn-free:hover {
+    background: var(--sb-primary-dark) !important;
+    box-shadow: 0 10px 18px rgba(37,99,235,0.25) !important;
+}
+.btn-outline-primary,
+.btn-outline-custom {
+    background: transparent !important;
+    border: 2px solid var(--sb-color-primary) !important;
+    color: var(--sb-color-primary) !important;
+}
+.btn-outline-primary:hover,
+.btn-outline-custom:hover {
+    background: rgba(37,99,235,0.08) !important;
+    color: var(--sb-primary-dark) !important;
+    border-color: var(--sb-primary-dark) !important;
+}
+.plan-btn-premium {
+    background: var(--sb-color-accent) !important;
+    color: #111827 !important;
+}
+.plan-btn-premium:hover {
+    background: #eab308 !important;
+}
+
+/* Cards and key elements */
+.feature-card i { color: var(--sb-color-primary); }
+.question-card { border-left-color: var(--sb-color-primary); background: #F8FAFF; }
+.badge-custom { background: var(--sb-color-primary); }
+.option:hover { border-color: var(--sb-color-primary); background: #F8FAFF; }
+.flashcard-front { background: linear-gradient(135deg, var(--sb-color-primary) 0%, var(--sb-primary-dark) 100%) !important; }
+.flashcard-back { border-color: var(--sb-color-primary) !important; }
+.price { color: var(--sb-color-primary); }
+.pricing-card.featured {
+    background: linear-gradient(135deg, var(--sb-color-primary) 0%, var(--sb-primary-dark) 100%);
+    border-color: var(--sb-color-primary);
+}
+
+/* Alerts brand alignment */
+.alert-info { border-color: var(--sb-color-primary); color: var(--sb-primary-darker); }
+.alert-warning { border-color: var(--sb-color-accent); }
+.alert-success { border-color: var(--sb-color-secondary); }
+
+/* ==========================================
+   B. RESULT PAGE (moved from inline styles)
+   ========================================== */
+.result-page {
+    background: var(--color-primary-gradient);
+    min-height: calc(100vh - 76px);
+    padding: var(--spacing-lg);
+}
+.result-page .header {
+    background: var(--color-bg-primary);
+    border-radius: 15px;
+    padding: 25px;
+    margin-bottom: 20px;
+    box-shadow: var(--shadow-md);
+}
+.result-page .header h1 {
+    color: var(--color-text-primary);
+    margin: 0;
+    font-size: 28px;
+}
+.result-page .header p {
+    color: var(--color-text-secondary);
+    margin: 5px 0 0 0;
+}
+.result-page .content-container {
+    background: var(--color-bg-primary);
+    border-radius: 15px;
+    padding: 30px;
+    box-shadow: var(--shadow-md);
+}
+.result-page .tabs-wrapper {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: var(--color-bg-primary);
+    padding-top: 20px;
+    margin-top: -20px;
+    border-radius: 15px 15px 0 0;
+}
+.result-page .nav-tabs {
+    border-bottom: 2px solid var(--color-border-light);
+    background: var(--color-bg-primary);
+}
+.result-page .nav-tabs .nav-link {
+    color: var(--color-text-secondary);
+    border: none;
+    padding: 12px 20px;
+    margin-right: 5px;
+    border-radius: 10px 10px 0 0;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+.result-page .nav-tabs .nav-link:hover {
+    background: #EFF6FF;
+    color: var(--sb-color-primary);
+}
+.result-page .nav-tabs .nav-link.active {
+    background: var(--sb-color-primary);
+    color: white;
+}
+.result-page .tab-content { padding: 30px 0; }
+.result-page .quiz-stats { background: #F8FAFF; }
+.result-page .short-answer-input,
+.result-page .fill-blank-input { border-width: 2px; border-color: #d0d7ff; }
+.result-page .short-answer-input:focus,
+.result-page .fill-blank-input:focus {
+    border-color: var(--sb-color-primary);
+    box-shadow: 0 0 0 0.2rem rgba(37, 99, 235, 0.25);
+}
