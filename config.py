@@ -46,6 +46,7 @@ class Config:
     }
     
     # Internationalization (i18n) ayarları
+    # Varsayılan dil: Türkçe (UI ve AI içerik üretimi için)
     BABEL_DEFAULT_LOCALE = 'tr'
     BABEL_DEFAULT_TIMEZONE = 'Europe/Istanbul'
     BABEL_TRANSLATION_DIRECTORIES = 'translations'
@@ -53,7 +54,7 @@ class Config:
         'tr': {'name': 'Türkçe', 'flag': '🇹🇷'},
         'en': {'name': 'English', 'flag': '🇬🇧'}
     }
-    DEFAULT_LANGUAGE = 'tr'
+    DEFAULT_LANGUAGE = 'tr'  # UI dili ve AI içerik üretim dili varsayılanı
     
     # SQLite Database
     # Flask SQLAlchemy instance klasöründe veritabanı oluşturur

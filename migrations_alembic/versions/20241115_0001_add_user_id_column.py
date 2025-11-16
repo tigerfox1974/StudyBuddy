@@ -23,7 +23,7 @@ def upgrade() -> None:
     # users, documents (user_id OLMADAN), results, usage_stats tablolarını oluşturur
     # user_id kolonu 20241115_0002 migration'ında eklenecek
     
-    # 1. users tablosunu oluştur (temel kolonlar, token kolonları sonra eklenecek)
+    # 1. users tablosunu oluştur (temel kolonlar + token sistemı kolonları)
     op.create_table(
         'users',
         sa.Column('id', sa.Integer(), nullable=False),
@@ -37,6 +37,9 @@ def upgrade() -> None:
         sa.Column('last_login', sa.DateTime(), nullable=True),
         sa.Column('reset_token', sa.String(length=100), nullable=True),
         sa.Column('reset_token_expiry', sa.DateTime(), nullable=True),
+        sa.Column('tokens_remaining', sa.Integer(), nullable=False, server_default='0'),
+        sa.Column('trial_ends_at', sa.DateTime(), nullable=True),
+        sa.Column('last_token_refresh', sa.DateTime(), nullable=True),
         sa.PrimaryKeyConstraint('id'),
         sa.UniqueConstraint('email'),
         sa.UniqueConstraint('username')

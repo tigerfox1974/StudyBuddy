@@ -1,8 +1,8 @@
 """add_payment_model
 
-Revision ID: 20241115_0005
-Revises: 20241115_0004
-Create Date: 2024-11-15 00:05:00.000000
+Revision ID: 20241115_0004
+Revises: 20241115_0003
+Create Date: 2024-11-15 00:04:00.000000
 
 """
 from typing import Sequence, Union
@@ -13,8 +13,8 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '20241115_0005'
-down_revision: Union[str, None] = '20241115_0004'
+revision: str = '20241115_0004'
+down_revision: Union[str, None] = '20241115_0003'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 

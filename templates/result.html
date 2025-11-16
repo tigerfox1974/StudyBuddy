@@ -40,61 +40,88 @@
         </ol>
     </nav>
     
-    <div class="header">
-        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
-            <div class="flex-grow-1">
-                <h1><i class="bi bi-check-circle text-success"></i> {{ _('İçerik Başarıyla Oluşturuldu!') }}</h1>
-                <p class="mb-0"><i class="bi bi-file-earmark"></i> {{ filename }}</p>
-                {% if user and user.is_authenticated %}
-                <p class="user-info mb-0"><i class="bi bi-person"></i> {{ user.username }} {{ _('tarafından işlendi') }}</p>
-                {% endif %}
-            </div>
-            <div class="d-flex gap-2 flex-wrap">
-                <button onclick="printContent()" class="btn btn-outline-secondary">
-                    <i class="bi bi-printer"></i> {{ _('Yazdır') }}
-                </button>
-                {% if user and user.is_authenticated and result_id %}
-                    {% if user.subscription_plan == 'premium' or user.tokens_remaining >= 2 %}
-                    <a href="{{ url_for('export', result_id=result_id, format='pdf') }}" class="btn btn-outline-primary position-relative">
-                        <i class="bi bi-file-pdf"></i> {{ _('PDF Olarak İndir') }}
-                        {% if user.subscription_plan == 'premium' %}
-                        <span class="badge bg-success position-absolute top-0 start-100 translate-middle" style="font-size: 0.65rem;">{{ _('Ücretsiz') }}</span>
-                        {% else %}
-                        <span class="badge bg-primary position-absolute top-0 start-100 translate-middle" style="font-size: 0.65rem;">2 {{ _('Fiş') }}</span>
-                        {% endif %}
-                    </a>
-                    <a href="{{ url_for('export', result_id=result_id, format='docx') }}" class="btn btn-outline-primary position-relative">
-                        <i class="bi bi-file-word"></i> {{ _('Word Olarak İndir') }}
-                        {% if user.subscription_plan == 'premium' %}
-                        <span class="badge bg-success position-absolute top-0 start-100 translate-middle" style="font-size: 0.65rem;">{{ _('Ücretsiz') }}</span>
-                        {% else %}
-                        <span class="badge bg-primary position-absolute top-0 start-100 translate-middle" style="font-size: 0.65rem;">2 {{ _('Fiş') }}</span>
-                        {% endif %}
-                    </a>
-                    {% else %}
-                    <button class="btn btn-outline-primary position-relative" disabled>
-                        <i class="bi bi-file-pdf"></i> {{ _('PDF Olarak İndir') }}
-                        <span class="badge bg-secondary position-absolute top-0 start-100 translate-middle" style="font-size: 0.65rem;">2 {{ _('Fiş') }}</span>
-                    </button>
-                    <button class="btn btn-outline-primary position-relative" disabled>
-                        <i class="bi bi-file-word"></i> {{ _('Word Olarak İndir') }}
-                        <span class="badge bg-secondary position-absolute top-0 start-100 translate-middle" style="font-size: 0.65rem;">2 {{ _('Fiş') }}</span>
-                    </button>
+    <div class="header sb-export-header-card">
+        <div class="row g-4">
+            <!-- Left Side: Success Message & File Info -->
+            <div class="col-lg-6 col-md-12">
+                <div class="sb-result-info">
+                    <h1 class="mb-3">
+                        <i class="bi bi-check-circle text-success"></i> 
+                        {{ _('İçerik Başarıyla Oluşturuldu!') }}
+                    </h1>
+                    <p class="mb-2 text-muted">
+                        <i class="bi bi-file-earmark"></i> 
+                        <strong>{{ filename }}</strong>
+                    </p>
+                    {% if user and user.is_authenticated %}
+                    <p class="mb-0 text-muted">
+                        <i class="bi bi-person"></i> 
+                        {{ user.username }} {{ _('tarafından işlendi') }}
+                    </p>
                     {% endif %}
-                {% endif %}
-                <a href="{{ url_for('history') }}" class="btn btn-outline-secondary">
-                    <i class="bi bi-clock-history"></i> {{ _('Geçmiş') }}
-                </a>
-                <a href="{{ url_for('upload') }}" class="btn btn-home">
-                    <i class="bi bi-cloud-upload"></i> {{ _('Yeni Dosya Yükle') }}
-                </a>
+                </div>
             </div>
-            {% if user and user.is_authenticated and user.tokens_remaining < 2 and user.subscription_plan != 'premium' %}
-            <div class="alert alert-warning mt-3 mb-0" style="font-size: 0.875rem;">
-                <i class="bi bi-exclamation-triangle"></i> {{ _('Export için yeterli fişiniz yok. Lütfen') }} <a href="{{ url_for('pricing') }}" class="alert-link">{{ _('paket yükseltin') }}</a> {{ _('veya fiş satın alın.') }}
+            
+            <!-- Right Side: Export Button Group -->
+            <div class="col-lg-6 col-md-12">
+                <div class="sb-export-buttons">
+                    {% if user and user.is_authenticated %}
+                        {% if user.subscription_plan == 'premium' or user.tokens_remaining >= 1 %}
+                        <button onclick="printContent()" class="btn btn-primary" data-bs-toggle="tooltip" data-bs-placement="top" title="{% if user.subscription_plan == 'premium' %}{{ _('Premium: Sınırsız yazdırma') }}{% else %}{{ _('Bu işlem 1 fiş kullanır') }}{% endif %}">
+                            <i class="bi bi-printer"></i> {{ _('Yazdır') }}
+                        </button>
+                        {% else %}
+                        <a href="{{ url_for('pricing') }}" class="btn btn-outline-secondary" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ _('Yetersiz fiş! 1 fiş gerekli. Tıklayarak paket yükseltin.') }}">
+                            <i class="bi bi-printer"></i> {{ _('Yazdır') }}
+                        </a>
+                        {% endif %}
+                    {% else %}
+                        <button onclick="printContent()" class="btn btn-primary" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ _('Sayfayı yazdır') }}">
+                            <i class="bi bi-printer"></i> {{ _('Yazdır') }}
+                        </button>
+                    {% endif %}
+                    
+                    {% if user and user.is_authenticated and result_id %}
+                        {% if user.subscription_plan == 'premium' or user.tokens_remaining >= 2 %}
+                        <a href="{{ url_for('export', result_id=result_id, format='pdf') }}" class="btn btn-primary" data-bs-toggle="tooltip" data-bs-placement="top" title="{% if user.subscription_plan == 'premium' %}{{ _('Premium: Sınırsız PDF') }}{% else %}{{ _('PDF olarak indir (2 fiş)') }}{% endif %}">
+                            <i class="bi bi-file-pdf"></i> {{ _('PDF') }}
+                        </a>
+                        <a href="{{ url_for('export', result_id=result_id, format='docx') }}" class="btn btn-primary" data-bs-toggle="tooltip" data-bs-placement="top" title="{% if user.subscription_plan == 'premium' %}{{ _('Premium: Sınırsız Word') }}{% else %}{{ _('Word olarak indir (2 fiş)') }}{% endif %}">
+                            <i class="bi bi-file-word"></i> {{ _('Word') }}
+                        </a>
+                        {% else %}
+                        <a href="{{ url_for('pricing') }}" class="btn btn-outline-secondary" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ _('Yetersiz fiş! 2 fiş gerekli. Tıklayarak paket yükseltin.') }}">
+                            <i class="bi bi-file-pdf"></i> {{ _('PDF') }}
+                        </a>
+                        <a href="{{ url_for('pricing') }}" class="btn btn-outline-secondary" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ _('Yetersiz fiş! 2 fiş gerekli. Tıklayarak paket yükseltin.') }}">
+                            <i class="bi bi-file-word"></i> {{ _('Word') }}
+                        </a>
+                        {% endif %}
+                    {% endif %}
+                    <a href="{{ url_for('history') }}" class="btn btn-outline-secondary" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ _('Geçmiş sonuçlarınızı görüntüleyin') }}">
+                        <i class="bi bi-clock-history"></i> {{ _('Geçmiş') }}
+                    </a>
+                    <a href="{{ url_for('upload') }}" class="btn btn-outline-primary" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ _('Yeni bir dosya yükleyerek çalışmaya başlayın') }}">
+                        <i class="bi bi-cloud-upload"></i> {{ _('Yeni Dosya Yükle') }}
+                    </a>
+                </div>
             </div>
-            {% endif %}
         </div>
+        
+        <!-- Warning Banner (Compact, Bottom) -->
+        {% if user and user.is_authenticated and user.tokens_remaining < 1 and user.subscription_plan != 'premium' %}
+        <div class="sb-token-warning">
+            <div class="d-flex align-items-center gap-3">
+                <i class="bi bi-exclamation-triangle-fill text-warning"></i>
+                <span class="flex-grow-1">
+                    {{ _('Export ve yazdırma için yeterli fişiniz yok. Lütfen paket yükseltin veya fiş satın alın.') }}
+                </span>
+                <a href="{{ url_for('pricing') }}" class="btn btn-sm btn-outline-warning">
+                    <i class="bi bi-arrow-up-circle"></i> {{ _('Paket Yükselt') }}
+                </a>
+            </div>
+        </div>
+        {% endif %}
     </div>
     
     <div class="content-container">
@@ -406,21 +433,25 @@
                 <div class="row">
                     {% for card in results.flashcards %}
                     <div class="col-md-6 mb-4">
-                        <div class="flashcard" onclick="this.classList.toggle('flipped')">
-                            <div class="flashcard-inner">
-                                <div class="flashcard-front">
-                                    <div>
+                        <div class="sb-flashcard" onclick="this.querySelector('.sb-flashcard-inner').classList.toggle('sb-flipped')">
+                            <div class="sb-flashcard-inner">
+                                <div class="sb-flashcard-front">
+                                    <div class="sb-flashcard-content">
                                         {% if config.DEMO_MODE %}
                                         <span class="demo-data-note"><i class="bi bi-info-circle"></i> {{ _(config.DEMO_MODE_WARNING_TEXT['card_note']) }}</span>
                                         {% endif %}
-                                        <div class="mb-2"><i class="bi bi-question-circle" style="font-size: 30px;"></i></div>
-                                        <h5>{{ card.front }}</h5>
+                                        <div class="sb-flashcard-icon">
+                                            <i class="bi bi-question-circle"></i>
+                                        </div>
+                                        <h5 class="sb-flashcard-text">{{ card.front }}</h5>
                                     </div>
                                 </div>
-                                <div class="flashcard-back">
-                                    <div>
-                                        <div class="mb-2"><i class="bi bi-lightbulb" style="font-size: 30px; color: #667eea;"></i></div>
-                                        <p>{{ card.back }}</p>
+                                <div class="sb-flashcard-back">
+                                    <div class="sb-flashcard-content">
+                                        <div class="sb-flashcard-icon">
+                                            <i class="bi bi-lightbulb"></i>
+                                        </div>
+                                        <p class="sb-flashcard-text">{{ card.back }}</p>
                                     </div>
                                 </div>
                             </div>
@@ -1095,6 +1126,16 @@
     
     // Sayfa yüklendiğinde tüm sekmeler için quiz modunu aç
     document.addEventListener('DOMContentLoaded', function() {
+        // Tooltip'leri aktif et
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl, {
+                trigger: 'hover focus',
+                offset: [0, 12],
+                customClass: 'sb-custom-tooltip'
+            });
+        });
+        
         const quizTypes = ['multiple-choice', 'short-answer', 'fill-blank', 'true-false'];
         quizTypes.forEach(type => {
             // Quiz modunu aç (ama toggleQuizMode çağırmadan, direkt DOM'u güncelle)

@@ -225,16 +225,52 @@
     });
     
     // SocketIO bağlantısı kur
-    const socket = io();
+    const socket = io({
+        transports: ['polling', 'websocket'],
+        upgrade: true,
+        reconnection: true,
+        reconnectionAttempts: 5,
+        reconnectionDelay: 1000
+    });
+    
+    socket.on('connect', function() {
+        console.log('SocketIO bağlantısı kuruldu');
+    });
+    
+    socket.on('disconnect', function() {
+        console.log('SocketIO bağlantısı kesildi');
+    });
+    
+    socket.on('connect_error', function(error) {
+        console.error('SocketIO bağlantı hatası:', error);
+    });
     
     // Gerçek zamanlı ilerleme güncellemeleri
     socket.on('progress', function(data) {
+        console.log('Progress update:', data);
         const progressBar = document.getElementById('progressBar');
         const progressText = document.getElementById('progressText');
+        const progressContainer = document.getElementById('progressContainer');
         
-        progressBar.style.width = data.progress + '%';
-        progressBar.textContent = data.progress + '%';
-        progressText.textContent = data.message;
+        if (progressBar && progressText) {
+            // Progress bar'ı görünür yap
+            if (progressContainer && !progressContainer.classList.contains('active')) {
+                progressContainer.classList.add('active');
+            }
+            
+            // Progress değerini güncelle
+            const progress = Math.min(100, Math.max(0, data.progress || 0));
+            progressBar.style.width = progress + '%';
+            progressBar.setAttribute('aria-valuenow', progress);
+            progressBar.textContent = progress + '%';
+            progressText.textContent = data.message || 'İşleniyor...';
+            
+            // %100'e ulaştığında tamamlandı mesajı
+            if (progress >= 100) {
+                progressBar.classList.add('bg-success');
+                progressText.textContent = data.message || 'Tamamlandı! Yönlendiriliyorsunuz...';
+            }
+        }
     });
     
     // Form gönderilirken loading state ve progress bar

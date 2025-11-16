@@ -102,7 +102,7 @@ csrf = CSRFProtect(app)
 # Babel (i18n) başlat
 # Flask-Babel 4.0.0+ API: locale_selector callback'i constructor'a veriliyor
 def get_locale():
-    """Locale seçici fonksiyonu"""
+    """Locale seçici fonksiyonu - Varsayılan: Türkçe"""
     # 1. URL parametresinden dil seç (örn: ?lang=en)
     if 'lang' in request.args:
         lang = request.args.get('lang')
@@ -122,12 +122,9 @@ def get_locale():
         session['language'] = lang
         return lang
     
-    # 4. Browser accept-language header'ından seç
-    lang = request.accept_languages.best_match(Config.SUPPORTED_LANGUAGES.keys())
-    if lang:
-        return lang
-    
-    # 5. Default dil
+    # 4. Direkt Türkçe varsayılan (Browser dilini atlıyoruz)
+    # Kullanıcı isterse navbar'dan değiştirebilir
+    session['language'] = Config.DEFAULT_LANGUAGE
     return Config.DEFAULT_LANGUAGE
 
 babel = Babel(app, locale_selector=get_locale)
