@@ -1200,6 +1200,54 @@ docker compose logs --tail=100 app
 
 Gunicorn logs stdout/stderr'a yazılır, Docker logs ile görüntülenir.
 
+## Güvenlik İyileştirmeleri (Yeni)
+
+- SECRET_KEY production doğrulaması eklendi (fallback kabul edilmez).
+- Open redirect koruması güçlendirildi (`is_safe_url`).
+- Token düşümü ve cache yazımı tek transaction mantığına yakınlaştırıldı; hata durumunda rollback.
+- Webhook logging iyileştirildi; hatalar detaylı loglanır, idempotent tekrarlar sessizce atlanır.
+- Merkezi logging altyapısı eklendi (`logging_config.py`).
+
+Production kontrol listesi:
+
+- [ ] FLASK_ENV=production ve FLASK_DEBUG=false
+- [ ] Güçlü ve unique SECRET_KEY
+- [ ] Stripe production anahtarları ve doğru Price ID'ler
+- [ ] AUTO_MIGRATE_ON_STARTUP=false
+- [ ] LOG_LEVEL=INFO veya WARNING
+
+## Logging Konfigürasyonu
+
+Uygulama Python `logging` ile log yazar. Varsayılan olarak console handler aktiftir. İsteğe bağlı olarak dönen dosya log'u açabilirsiniz:
+
+- LOG_LEVEL: DEBUG/INFO/WARNING/ERROR/CRITICAL (default: INFO)
+- LOG_FILE: logs/studybuddy.log (varsa dosyaya yazar)
+- LOG_MAX_BYTES: rotation için maksimum boyut (default: 10MB)
+- LOG_BACKUP_COUNT: yedek dosya sayısı (default: 5)
+
+Docker'da log görüntüleme:
+
+```bash
+docker logs studybuddy
+docker logs -f studybuddy
+```
+
+## Sorun Giderme (Yeni)
+
+- "SECRET_KEY must be set in production": `.env` dosyanızda güçlü bir SECRET_KEY ayarlayın.
+- "Invalid Stripe Price ID": Stripe dashboard'dan gerçek Price ID'yi kopyalayın (format: `price_...`).
+- "Token deduction failed": `logs/` klasöründeki uygulama loglarını kontrol edin.
+- "Webhook signature verification failed": `STRIPE_WEBHOOK_SECRET` doğru mu kontrol edin; saat senkronizasyonuna dikkat edin.
+
+## Migration Notları
+
+Webhook idempotency için ek kolonlar önerildi ancak mevcut sürümde opsiyonel tutuldu. İleride ihtiyaç halinde Alembic ile migration oluşturabilirsiniz:
+
+```bash
+alembic revision --autogenerate -m "Add webhook idempotency fields"
+alembic upgrade head
+```
+
 ### Backup and Persistence
 
 **Volumes (Persistent Data):**
@@ -1333,4 +1381,222 @@ docker compose down -v
 # Remove images
 docker compose down --rmi all
 ```
+
+### Health Check Endpoint
+
+**Mevcut Durum:**
+- Health check şu an `/` endpoint'ini kullanıyor
+- Public erişim, authentication gerektirmiyor
+- Rate limiting'e tabi olabilir
+
+**Önerilen İyileştirme (Optional):**
+
+Dedicated `/health` veya `/healthz` endpoint'i oluşturulabilir:
+- Authentication gerektirmez
+- Rate limiting'den muaf
+- Minimal response (örn: `{"status": "healthy"}`)
+- Database bağlantısı kontrolü (optional)
+- Redis bağlantısı kontrolü (optional)
+
+**Örnek Implementation:**
+```python
+@app.route('/health')
+def health_check():
+    return jsonify({"status": "healthy", "timestamp": datetime.utcnow().isoformat()}), 200
+```
+
+**Docker Health Check Güncelleme:**
+- Dockerfile: `CMD curl -f http://localhost:5000/health || exit 1`
+- docker-compose.yml: `test: ["CMD", "curl", "-f", "http://localhost:5000/health"]`
+
+## Logging Konfigürasyonu (Genişletilmiş)
+
+Uygulama Python `logging` modülü ile merkezi log yönetimi kullanır (`logging_config.py`).
+
+**Environment Variables:**
+
+| Değişken | Açıklama | Default | Production Önerisi |
+|----------|----------|---------|--------------------|
+| LOG_LEVEL | Log seviyesi | INFO | INFO veya WARNING |
+| LOG_FILE | Log dosya yolu | None (sadece console) | /app/logs/studybuddy.log |
+| LOG_MAX_BYTES | Rotation max boyut | 10MB | 10MB - 50MB |
+| LOG_BACKUP_COUNT | Yedek dosya sayısı | 5 | 5 - 10 |
+| LOG_ERROR_FILE | Sadece error logları | None | /app/logs/errors.log |
+
+**Production Logging Stratejisi:**
+
+1. **Console Logging (Zorunlu):**
+   - Gunicorn stdout/stderr'a yazar
+   - Docker logs ile erişilir: `docker compose logs -f app`
+   - Container orchestration (Kubernetes) ile entegre
+
+2. **File Logging (Optional):**
+   - Persistent volume mount: `./logs:/app/logs`
+   - Rotation ile disk dolmasını engelle
+   - Log aggregation için kullanılabilir
+
+3. **Log Levels:**
+   - DEBUG: Development only (çok verbose)
+   - INFO: Production default (önemli olaylar)
+   - WARNING: Production minimal (sadece uyarılar ve hatalar)
+   - ERROR: Sadece hatalar (önerilmez, WARNING kullanın)
+
+**Docker'da Log Görüntüleme:**
+```bash
+# Real-time logs
+docker compose logs -f app
+
+# Son 100 satır
+docker compose logs --tail=100 app
+
+# Belirli zaman aralığı
+docker compose logs --since 1h app
+
+# Sadece error logları (grep ile)
+docker compose logs app | grep ERROR
+```
+
+**Log Rotation ve Cleanup:**
+```bash
+# Manuel cleanup (disk doluysa)
+docker compose exec app find /app/logs -name "*.log.*" -mtime +30 -delete
+
+# Otomatik cleanup için cron job (host'ta)
+0 2 * * * find /path/to/logs -name "*.log.*" -mtime +30 -delete
+```
+
+## PostgreSQL'e Geçiş Adımları (Detaylı)
+
+1. **PostgreSQL Service'i Aktif Et:**
+   ```bash
+   # docker-compose.yml'de postgres service yorumunu kaldır
+   docker compose --profile postgres up -d
+   ```
+
+2. **Environment Variables Ayarla:**
+   ```bash
+   # .env dosyasında:
+   DATABASE_URL=postgresql://studybuddy:your_password@postgres:5432/studybuddy
+   POSTGRES_PASSWORD=your_strong_password
+   ```
+
+3. **SQLite'dan PostgreSQL'e Veri Taşıma (Optional):**
+   ```bash
+   # SQLite dump al
+   docker compose exec app sqlite3 instance/studybuddy.db .dump > sqlite_dump.sql
+   
+   # PostgreSQL'e import et (manuel düzenleme gerekebilir)
+   # SQLite ve PostgreSQL syntax farklılıkları için:
+   # - AUTOINCREMENT → SERIAL
+   # - DATETIME → TIMESTAMP
+   # - Boolean değerler
+   ```
+
+4. **Migration'ları Çalıştır:**
+   ```bash
+   docker compose exec app alembic upgrade head
+   ```
+
+5. **Test Et:**
+   ```bash
+   # Uygulama loglarını kontrol et
+   docker compose logs -f app
+   
+   # PostgreSQL bağlantısını test et
+   docker compose exec postgres psql -U studybuddy -d studybuddy -c "\dt"
+   ```
+
+## Environment Variables (Güncellenmiş)
+
+**Logging Değişkenleri:**
+- `LOG_LEVEL=INFO`: Production log seviyesi
+- `LOG_FILE=/app/logs/studybuddy.log`: Optional file logging
+- `LOG_MAX_BYTES=10485760`: Log rotation boyutu (10MB)
+- `LOG_BACKUP_COUNT=5`: Yedek log dosya sayısı
+
+**Gunicorn Değişkenleri:**
+- `GUNICORN_WORKERS=4`: Worker sayısı (CPU'ya göre ayarla)
+- `GUNICORN_BIND=0.0.0.0:5000`: Bind address
+- `GUNICORN_TIMEOUT=120`: Worker timeout (AI işlemleri için)
+- `GUNICORN_LOG_LEVEL=info`: Gunicorn log seviyesi
+
+## 🚀 Quick Commands (Production)
+
+### Docker Management
+```bash
+# Build ve başlat
+docker compose up -d --build
+
+# Sadece başlat (build olmadan)
+docker compose up -d
+
+# Durdur
+docker compose down
+
+# Durdur ve volume'ları sil (DİKKAT: Veri kaybı!)
+docker compose down -v
+
+# Restart
+docker compose restart app
+
+# Logs
+docker compose logs -f app
+docker compose logs --tail=100 app
+
+# Container shell
+docker compose exec app /bin/bash
+
+# Health check
+docker compose ps
+curl http://localhost:5000/
+```
+
+### Database Management
+```bash
+# Alembic migration
+docker compose exec app alembic upgrade head
+docker compose exec app alembic current
+docker compose exec app alembic history
+
+# SQLite shell
+docker compose exec app sqlite3 instance/studybuddy.db
+
+# PostgreSQL shell
+docker compose exec postgres psql -U studybuddy -d studybuddy
+
+# Database backup
+docker compose exec app sqlite3 instance/studybuddy.db .dump > backup_$(date +%Y%m%d).sql
+```
+
+### Cleanup
+```bash
+# Container'ları temizle
+docker compose down
+docker system prune -f
+
+# Volume'ları temizle (DİKKAT: Veri kaybı!)
+docker volume prune -f
+
+# Image'ları temizle
+docker image prune -a -f
+
+# Tümünü temizle (DİKKAT: Tüm Docker kaynakları silinir!)
+docker system prune -a --volumes -f
+```
+
+## Production Checklist (Genişletildi)
+
+- [ ] FLASK_ENV=production ve FLASK_DEBUG=false
+- [ ] Güçlü ve unique SECRET_KEY (32+ karakter)
+- [ ] Stripe production anahtarları ve doğru Price ID'ler
+- [ ] AUTO_MIGRATE_ON_STARTUP=false
+- [ ] LOG_LEVEL=INFO veya WARNING (DEBUG değil)
+- [ ] SESSION_COOKIE_SECURE=true (HTTPS zorunlu)
+- [ ] VALIDATE_FILE_SIGNATURES=true
+- [ ] WTF_CSRF_ENABLED=true
+- [ ] RATELIMIT_ENABLED=true (production'da aktif olmalı)
+- [ ] Rate limiting backend: Redis kullan (RATELIMIT_STORAGE_URI=redis://redis:6379)
+- [ ] Veritabanı ve volume yedekleme stratejisi belirlendi ve belgelendi
+- [ ] Monitoring ve alerting kuruldu (container health, Gunicorn, app logs)
+- [ ] Daha yüksek trafik için PostgreSQL’e geçiş değerlendirildi (DATABASE_URL=postgresql://...)
 

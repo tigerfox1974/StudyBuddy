@@ -10,14 +10,19 @@ services:
     ports:
       - "5000:5000"
     env_file:
+      # Load environment variables from .env file
+      # For production, use .env.production.example as template
+      # Ensure all required variables are set (see README.md)
       - .env
     volumes:
       # Persistent file storage
       - ./uploads:/app/uploads
       - ./exports:/app/exports
       - ./invoices:/app/invoices
-      # SQLite database (optional - for production, PostgreSQL is recommended)
-      - ./studybuddy.db:/app/studybuddy.db
+      # Application logs (optional but recommended for production)
+      - ./logs:/app/logs
+      # SQLite instance directory (development; production'da PostgreSQL önerilir)
+      - ./instance:/app/instance
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:5000/"]
@@ -27,6 +32,9 @@ services:
       start_period: 40s
     networks:
       - studybuddy-network
+    # depends_on:
+    #   - postgres  # Uncomment if using PostgreSQL
+    #   - redis     # Uncomment if using Redis
 
   # Redis Service (optional but recommended for rate limiting)
   # To enable Redis, use: docker-compose --profile redis up -d
@@ -51,12 +59,38 @@ services:
     profiles:
       - redis
 
+# PostgreSQL Database (Optional - recommended for production)
+# Uncomment to use PostgreSQL instead of SQLite
+# postgres:
+#   image: postgres:15-alpine
+#   container_name: studybuddy-postgres
+#   environment:
+#     POSTGRES_DB: studybuddy
+#     POSTGRES_USER: studybuddy
+#     POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+#   volumes:
+#     - postgres-data:/var/lib/postgresql/data
+#   restart: unless-stopped
+#   healthcheck:
+#     test: ["CMD-SHELL", "pg_isready -U studybuddy"]
+#     interval: 10s
+#     timeout: 5s
+#     retries: 5
+#   networks:
+#     - studybuddy-network
+#   profiles:
+#     - postgres
+
 volumes:
   # Named volume for Redis persistence
   redis-data:
+  # Named volume for PostgreSQL persistence (uncomment if using PostgreSQL)
+  # postgres-data:
 
 networks:
   # Bridge network for service communication
   studybuddy-network:
     driver: bridge
+    driver_opts:
+      com.docker.network.bridge.name: studybuddy0
 

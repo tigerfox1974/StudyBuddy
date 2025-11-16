@@ -17,6 +17,9 @@ class Config:
     
     # Flask ayarları
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'dev-secret-key-change-in-production'
+    # Flask DEBUG modu (production'da kapalı olmalıdır)
+    DEBUG = os.environ.get('FLASK_DEBUG', 'false').lower() in ('true', '1', 'yes')
+    _SECRET_FALLBACK = 'dev-secret-key-change-in-production'
     
     # Session ve Security ayarları
     SESSION_COOKIE_SECURE = os.environ.get('SESSION_COOKIE_SECURE', 'false').lower() in ('true', '1', 'yes')
@@ -321,6 +324,19 @@ class Config:
     EXPORT_FILENAME_FORMAT = 'export_{result_id}_{timestamp}'
     EXPORT_INCLUDE_ANSWER_KEY = True
     EXPORT_FORMATS = ['pdf', 'docx']
+
+    # Logging Ayarları (Environment üzerinden yapılandırılabilir)
+    LOG_LEVEL = os.environ.get('LOG_LEVEL', 'INFO')
+    LOG_FILE = os.environ.get('LOG_FILE')  # Örn: logs/studybuddy.log (optional)
+    LOG_MAX_BYTES = int(os.environ.get('LOG_MAX_BYTES', 10 * 1024 * 1024))  # 10MB
+    LOG_BACKUP_COUNT = int(os.environ.get('LOG_BACKUP_COUNT', 5))
+    LOG_ERROR_FILE = os.environ.get('LOG_ERROR_FILE')  # Sadece error logları için (optional)
+
+    # Gunicorn Ayarları (Environment üzerinden yapılandırılabilir)
+    GUNICORN_BIND = os.environ.get('GUNICORN_BIND', '0.0.0.0:5000')
+    GUNICORN_WORKERS = int(os.environ.get('GUNICORN_WORKERS', (os.cpu_count() or 1) * 2 + 1))
+    GUNICORN_LOG_LEVEL = os.environ.get('GUNICORN_LOG_LEVEL', 'info')
+    GUNICORN_TIMEOUT = int(os.environ.get('GUNICORN_TIMEOUT', 120))
     
     @staticmethod
     def allowed_file(filename):
@@ -355,6 +371,15 @@ class Config:
     @staticmethod
     def validate_config():
         """Gerekli konfigürasyonların ayarlanıp ayarlanmadığını kontrol eder"""
+        # Production ortamında SECRET_KEY fallback kullanımı engellenir
+        if Config.is_production():
+            if not Config.SECRET_KEY or Config.SECRET_KEY == Config._SECRET_FALLBACK:
+                raise ValueError(
+                    "SECRET_KEY must be set in production and cannot use fallback value."
+                )
+            # Production'da DEBUG kesinlikle kapalı olmalı
+            if Config.DEBUG:
+                raise ValueError("DEBUG mode must be disabled in production (FLASK_DEBUG=false)")
         if Config.DEMO_MODE:
             return True  # Demo modda API key kontrolü yapma
         
@@ -365,6 +390,18 @@ class Config:
                 "Veya test için DEMO_MODE=true ayarlayın."
             )
         return True
+    
+    @staticmethod
+    def is_production():
+        """Production ortamını belirle (FLASK_ENV/FLASK_DEBUG)"""
+        env = (os.environ.get('FLASK_ENV') or '').lower()
+        debug_raw = os.environ.get('FLASK_DEBUG')
+        debug_on = False if debug_raw is None else str(debug_raw).lower() in ('true', '1', 'yes')
+        # FLASK_DEBUG açıksa asla production değildir
+        if debug_on:
+            return False
+        # Debug kapalıysa yalnızca FLASK_ENV explicit 'production' ise prod
+        return env == 'production'
     
     @staticmethod
     def get_plan_limit(plan_type, feature_key):
@@ -407,6 +444,11 @@ class Config:
                 "STRIPE_PUBLISHABLE_KEY ortam değişkeni ayarlanmamış! "
                 "Lütfen .env dosyasında STRIPE_PUBLISHABLE_KEY değerini ayarlayın."
             )
+        # Price ID doğrulaması (free plan hariç)
+        for plan_key, plan in Config.SUBSCRIPTION_PLANS.items():
+            price_id = plan.get('stripe_price_id')
+            if price_id:
+                Config.validate_stripe_price_id(price_id)
         return True
     
     @staticmethod
@@ -424,4 +466,47 @@ class Config:
             if plan.get('stripe_price_id') == price_id:
                 return plan_key, plan
         return None, None
+
+    @staticmethod
+    def validate_stripe_price_id(price_id: str):
+        """
+        Stripe Price ID formatını doğrula ve placeholder değerleri reddet.
+        Beklenen format: price_XXXX...
+        """
+        if not isinstance(price_id, str):
+            raise ValueError("Invalid Stripe Price ID: not a string")
+        placeholder_patterns = [
+            r'^price_your_.*_price_id_here$',
+            r'^price_test_.*$',
+        ]
+        for patt in placeholder_patterns:
+            if re.match(patt, price_id):
+                raise ValueError(f"Invalid Stripe Price ID (placeholder not allowed): {price_id}")
+        if not re.match(r'^price_[A-Za-z0-9_]+$', price_id):
+            raise ValueError(f"Invalid Stripe Price ID format: {price_id}")
+
+    @staticmethod
+    def validate_production_config():
+        """
+        Production için genişletilmiş doğrulama:
+        - SECRET_KEY, DEBUG, Stripe (enabled ise), Mail ayarları
+        - Logging seviyesi önerisi
+        """
+        if not Config.is_production():
+            return True
+        # SECRET_KEY ve DEBUG kontrolü zaten validate_config içinde var
+        Config.validate_config()
+        # Stripe (enabled ise) doğrula
+        if Config.STRIPE_ENABLED:
+            Config.validate_stripe_config()
+        # Mail ayarları (basic check)
+        if not Config.MAIL_USERNAME or not Config.MAIL_PASSWORD:
+            # Prod'da e-posta reset/notification planlanıyorsa zorunlu olabilir; uyarı amaçlı istisna fırlat
+            # Operasyonel bilinç için ValueError tercih edildi
+            raise ValueError("MAIL_USERNAME ve MAIL_PASSWORD production ortamında ayarlanmalıdır.")
+        # Logging seviyesi önerisi
+        lvl = (Config.LOG_LEVEL or '').upper()
+        if lvl == 'DEBUG':
+            raise ValueError("Production ortamında LOG_LEVEL DEBUG olamaz. INFO veya WARNING kullanın.")
+        return True
 

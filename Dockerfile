@@ -1,7 +1,8 @@
 # Multi-stage Dockerfile for StudyBuddy Production Deployment
 # Stage 1: Builder (dependencies)
-
-FROM python:3.10-slim as builder
+# Allow overriding Python version at build time
+ARG PYTHON_VERSION=3.10
+FROM python:${PYTHON_VERSION}-slim as builder
 
 # Set working directory
 WORKDIR /app
@@ -22,8 +23,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 RUN pip install --no-cache-dir gunicorn[gevent]
 
 # Stage 2: Runtime
-
-FROM python:3.10-slim
+FROM python:${PYTHON_VERSION}-slim
 
 # Install curl for healthcheck
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -37,7 +37,9 @@ RUN useradd -m -u 1000 studybuddy
 WORKDIR /app
 
 # Copy Python packages from builder
-COPY --from=builder /usr/local/lib/python3.10/site-packages /usr/local/lib/python3.10/site-packages
+# Copy entire versioned Python lib directory to avoid hardcoding minor version
+# This ensures compatibility when PYTHON_VERSION is overridden at build time.
+COPY --from=builder /usr/local/lib/python*/ /usr/local/lib/
 
 # Copy gunicorn binary from builder
 COPY --from=builder /usr/local/bin/gunicorn /usr/local/bin/gunicorn
@@ -46,8 +48,9 @@ COPY --from=builder /usr/local/bin/gunicorn /usr/local/bin/gunicorn
 COPY --chown=studybuddy:studybuddy . .
 
 # Create necessary directories with proper permissions
-RUN mkdir -p uploads exports invoices && \
-    chown -R studybuddy:studybuddy uploads exports invoices
+RUN mkdir -p uploads exports invoices instance logs && \
+    chown -R studybuddy:studybuddy uploads exports invoices instance logs && \
+    chown -R studybuddy:studybuddy /app
 
 # Switch to non-root user
 USER studybuddy
@@ -55,7 +58,9 @@ USER studybuddy
 # Expose port
 EXPOSE 5000
 
-# Health check (curl kullanarak - requests kütüphanesi gerekmez)
+# Health check uses curl to test the root endpoint.
+# For production, consider implementing a dedicated /health endpoint
+# that doesn't require authentication and returns minimal data.
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
     CMD curl -f http://localhost:5000/ || exit 1
 

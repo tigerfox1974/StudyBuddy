@@ -7,21 +7,36 @@ import os
 import multiprocessing
 
 # Server Socket
-bind = "0.0.0.0:5000"
+# Environment-driven bind address (override in production if needed)
+bind = os.environ.get('GUNICORN_BIND', '0.0.0.0:5000')
 backlog = 2048
 
 # Worker Processes
 workers = int(os.environ.get('GUNICORN_WORKERS', multiprocessing.cpu_count() * 2 + 1))
+# gevent worker class is REQUIRED for SocketIO support.
+# Do not change to sync or other worker types without testing SocketIO.
 worker_class = "gevent"  # REQUIRED for SocketIO - async worker
 worker_connections = 1000  # Max concurrent connections for gevent worker
 threads = 1  # Not used with gevent
-timeout = 120  # Worker timeout (AI operations can take time)
+# Environment-driven timeout (AI operations can take time)
+timeout = int(os.environ.get('GUNICORN_TIMEOUT', '120'))
 keepalive = 5  # Keep-alive connection timeout
 
 # Logging
 accesslog = "-"  # Log to stdout (visible in Docker logs)
 errorlog = "-"   # Log to stderr (visible in Docker logs)
-loglevel = os.environ.get('GUNICORN_LOG_LEVEL', 'info')
+# Production mode detection and log level control
+def _is_production():
+    env = (os.environ.get('FLASK_ENV') or '').lower()
+    debug_raw = os.environ.get('FLASK_DEBUG')
+    debug_on = False if debug_raw is None else str(debug_raw).lower() in ('true', '1', 'yes')
+    if debug_on:
+        return False
+    return env == 'production'
+
+# Default: info; in development you may set debug via env
+_default_level = 'info' if _is_production() else 'debug'
+loglevel = os.environ.get('GUNICORN_LOG_LEVEL', _default_level)
 access_log_format = '%(h)s %(l)s %(u)s %(t)s "%(r)s" %(s)s %(b)s "%(f)s" "%(a)s" %(D)s'
 
 # Process Naming

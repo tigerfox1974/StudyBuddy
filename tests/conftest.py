@@ -276,3 +276,43 @@ def demo_mode_false(monkeypatch):
     monkeypatch.setattr('config.Config.DEMO_MODE', False)
     yield
     monkeypatch.setattr('config.Config.DEMO_MODE', original_value)
+
+
+@pytest.fixture
+def completed_payment(db_session, user):
+    """Completed status'ta payment record oluştur"""
+    from models import Payment
+    payment = Payment(
+        user_id=user.id,
+        amount=49.99,
+        currency='TRY',
+        status='completed',
+        stripe_session_id='cs_test_completed_123',
+        stripe_payment_intent_id='pi_test_123',
+        plan_type='premium',
+        billing_period='monthly',
+        invoice_number='INV-2025-00001',
+        completed_at=datetime.utcnow()
+    )
+    db_session.add(payment)
+    db_session.commit()
+    return payment
+
+
+@pytest.fixture
+def standard_user(db_session):
+    """Standard plan kullanıcısı oluştur"""
+    from models import User
+    standard = User(
+        email='standard@example.com',
+        username='standarduser',
+        subscription_plan='standard',
+        tokens_remaining=25,
+        trial_ends_at=datetime.utcnow() + timedelta(days=7)
+    )
+    standard.set_password('Test123!')
+    db_session.add(standard)
+    db_session.commit()
+    return standard
+
+

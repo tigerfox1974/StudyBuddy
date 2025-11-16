@@ -6,28 +6,52 @@
 <!-- Hero Section -->
 <section class="page-gradient-bg hero-section">
     <div class="container">
-        <img src="{{ url_for('static', filename='img/studybuddy-owl.png') }}" alt="StudyBuddy Logo" class="logo">
-        <h1>StudyBuddy</h1>
-        <p>Ders notlarınızı yapay zeka ile özet, test soruları ve flashcard'lara dönüştürün!</p>
-        
-        <div class="cta-buttons">
-            {% if current_user and current_user.is_authenticated %}
-            <a href="{{ url_for('upload') }}" class="btn btn-hero btn-hero-primary">
-                <i class="bi bi-cloud-upload"></i> Hemen Başla
-            </a>
-            <a href="{{ url_for('pricing') }}" class="btn btn-hero btn-hero-outline">
-                <i class="bi bi-star"></i> Planları İncele
-            </a>
-            {% else %}
-            <a href="{{ url_for('register') }}" class="btn btn-hero btn-hero-primary">
-                <i class="bi bi-person-plus"></i> Ücretsiz Başla
-            </a>
-            <a href="{{ url_for('login') }}" class="btn btn-hero btn-hero-outline">
-                <i class="bi bi-box-arrow-in-right"></i> Giriş Yap
-            </a>
-            {% endif %}
+        <div class="hero-layout">
+            <!-- Left: Content -->
+            <div class="hero-content">
+                <span class="hero-badge" role="status" aria-label="Yapay zeka destekli çalışma asistanı">
+                    <i class="bi bi-stars"></i> Yapay zeka destekli çalışma asistanı
+                </span>
+                <h1 class="hero-title">Notlarını dakikalar içinde sınava çevir.</h1>
+                <p class="hero-subtitle">PDF, Word, PowerPoint ve düz metin dosyalarından; özet, çoktan seçmeli ve kısa cevap soruları ile flashcard setleri üret.</p>
+                <div class="hero-cta-group">
+                    {% if current_user and current_user.is_authenticated %}
+                    <a href="{{ url_for('upload') }}" class="btn btn-hero btn-hero-primary">
+                        <i class="bi bi-cloud-upload"></i> Hemen Başla
+                    </a>
+                    <a href="{{ url_for('pricing') }}" class="btn btn-outline-primary hero-cta-secondary">
+                        <i class="bi bi-star"></i> Planları İncele
+                    </a>
+                    {% else %}
+                    <a href="{{ url_for('register') }}" class="btn btn-hero btn-hero-primary">
+                        <i class="bi bi-person-plus"></i> Ücretsiz Başla
+                    </a>
+                    <a href="{{ url_for('login') }}" class="btn btn-outline-primary hero-cta-secondary">
+                        <i class="bi bi-box-arrow-in-right"></i> Giriş Yap
+                    </a>
+                    {% endif %}
+                </div>
+                <small class="hero-helper">Tüm içeriklerin seninle güvende. Sadece gerekli minimum metin işlenir.</small>
+            </div>
+            <!-- Right: Visual -->
+            <div class="hero-visual">
+                <img src="{{ url_for('static', filename='img/studybuddy-owl.png') }}" alt="StudyBuddy Logo" class="logo" style="max-width:140px;">
+                <div class="hero-mock-card">
+                    <h6><i class="bi bi-journal-text"></i> Özet</h6>
+                    <div class="hero-mock-summary">
+                        Kapsamlı metinleri kısa, maddeli bir özete dönüştürür. Temel kavramları ve ilişkileri vurgular.
+                    </div>
+                    <div class="mt-3 hero-mock-questions">
+                        <h6 class="mb-2"><i class="bi bi-card-checklist"></i> Sorular</h6>
+                        <div class="q"><span class="badge">A</span> Fotosentezin temel çıktısı nedir?</div>
+                        <div class="q"><span class="badge">B</span> Osmos ile difüzyon arasındaki farkı yazın.</div>
+                        <div class="q"><span class="badge">C</span> Hücre zarının görevi nedir?</div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
+
 </section>
 
 <!-- Features Section -->
@@ -37,42 +61,42 @@
         <div class="row g-4">
             <div class="col-md-4">
                 <div class="feature-card">
-                    <i class="bi bi-file-earmark-text"></i>
+                    <i class="bi bi-file-earmark-text" aria-hidden="true"></i>
                     <h4>Çoklu Dosya Desteği</h4>
                     <p>PDF, Word, PowerPoint ve metin dosyalarınızı yükleyin. Sistem otomatik olarak içeriği analiz eder.</p>
                 </div>
             </div>
             <div class="col-md-4">
                 <div class="feature-card">
-                    <i class="bi bi-magic"></i>
+                    <i class="bi bi-magic" aria-hidden="true"></i>
                     <h4>Otomatik İçerik Üretimi</h4>
                     <p>Yapay zeka, dokümanınızdan konu özeti, çoktan seçmeli sorular, kısa cevap soruları ve flashcard'lar üretir.</p>
                 </div>
             </div>
             <div class="col-md-4">
                 <div class="feature-card">
-                    <i class="bi bi-lightning-charge"></i>
+                    <i class="bi bi-lightning-charge" aria-hidden="true"></i>
                     <h4>Hızlı ve Akıllı</h4>
                     <p>Aynı dosyayı tekrar yüklediğinizde, sistem önbellekten hızlıca sonuçları gösterir. Zaman ve token tasarrufu!</p>
                 </div>
             </div>
             <div class="col-md-4">
                 <div class="feature-card">
-                    <i class="bi bi-graph-up"></i>
+                    <i class="bi bi-graph-up" aria-hidden="true"></i>
                     <h4>İnteraktif Öğrenme</h4>
                     <p>Quiz modu ile soruları çözebilir, skorunuzu görebilir ve flashcard'ları çevirerek çalışabilirsiniz.</p>
                 </div>
             </div>
             <div class="col-md-4">
                 <div class="feature-card">
-                    <i class="bi bi-person-check"></i>
+                    <i class="bi bi-person-check" aria-hidden="true"></i>
                     <h4>Seviye Bazlı İçerik</h4>
                     <p>İlkokuldan üniversiteye, sınav hazırlığına kadar her seviyeye uygun sorular ve içerikler üretilir.</p>
                 </div>
             </div>
             <div class="col-md-4">
                 <div class="feature-card">
-                    <i class="bi bi-shield-check"></i>
+                    <i class="bi bi-shield-check" aria-hidden="true"></i>
                     <h4>Güvenli ve Özel</h4>
                     <p>Dosyalarınız güvenli bir şekilde işlenir ve sadece size özel içerikler üretilir.</p>
                 </div>
@@ -86,32 +110,25 @@
     <div class="container">
         <h2 class="section-title">Nasıl Çalışır?</h2>
         <div class="row g-4">
-            <div class="col-md-3">
-                <div class="step-card">
-                    <div class="step-number">1</div>
-                    <h4>Dosya Yükle</h4>
-                    <p>PDF, Word, PowerPoint veya metin dosyanızı yükleyin ve seviyenizi seçin.</p>
+            <div class="col-md-4">
+                <div class="how-step-card">
+                    <div class="how-step-badge">1</div>
+                    <h4>Dokümanını yükle</h4>
+                    <p>PDF, Word, PowerPoint veya metin dosyanı seç.</p>
                 </div>
             </div>
-            <div class="col-md-3">
-                <div class="step-card">
-                    <div class="step-number">2</div>
-                    <h4>Yapay Zeka İşlesin</h4>
-                    <p>Sistem dokümanınızı analiz eder ve içeriği çıkarır.</p>
+            <div class="col-md-4">
+                <div class="how-step-card">
+                    <div class="how-step-badge">2</div>
+                    <h4>Özet ve soru türlerini seç</h4>
+                    <p>Özet, çoktan seçmeli, kısa cevap ve flashcard’ları belirle.</p>
                 </div>
             </div>
-            <div class="col-md-3">
-                <div class="step-card">
-                    <div class="step-number">3</div>
-                    <h4>İçerik Üretilsin</h4>
-                    <p>Özet, sorular ve flashcard'lar otomatik olarak oluşturulur.</p>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="step-card">
-                    <div class="step-number">4</div>
-                    <h4>Çalışmaya Başla</h4>
-                    <p>Üretilen içeriklerle çalışın, quiz çözün ve öğrenin!</p>
+            <div class="col-md-4">
+                <div class="how-step-card">
+                    <div class="how-step-badge">3</div>
+                    <h4>Çalış ve dışa aktar</h4>
+                    <p>Quiz çöz, ilerlemeni takip et, PDF/Word olarak indir.</p>
                 </div>
             </div>
         </div>
@@ -121,7 +138,8 @@
 <!-- Pricing Preview Section -->
 <section class="pricing-preview">
     <div class="container">
-        <h2 class="section-title">Planlarımız</h2>
+        <h2 class="section-title">Planını seç, çalışmaya başla</h2>
+        <p class="text-center text-muted mb-5">Hemen ücretsiz başlayın; ihtiyacınız olduğunda Premium’a geçerek limitsiz soru ve esnek dışa aktarım seçeneklerini kullanın.</p>
         <div class="row g-4 justify-content-center">
             <div class="col-md-6 col-lg-5">
                 <div class="pricing-card-landing free">

@@ -10,11 +10,13 @@ import io
 import zipfile
 import os
 from typing import Tuple, Optional
+import logging
 from datetime import datetime
 from models import Document, Result, UsageStats, User, UserUsageStats, Subscription, Payment, db
 from config import Config
 from flask import render_template, url_for
 
+logger = logging.getLogger(__name__)
 
 def get_file_hash(file_content):
     """
@@ -138,11 +140,7 @@ def save_to_cache(file_hash, filename, file_type, file_size, user_level, user_ty
         processing_time=processing_time
     )
     db.session.add(result)
-    db.session.commit()
-    
-    # Istatistik guncelle
-    stats = UsageStats.get_or_create()
-    stats.update_cache_miss()
+    db.session.flush()
     
     return result
 
@@ -743,7 +741,7 @@ def send_payment_confirmation_email(user_email, payment, invoice_pdf_path):
         mail.send(msg)
         return True
     except Exception as e:
-        print(f"Email gönderme hatası: {str(e)}")
+        logger.error(f"Email gönderme hatası: {str(e)}")
         return False
 
 
@@ -767,6 +765,15 @@ def activate_user_subscription(user_id, plan_type, payment_id):
         payment = Payment.query.get(payment_id)
         if not payment:
             return False, None, "Ödeme kaydı bulunamadı"
+        
+        # Idempotency: payment zaten işlenmiş ve subscription bağlıysa tekrar oluşturma
+        if payment.status == 'completed' and payment.subscription_id:
+            existing_sub = Subscription.query.filter_by(id=payment.subscription_id, user_id=user_id).first()
+            if existing_sub:
+                # Kullanıcının planını güncel kabul et
+                user.subscription_plan = plan_type
+                db.session.flush()
+                return True, existing_sub, None
         
         # Kullanıcının planını güncelle
         user.subscription_plan = plan_type
@@ -856,12 +863,9 @@ def initialize_user_tokens(user):
     plan_config = Config.SUBSCRIPTION_PLANS.get('free', {})
     features = plan_config.get('features', {})
     
-    # 7 günlük deneme başlat
+    # 7 günlük deneme başlat ve yalnızca bu anda deneme fişlerini ver
     if user.trial_ends_at is None:
         user.trial_ends_at = datetime.utcnow() + timedelta(days=features.get('trial_days', 7))
-    
-    # Deneme fişlerini ver
-    if user.tokens_remaining == 0:
         user.tokens_remaining = features.get('trial_tokens', 10)
 
 
@@ -906,6 +910,9 @@ def refresh_monthly_tokens(user):
         user.last_token_refresh = now
     else:
         # Son yenilemeden 30 gün geçmiş mi?
+        # Basit race mitigation: son 1 saat içinde yenilendiyse tekrar etme
+        if (now - user.last_token_refresh).total_seconds() < 3600:
+            return
         days_since_refresh = (now - user.last_token_refresh).days
         if days_since_refresh >= 30:
             # Aylık yenileme

@@ -41,7 +41,7 @@
                     </li>
                     {% endif %}
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="languageDropdown" role="button" data-bs-toggle="dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="languageDropdown" role="button" data-bs-toggle="dropdown" aria-label="Dil Seçimi">
                             {{ supported_languages[current_language]['flag'] }} {{ supported_languages[current_language]['name'] }}
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end">
@@ -62,7 +62,7 @@
                         </a>
                     </li>
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-label="Kullanıcı menüsü">
                             <i class="bi bi-person-circle"></i> {{ _('Merhaba') }}, {{ current_user.username }}
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end">

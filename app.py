@@ -6,7 +6,8 @@ Flask Web Uygulaması
 import os
 import time
 from datetime import datetime
-from urllib.parse import urlparse
+from urllib.parse import urlparse, urljoin
+import logging
 from flask import Flask, render_template, request, redirect, url_for, flash, abort, send_file, session, make_response
 from flask_socketio import SocketIO, emit
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
@@ -38,6 +39,31 @@ from decimal import Decimal
 # Flask uygulamasını oluştur
 app = Flask(__name__)
 app.config.from_object(Config)
+
+# Logging setup
+logger = logging.getLogger(__name__)
+try:
+    from logging_config import setup_logging  # type: ignore
+    setup_logging(app)
+except Exception:
+    if not logger.handlers:
+        handler = logging.StreamHandler()
+        formatter = logging.Formatter('[%(asctime)s] %(levelname)s in %(module)s: %(message)s')
+        handler.setFormatter(formatter)
+        logger.addHandler(handler)
+    logger.setLevel(logging.INFO)
+
+# Production config validation (fail-fast in production, noop in development)
+try:
+    Config.validate_production_config()
+except ValueError as e:
+    # In production this should stop the app from starting with invalid config
+    logger.error(f"Production configuration validation failed: {str(e)}")
+    if Config.is_production():
+        raise
+    else:
+        # In non-production, continue to allow development convenience
+        logger.warning("Continuing in non-production despite config validation error.")
 
 # SocketIO'yu başlat
 socketio = SocketIO(app, cors_allowed_origins="*")
@@ -119,11 +145,11 @@ try:
 except ValueError as e:
     # Unicode-safe error message
     error_msg = str(e).encode('ascii', 'ignore').decode('ascii')
-    print(f"WARNING: Stripe configuration validation failed: {error_msg}")
+    logger.warning(f"Stripe configuration validation failed: {error_msg}")
     # Stripe'ı devre dışı bırak veya uygulamayı durdur
     # Burada devre dışı bırakıyoruz, böylece uygulama çalışmaya devam edebilir
     app.config['STRIPE_ENABLED'] = False
-    print("Stripe has been disabled. Payment features will not be available.")
+    logger.info("Stripe has been disabled. Payment features will not be available.")
 
 # Database tablolarını oluştur
 # NOT: db.create_all() ile Alembic birlikte kullanıldığında çakışma riski var.
@@ -135,7 +161,7 @@ with app.app_context():
     use_db_create_all = os.environ.get('USE_DB_CREATE_ALL_FOR_TESTS', 'false').lower() in ('true', '1', 'yes')
     if use_db_create_all:
         db.create_all()
-        print("[INFO] db.create_all() test modunda calistirildi")
+        logger.info("db.create_all() test modunda calistirildi")
     
     # Alembic otomatik migration kontrolü (opsiyonel)
     if Config.AUTO_MIGRATE_ON_STARTUP:
@@ -161,19 +187,19 @@ with app.app_context():
             # Eğer tablolar var ama Alembic version tablosu yoksa (db.create_all() ile oluşturulmuş)
             # önce stamp head yap, sonra upgrade
             if has_tables and current_rev is None:
-                print("[INFO] Veritabani tablolari mevcut ama Alembic version tablosu yok")
-                print("[INFO] Alembic version tablosu olusturuluyor (stamp head)...")
+                logger.info("Veritabani tablolari mevcut ama Alembic version tablosu yok")
+                logger.info("Alembic version tablosu olusturuluyor (stamp head)...")
                 command.stamp(alembic_cfg, "head")
-                print("[OK] Alembic version tablosu olusturuldu")
+                logger.info("Alembic version tablosu olusturuldu")
             
             # Veritabanını en son versiyona güncelle
             command.upgrade(alembic_cfg, "head")
-            print("[OK] Veritabani migration'lari guncellendi")
+            logger.info("Veritabani migration'lari guncellendi")
         except Exception as e:
-            print(f"[WARNING] Migration kontrolu basarisiz: {e}")
-            print("[INFO] Manuel migration icin: alembic upgrade head")
+            logger.warning(f"Migration kontrolu basarisiz: {e}")
+            logger.info("Manuel migration icin: alembic upgrade head")
     else:
-        print("[INFO] Otomatik migration devre disi. Manuel kontrol icin: alembic upgrade head")
+        logger.info("Otomatik migration devre disi. Manuel kontrol icin: alembic upgrade head")
 
 
 @login_manager.user_loader
@@ -206,7 +232,7 @@ def send_reset_email(to_email, reset_link):
         mail.send(msg)
         return True
     except Exception as e:
-        print(f"Email gönderme hatası: {str(e)}")
+        logger.error(f"Email gönderme hatası: {str(e)}")
         return False
 
 
@@ -217,6 +243,25 @@ def inject_language():
         'current_language': str(get_locale()),
         'supported_languages': Config.SUPPORTED_LANGUAGES
     }
+
+
+def is_safe_url(target: str) -> bool:
+    """Open redirect koruması: sadece aynı host'a izin ver"""
+    try:
+        ref_url = urlparse(request.host_url)
+        test_url = urlparse(urljoin(request.host_url, target))
+        if test_url.scheme not in ('http', 'https'):
+            return False
+        return ref_url.netloc == test_url.netloc
+    except Exception:
+        return False
+
+
+def flash_safe_error(user_message: str, error: Exception = None):
+    """Kullanıcıya güvenli mesaj göster, teknik detayı logla"""
+    if error:
+        logger.error(str(error))
+    flash(user_message, 'error')
 
 @app.route('/set_language/<lang>')
 def set_language(lang):
@@ -365,11 +410,8 @@ def login():
         
         # Redirect to next page or upload
         next_page = request.args.get('next')
-        if next_page:
-            # Security check: prevent open redirect
-            parsed_url = urlparse(next_page)
-            if parsed_url.netloc == '':
-                return redirect(next_page)
+        if next_page and is_safe_url(next_page):
+            return redirect(next_page)
         return redirect(url_for('upload'))
     
     return render_template('login.html')
@@ -555,7 +597,18 @@ def process():
         
         if cached_result:
             # CACHE HIT - Daha once islenmis!
-            print(f"[CACHE HIT] Token saved: ~{cached_result.token_used}")
+            logger.info(f"[CACHE HIT] Token saved: ~{cached_result.token_used}")
+
+            # Plan limitlerini cache hit durumunda da kontrol et
+            plan_type_hit = current_user.subscription_plan or 'free'
+            plan_config_hit = Config.SUBSCRIPTION_PLANS.get(plan_type_hit, {})
+            max_file_size_mb_hit = plan_config_hit.get('features', {}).get('max_file_size_mb')
+            if max_file_size_mb_hit:
+                if file_size > max_file_size_mb_hit * 1024 * 1024:
+                    plan_name = plan_config_hit.get("name", plan_type_hit.upper())
+                    logger.warning("Cache hit but plan limit exceeded for user %s, plan %s", current_user.id, plan_name)
+                    flash(gettext('Dosya çok büyük! %(plan_name)s için maksimum %(max_size)d MB dosya yükleyebilirsiniz.', plan_name=plan_name, max_size=max_file_size_mb_hit), 'error')
+                    return redirect(url_for('upload'))
             
             # İstatistik güncelle
             stats = UsageStats.get_or_create()
@@ -583,7 +636,7 @@ def process():
                                    result_id=cached_result.id)
         
         # CACHE MISS - Ilk defa isleniyor
-        print(f"[CACHE MISS] Isleniyor: {filename}")
+        logger.info(f"[CACHE MISS] Isleniyor: {filename}")
         
         # Plan bilgilerini al
         plan_type = current_user.subscription_plan or 'free'
@@ -687,28 +740,34 @@ def process():
                                 'limit': max_questions_per_type
                             }
             
-            # Fiş düş
-            deduct_tokens(current_user, required_tokens)
-            db.session.commit()  # Fiş düşümünü kaydet
-            
             # Geçici dosyayı temizle
             if os.path.exists(file_path):
                 os.remove(file_path)
             
-            # Cache'e kaydet
-            result = save_to_cache(
-                file_hash=file_hash,
-                filename=filename,
-                file_type=file_extension,
-                file_size=file_size,
-                user_level=user_level,
-                user_type=user_type,
-                results_data=results,
-                ai_model=Config.OPENAI_MODEL,
-                token_used=estimated_tokens,
-                processing_time=processing_time,
-                user_id=current_user.id
-            )
+            # Cache'e kaydet ve ardından fiş düş (tek transaction)
+            try:
+                # İsteğe bağlı sıkı doğruluk: token düşmeden önce kullanıcı satırını kilitle
+                locked_user = User.query.filter_by(id=current_user.id).with_for_update().first()
+                result = save_to_cache(
+                    file_hash=file_hash,
+                    filename=filename,
+                    file_type=file_extension,
+                    file_size=file_size,
+                    user_level=user_level,
+                    user_type=user_type,
+                    results_data=results,
+                    ai_model=Config.OPENAI_MODEL,
+                    token_used=estimated_tokens,
+                    processing_time=processing_time,
+                    user_id=current_user.id
+                )
+                deduct_tokens(locked_user or current_user, required_tokens)
+                db.session.commit()
+            except Exception as trx_err:
+                db.session.rollback()
+                logger.error(f"Transaction failed after AI generation: {trx_err}")
+                flash(gettext('İşlem sırasında bir hata oluştu. Lütfen tekrar deneyin.'), 'error')
+                return redirect(url_for('upload'))
             
             # Kullanıcı bazlı yükleme sayacını artır
             increment_user_upload(current_user.id)
@@ -789,7 +848,11 @@ def checkout():
         
         # Stripe price ID kontrolü
         stripe_price_id = plan.get('stripe_price_id')
-        if not stripe_price_id or stripe_price_id == 'price_your_premium_price_id_here':
+        try:
+            if not stripe_price_id:
+                raise ValueError("Missing price id")
+            Config.validate_stripe_price_id(stripe_price_id)
+        except ValueError:
             flash('Ödeme sistemi yapılandırılmamış. Lütfen daha sonra tekrar deneyin.', 'error')
             return redirect(url_for('pricing'))
         
@@ -824,7 +887,11 @@ def checkout():
         
         # Stripe price ID kontrolü
         stripe_price_id = plan.get('stripe_price_id')
-        if not stripe_price_id or stripe_price_id == 'price_your_premium_price_id_here':
+        try:
+            if not stripe_price_id:
+                raise ValueError("Missing price id")
+            Config.validate_stripe_price_id(stripe_price_id)
+        except ValueError:
             flash('Ödeme sistemi yapılandırılmamış. Lütfen daha sonra tekrar deneyin.', 'error')
             return redirect(url_for('pricing'))
         
@@ -869,7 +936,8 @@ def checkout():
             
         except stripe.error.StripeError as e:
             db.session.rollback()
-            flash(f'Ödeme oturumu oluşturulamadı: {str(e)}', 'error')
+            logger.error(f"Stripe checkout session error: {str(e)}")
+            flash('Ödeme oturumu oluşturulamadı. Lütfen daha sonra tekrar deneyin.', 'error')
             return redirect(url_for('pricing'))
             
     except Exception as e:
@@ -918,10 +986,12 @@ def checkout_success():
                                  format_currency=format_currency)
             
     except stripe.error.StripeError as e:
-        flash(f'Ödeme bilgileri alınamadı: {str(e)}', 'error')
+        logger.error(f"Stripe retrieve session error: {str(e)}")
+        flash('Ödeme bilgileri alınamadı. Lütfen daha sonra tekrar deneyin.', 'error')
         return redirect(url_for('pricing'))
     except Exception as e:
-        flash(gettext('Bir hata oluştu: %(error)s', error=str(e)), 'error')
+        logger.error(f"Checkout success error: {str(e)}")
+        flash('Bir hata oluştu. Lütfen daha sonra tekrar deneyin.', 'error')
         return redirect(url_for('pricing'))
 
 
@@ -972,28 +1042,29 @@ def stripe_webhook():
         )
     except ValueError as e:
         # Invalid payload
-        print(f"Invalid payload: {str(e)}")
+        logger.error("Stripe webhook invalid payload: %s", str(e))
         return {'error': 'Invalid payload'}, 400
     except stripe.error.SignatureVerificationError as e:
         # Invalid signature
-        print(f"Invalid signature: {str(e)}")
+        logger.error("Stripe webhook invalid signature: %s", str(e))
         return {'error': 'Invalid signature'}, 400
     
     # Event tipine göre işle
     if event['type'] == 'checkout.session.completed':
         session = event['data']['object']
+        logger.info("Stripe event received: type=%s event_id=%s session_id=%s", event.get('type'), event.get('id'), session.get('id'))
         
         try:
             # Payment kaydını bul
             payment = Payment.query.filter_by(stripe_session_id=session['id']).first()
             
             if not payment:
-                print(f"Payment not found for session: {session['id']}")
+                logger.warning("Payment not found for session. event_id=%s session_id=%s", event.get('id'), session.get('id'))
                 return {'error': 'Payment not found'}, 404
             
             # Zaten işlenmiş mi kontrol et (idempotency)
             if payment.status == 'completed':
-                print(f"Payment already processed: {payment.id}")
+                logger.info("Payment already processed. event_id=%s payment_id=%s session_id=%s", event.get('id'), payment.id, session.get('id'))
                 return {'status': 'already_processed'}, 200
             
             # Payment Intent ID'yi al
@@ -1009,7 +1080,7 @@ def stripe_webhook():
                             invoice = stripe.Invoice.retrieve(subscription.latest_invoice)
                             payment_intent_id = invoice.payment_intent
                     except Exception as e:
-                        print(f"Error retrieving payment intent from subscription: {str(e)}")
+                        logger.warning("Error retrieving payment intent from subscription. event_id=%s session_id=%s error=%s", event.get('id'), session.get('id'), str(e))
                         # Fallback: session ID kullanılacak
             
             # Ödemeyi tamamlandı olarak işaretle (henüz commit yok)
@@ -1019,7 +1090,7 @@ def stripe_webhook():
                     payment_intent = stripe.PaymentIntent.retrieve(payment_intent_id)
                     payment_method = payment_intent.payment_method_types[0] if payment_intent.payment_method_types else 'card'
                 except Exception as e:
-                    print(f"Error retrieving payment intent details: {str(e)}")
+                    logger.warning("Error retrieving payment intent details. event_id=%s payment_intent_id=%s error=%s", event.get('id'), payment_intent_id, str(e))
                     # Fallback: default payment_method kullanılacak
             
             # Tüm database işlemlerini tek transaction içinde yap
@@ -1047,19 +1118,20 @@ def stripe_webhook():
             try:
                 send_payment_confirmation_email(user.email, payment, invoice_pdf_path)
             except Exception as e:
-                print(f"Error sending confirmation email: {str(e)}")
+                logger.warning("Error sending payment confirmation email. event_id=%s payment_id=%s error=%s", event.get('id'), payment.id, str(e))
                 # Email hatası transaction'ı etkilemez
             
-            print(f"Payment processed successfully: {payment.id}")
+            logger.info("Payment processed successfully. event_id=%s payment_id=%s session_id=%s", event.get('id'), payment.id, session.get('id'))
             return {'status': 'success'}, 200
             
         except Exception as e:
-            print(f"Error processing webhook: {str(e)}")
+            logger.error("Error processing Stripe webhook. event_id=%s session_id=%s error=%s", event.get('id'), session.get('id'), str(e))
             db.session.rollback()
             return {'error': str(e)}, 500
     
     elif event['type'] == 'payment_intent.payment_failed':
         payment_intent = event['data']['object']
+        logger.info("Stripe event received: type=%s event_id=%s payment_intent_id=%s", event.get('type'), event.get('id'), payment_intent.get('id'))
         
         try:
             # Payment kaydını bul (metadata'dan veya session'dan)
@@ -1071,12 +1143,12 @@ def stripe_webhook():
             if payment:
                 payment.mark_failed(payment_intent.get('last_payment_error', {}).get('message', 'Payment failed'))
                 db.session.commit()
-                print(f"Payment marked as failed: {payment.id}")
+                logger.warning("Payment marked as failed. event_id=%s payment_id=%s payment_intent_id=%s", event.get('id'), payment.id, payment_intent.get('id'))
             
             return {'status': 'processed'}, 200
             
         except Exception as e:
-            print(f"Error processing failed payment: {str(e)}")
+            logger.error("Error processing failed payment event. event_id=%s payment_intent_id=%s error=%s", event.get('id'), payment_intent.get('id'), str(e))
             db.session.rollback()
             return {'error': str(e)}, 500
     
@@ -1176,10 +1248,20 @@ def export(result_id):
         flash(gettext('Export oluşturulurken hata oluştu: %(error)s', error=str(e)), 'error')
         return redirect(url_for('view_result', result_id=result_id))
     
-    # Token düşme (sadece required_tokens > 0 ise)
+    # Token düşme (sadece required_tokens > 0 ise), dosya gerçekten oluştuysa uygula
     if required_tokens > 0:
-        deduct_tokens(current_user, required_tokens)
-        db.session.commit()
+        try:
+            if not os.path.exists(file_path):
+                logger.error("Export file not found before token deduction: %s", file_path)
+                flash(gettext('Export oluşturulurken bir sorun oluştu.'), 'error')
+                return redirect(url_for('view_result', result_id=result_id))
+            deduct_tokens(current_user, required_tokens)
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            logger.error(f"Export token deduction failed: {str(e)}")
+            flash(gettext('Export sırasında bir hata oluştu.'), 'error')
+            return redirect(url_for('view_result', result_id=result_id))
     
     # Dosya indirme
     download_name = f"{result.document.original_filename.rsplit('.', 1)[0]}_export.{format_param}"
