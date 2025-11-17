@@ -689,6 +689,11 @@ def process():
         text = DocumentReader.truncate_text(text)
         estimated_tokens = estimate_tokens(text)
         
+        # İçerik zenginliğini analiz et
+        from utils import analyze_content_richness, detect_main_topic
+        content_analysis = analyze_content_richness(text)
+        topic_info = detect_main_topic(text) if content_analysis['is_limited'] else None
+        
         # AI ile içerik üret
         try:
             Config.validate_config()
@@ -790,7 +795,9 @@ def process():
                                    original_counts=original_counts,
                                    plan_limit_info=plan_limit_info,
                                    token_info=token_info,
-                                   result_id=result.id)
+                                   result_id=result.id,
+                                   content_analysis=content_analysis,
+                                   topic_info=topic_info)
         
         except ValueError as e:
             if os.path.exists(file_path):

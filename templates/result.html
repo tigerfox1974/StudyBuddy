@@ -40,6 +40,111 @@
         </ol>
     </nav>
     
+    <!-- Content Expansion Modal (Info Panel Style) -->
+    {% if content_analysis and content_analysis.is_limited %}
+    <div class="modal fade" id="contentExpansionModal" tabindex="-1" aria-labelledby="contentExpansionModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header border-0 pb-2">
+                    <h5 class="modal-title" id="contentExpansionModalLabel">
+                        <i class="bi bi-lightbulb text-primary"></i> {{ _('İçerik Genişletme Seçenekleri') }}
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Info Panel Message -->
+                    <div class="sb-content-message-panel">
+                        <div class="panel-icon-box">
+                            <i class="bi bi-info-circle"></i>
+                        </div>
+                        <div class="panel-content">
+                            <h6 class="mb-2">{{ _('Yüklenen Materyal Az İçerikli') }}</h6>
+                            <p class="mb-0">
+                                {{ _('Yüklediğiniz dosyada yaklaşık %(count)s soru üretilebilecek kadar içerik var. Daha fazla soru üretmek için aşağıdaki seçeneklerden birini tercih edebilirsiniz:', count=content_analysis.estimated_questions) }}
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <!-- Option Cards -->
+                    <div class="row g-3 mt-3">
+                        <!-- Option 1: Material Only (FREE) -->
+                        <div class="col-12">
+                            <div class="sb-option-card" data-mode="material_only">
+                                <div class="card-header-row">
+                                    <div class="card-icon">
+                                        <i class="bi bi-file-text"></i>
+                                    </div>
+                                    <div class="card-title-area">
+                                        <h6 class="card-title-text">{{ _('Sadece Yüklenen Materyal') }}</h6>
+                                        <span class="sb-badge-free">{{ _('Ücretsiz') }}</span>
+                                    </div>
+                                </div>
+                                <p class="card-description">
+                                    {{ _('Sadece yüklediğiniz dosyadan soru üretilir. Az sayıda soru elde edeceksiniz.') }}
+                                </p>
+                            </div>
+                        </div>
+                        
+                        <!-- Option 2: Topic Expanded (PREMIUM) -->
+                        <div class="col-12">
+                            <div class="sb-option-card {% if user.subscription_plan != 'premium' %}disabled{% endif %}" data-mode="topic_expanded">
+                                <div class="card-header-row">
+                                    <div class="card-icon">
+                                        <i class="bi bi-lightbulb"></i>
+                                    </div>
+                                    <div class="card-title-area">
+                                        <h6 class="card-title-text">{{ _('Konu Genişletme') }}</h6>
+                                        <span class="sb-badge-premium">{{ _('Premium') }}</span>
+                                    </div>
+                                </div>
+                                <p class="card-description">
+                                    {% if topic_info %}
+                                    {{ _('Materyal "%(subject)s" dersi için tespit edildi. Genel bilgiden çok sayıda soru üretilir.', subject=topic_info.subject) }}
+                                    {% else %}
+                                    {{ _('Materyal konusu tespit edilip genel bilgiden çok sayıda soru üretilir.') }}
+                                    {% endif %}
+                                </p>
+                                {% if user.subscription_plan != 'premium' %}
+                                <div class="premium-lock-overlay">
+                                    <i class="bi bi-lock-fill"></i>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <!-- Option 3: Hybrid (PREMIUM) -->
+                        <div class="col-12">
+                            <div class="sb-option-card {% if user.subscription_plan != 'premium' %}disabled{% endif %}" data-mode="hybrid">
+                                <div class="card-header-row">
+                                    <div class="card-icon">
+                                        <i class="bi bi-stars"></i>
+                                    </div>
+                                    <div class="card-title-area">
+                                        <h6 class="card-title-text">{{ _('Karma (Materyal + Konu)') }}</h6>
+                                        <span class="sb-badge-premium">{{ _('Premium') }}</span>
+                                    </div>
+                                </div>
+                                <p class="card-description">
+                                    {{ _('Hem yüklenen materyalden hem de genel bilgiden sorular üretilir. En dengeli seçenek.') }}
+                                </p>
+                                {% if user.subscription_plan != 'premium' %}
+                                <div class="premium-lock-overlay">
+                                    <i class="bi bi-lock-fill"></i>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pt-2">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ _('İptal') }}</button>
+                    <button type="button" class="btn btn-primary" id="confirmExpansionBtn" disabled>{{ _('Devam Et') }}</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
     <div class="header sb-export-header-card">
         <div class="row g-4">
             <!-- Left Side: Success Message & File Info -->
@@ -1135,6 +1240,45 @@
                 customClass: 'sb-custom-tooltip'
             });
         });
+        
+        // Content Expansion Modal işlemleri
+        {% if content_analysis and content_analysis.is_limited %}
+        const expansionModal = new bootstrap.Modal(document.getElementById('contentExpansionModal'));
+        const confirmBtn = document.getElementById('confirmExpansionBtn');
+        const optionCards = document.querySelectorAll('.sb-option-card');
+        let selectedMode = null;
+        
+        // Modal'ı otomatik aç
+        expansionModal.show();
+        
+        // Kart seçim işlemleri
+        optionCards.forEach(card => {
+            card.addEventListener('click', function() {
+                if (this.classList.contains('disabled')) {
+                    // Premium özellik - kullanıcıyı uyar
+                    alert("{{ _('Bu özellik Premium kullanıcılara özeldir. Lütfen paket yükseltin.') }}");
+                    return;
+                }
+                
+                // Seçim durumunu güncelle
+                optionCards.forEach(c => c.classList.remove('selected'));
+                this.classList.add('selected');
+                
+                selectedMode = this.dataset.mode;
+                confirmBtn.disabled = false;
+            });
+        });
+        
+        // Onay butonu - seçilen moda göre işleme devam et
+        confirmBtn.addEventListener('click', function() {
+            if (!selectedMode) return;
+            
+            // Şimdilik sadece modal'ı kapat - backend entegrasyonu yapılacak
+            // TODO: Backend'e generation_mode parametresi gönder ve sonuçları yeniden üret
+            alert("{{ _('Seçilen mod:') }} " + selectedMode + "\n{{ _('Bu özellik yakında aktif olacak!') }}");
+            expansionModal.hide();
+        });
+        {% endif %}
         
         const quizTypes = ['multiple-choice', 'short-answer', 'fill-blank', 'true-false'];
         quizTypes.forEach(type => {

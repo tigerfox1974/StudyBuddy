@@ -3789,3 +3789,199 @@ body {
         margin-bottom: 12px;
     }
 }
+
+/* ============================================
+   CONTENT EXPANSION MODAL - INFO PANEL STYLE
+   ============================================ */
+
+/* Info Panel Message (Blue Gradient) */
+.sb-content-message-panel {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 20px;
+    border-radius: var(--radius-lg);
+    background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
+    border: 1px solid #7dd3fc;
+    margin-bottom: 16px;
+}
+
+.panel-icon-box {
+    flex-shrink: 0;
+    width: 70px;
+    height: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-md);
+    background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+    color: white;
+    font-size: 32px;
+}
+
+.panel-content h6 {
+    font-weight: 700;
+    color: #0c4a6e;
+    margin-bottom: 8px;
+}
+
+.panel-content p {
+    color: #0c4a6e;
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+/* Option Cards */
+.sb-option-card {
+    position: relative;
+    background: white;
+    border: 2px solid var(--sb-color-border);
+    border-radius: var(--radius-lg);
+    padding: 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.sb-option-card:hover:not(.disabled) {
+    border-color: var(--sb-color-primary);
+    background: #F8FAFF;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(37, 99, 235, 0.1);
+}
+
+.sb-option-card.selected {
+    border-color: var(--sb-color-primary);
+    background: #EFF6FF;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.sb-option-card.disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background: #F9FAFB;
+}
+
+.card-header-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.card-icon {
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-md);
+    background: linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%);
+    color: var(--sb-color-primary);
+    font-size: 20px;
+    flex-shrink: 0;
+}
+
+.card-title-area {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.card-title-text {
+    font-weight: 700;
+    font-size: 1.05rem;
+    color: var(--sb-color-text);
+    margin: 0;
+}
+
+.card-description {
+    color: var(--sb-color-text-light);
+    font-size: 0.9rem;
+    line-height: 1.5;
+    margin: 0;
+}
+
+/* Badges */
+.sb-badge-free {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.sb-badge-premium {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+    color: #78350f;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Premium Lock Overlay */
+.premium-lock-overlay {
+    position: absolute;
+    top: 50%;
+    right: 20px;
+    transform: translateY(-50%);
+    font-size: 24px;
+    color: #d1d5db;
+}
+
+/* Responsive: Mobile */
+@media (max-width: 768px) {
+    .sb-content-message-panel {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        padding: 16px;
+    }
+    
+    .panel-icon-box {
+        width: 50px;
+        height: 50px;
+        font-size: 24px;
+    }
+    
+    .panel-content h6 {
+        font-size: 1rem;
+    }
+    
+    .panel-content p {
+        font-size: 0.875rem;
+    }
+    
+    .card-header-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+    
+    .card-icon {
+        width: 36px;
+        height: 36px;
+        font-size: 18px;
+    }
+    
+    .card-title-text {
+        font-size: 0.95rem;
+    }
+    
+    .card-description {
+        font-size: 0.85rem;
+    }
+    
+    .premium-lock-overlay {
+        font-size: 20px;
+        right: 12px;
+    }
+}

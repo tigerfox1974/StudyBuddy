@@ -287,6 +287,114 @@ def generate_username_from_email(email):
     return username
 
 
+def analyze_content_richness(text):
+    """
+    İçeriğin zenginliğini analiz eder ve yaklaşık soru sayısını tahmin eder
+    
+    Args:
+        text: Döküman içeriği (string)
+        
+    Returns:
+        dict: {
+            'is_limited': bool,  # İçerik sınırlı mı? (<10 soru)
+            'estimated_questions': int,  # Tahmini soru sayısı
+            'word_count': int,  # Kelime sayısı
+            'reason': str  # Sınırlı ise açıklama
+        }
+    """
+    if not text or not text.strip():
+        return {
+            'is_limited': True,
+            'estimated_questions': 0,
+            'word_count': 0,
+            'reason': 'Boş içerik'
+        }
+    
+    # Kelime sayısını hesapla
+    words = text.split()
+    word_count = len(words)
+    
+    # Her 100 kelimeden yaklaşık 1 soru üretilebileceğini varsay
+    # Bu değer AI modeline ve içeriğe göre değişebilir
+    estimated_questions = max(1, word_count // 100)
+    
+    # 10'dan az soru üretilebilecekse içerik sınırlı sayılır
+    is_limited = estimated_questions < 10
+    
+    reason = ''
+    if is_limited:
+        if word_count < 200:
+            reason = 'Çok kısa içerik'
+        elif word_count < 500:
+            reason = 'Kısa içerik'
+        else:
+            reason = 'Orta uzunlukta içerik ama az soru üretilebilir'
+    
+    return {
+        'is_limited': is_limited,
+        'estimated_questions': estimated_questions,
+        'word_count': word_count,
+        'reason': reason
+    }
+
+
+def detect_main_topic(text):
+    """
+    Metinden ana konuyu/dersi tespit eder (basit keyword matching)
+    Gelecekte daha gelişmiş AI tabanlı konu tespiti eklenebilir
+    
+    Args:
+        text: Döküman içeriği (string)
+        
+    Returns:
+        dict: {
+            'subject': str,  # Tespit edilen ders (Matematik, Fizik vs.)
+            'topic': str,  # Tespit edilen konu (Türev, Kuvvet vs.)
+            'confidence': str  # 'high', 'medium', 'low'
+        }
+    """
+    if not text:
+        return {'subject': 'Genel', 'topic': 'Belirsiz', 'confidence': 'low'}
+    
+    text_lower = text.lower()
+    
+    # Basit keyword-based subject detection
+    subject_keywords = {
+        'Matematik': ['matematik', 'türev', 'integral', 'trigonometri', 'geometri', 'denklem', 'fonksiyon'],
+        'Fizik': ['fizik', 'kuvvet', 'hız', 'ivme', 'enerji', 'momentum', 'elektrik', 'manyetizma'],
+        'Kimya': ['kimya', 'atom', 'molekül', 'reaksiyon', 'element', 'periyodik', 'asit', 'baz'],
+        'Biyoloji': ['biyoloji', 'hücre', 'doku', 'organ', 'canlı', 'ekosistem', 'genetik', 'evrim'],
+        'Tarih': ['tarih', 'osmanlı', 'cumhuriyet', 'savaş', 'devlet', 'dönem', 'anlaşma'],
+        'Coğrafya': ['coğrafya', 'iklim', 'nüfus', 'harita', 'kıta', 'deniz', 'ülke'],
+        'Edebiyat': ['edebiyat', 'şiir', 'roman', 'öykü', 'nazım', 'nesir', 'edebi'],
+        'İngilizce': ['english', 'grammar', 'vocabulary', 'tense', 'present', 'past', 'future']
+    }
+    
+    detected_subject = 'Genel'
+    max_match_count = 0
+    
+    for subject, keywords in subject_keywords.items():
+        match_count = sum(1 for keyword in keywords if keyword in text_lower)
+        if match_count > max_match_count:
+            max_match_count = match_count
+            detected_subject = subject
+    
+    confidence = 'high' if max_match_count >= 3 else ('medium' if max_match_count >= 1 else 'low')
+    
+    # Basit konu tespiti (ilk 200 karakter içinden)
+    topic_preview = text[:200].strip()
+    if len(topic_preview) > 50:
+        topic = topic_preview[:50] + '...'
+    else:
+        topic = detected_subject + ' konusu'
+    
+    return {
+        'subject': detected_subject,
+        'topic': topic,
+        'confidence': confidence
+    }
+
+
 def _read_head(content: bytes, n: int) -> bytes:
     """
     Dosya içeriğinin ilk n byte'ını güvenli şekilde okur
