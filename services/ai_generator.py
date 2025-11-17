@@ -611,21 +611,30 @@ Dokümanda ele alınan konular, öğrencilerin konuyu anlaması için gerekli te
                     question['correct_answer'] = new_correct_index
             
             return questions
-        except json.JSONDecodeError:
-            # JSON parse edilemezse, basit format döndür
+        except json.JSONDecodeError as e:
+            # JSON parse edilemezse, hata logla ve basit format döndür
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"JSON parse error in generate_mcq: {str(e)}")
+            logger.error(f"Raw response (first 500 chars): {response[:500]}")
+            
             if language == 'en':
                 return [{
-                    "question": "An error occurred during question generation",
-                    "options": ["Try again", "", "", ""],
+                    "question": "An error occurred during question generation. Please try again.",
+                    "options": ["Retry", "Contact Support", "Go Back", "Try Different Text"],
                     "correct_answer": 0,
-                    "explanation": response
+                    "difficulty": "simple",
+                    "topic": "Error",
+                    "explanation": "The AI response could not be parsed. This usually happens with very short or unusual texts. Please try uploading a different document or contact support if the problem persists."
                 }]
             else:  # tr
                 return [{
-                    "question": "Soru üretimi sırasında bir hata oluştu",
-                    "options": ["Tekrar deneyin", "", "", ""],
+                    "question": "Soru üretimi sırasında bir hata oluştu. Lütfen tekrar deneyin.",
+                    "options": ["Tekrar Dene", "Destek İle İletişime Geç", "Geri Dön", "Farklı Metin Dene"],
                     "correct_answer": 0,
-                    "explanation": response
+                    "difficulty": "simple",
+                    "topic": "Hata",
+                    "explanation": "AI yanıtı işlenemedi. Bu durum genellikle çok kısa veya alışılmadık metinlerde oluşur. Lütfen farklı bir dosya yüklemeyi deneyin veya sorun devam ederse destek ekibiyle iletişime geçin."
                 }]
     
     def generate_short_answer(self, text: str, count: int = 5, level: str = 'high_school', user_type: str = 'student', language: str = None) -> List[Dict[str, str]]:
@@ -707,16 +716,25 @@ Dokümanda ele alınan konular, öğrencilerin konuyu anlaması için gerekli te
                 question['accepted_answers'] = cleaned[:2]
             
             return questions
-        except json.JSONDecodeError:
+        except json.JSONDecodeError as e:
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"JSON parse error in generate_short_answer: {str(e)}")
+            logger.error(f"Raw response (first 500 chars): {response[:500]}")
+            
             if language == 'en':
                 return [{
-                    "question": "An error occurred during question generation",
-                    "answer": response
+                    "question": "An error occurred during question generation. Please try again.",
+                    "answer": "Error",
+                    "accepted_answers": [],
+                    "topic": "Error"
                 }]
             else:  # tr
                 return [{
-                    "question": "Soru üretimi sırasında bir hata oluştu",
-                    "answer": response
+                    "question": "Soru üretimi sırasında bir hata oluştu. Lütfen tekrar deneyin.",
+                    "answer": "Hata",
+                    "accepted_answers": [],
+                    "topic": "Hata"
                 }]
     
     def generate_fill_blank(self, text: str, count: int = 5, level: str = 'high_school', user_type: str = 'student', language: str = None) -> List[Dict[str, Any]]:
@@ -790,18 +808,25 @@ Dokümanda ele alınan konular, öğrencilerin konuyu anlaması için gerekli te
                     question['answer'] = correct_answer  # answer alanını koru
             
             return questions
-        except json.JSONDecodeError:
+        except json.JSONDecodeError as e:
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"JSON parse error in generate_fill_blank: {str(e)}")
+            logger.error(f"Raw response (first 500 chars): {response[:500]}")
+            
             if language == 'en':
                 return [{
-                    "question": "An error occurred during question generation _____",
+                    "question": "An error occurred during question generation _____. Please try again.",
                     "answer": "error",
-                    "options": ["error", "retry", "try", "please"]
+                    "options": ["error", "retry", "support", "help"],
+                    "topic": "Error"
                 }]
             else:  # tr
                 return [{
-                    "question": "Soru üretimi sırasında bir hata oluştu _____",
-                    "answer": "hata",
-                    "options": ["hata", "tekrar", "dene", "lütfen"]
+                    "question": "Soru üretimi sırasında bir hata _____ oluştu. Lütfen tekrar deneyin.",
+                    "answer": "büyük",
+                    "options": ["büyük", "küçük", "teknik", "sistem"],
+                    "topic": "Hata"
                 }]
     
     def generate_true_false(self, text: str, count: int = 5, level: str = 'high_school', user_type: str = 'student', language: str = None) -> List[Dict[str, Any]]:
@@ -862,18 +887,25 @@ Dokümanda ele alınan konular, öğrencilerin konuyu anlaması için gerekli te
             
             questions = json.loads(response_clean.strip())
             return questions
-        except json.JSONDecodeError:
+        except json.JSONDecodeError as e:
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"JSON parse error in generate_true_false: {str(e)}")
+            logger.error(f"Raw response (first 500 chars): {response[:500]}")
+            
             if language == 'en':
                 return [{
-                    "statement": "An error occurred during question generation",
+                    "statement": "An error occurred during question generation. Please try again or contact support.",
                     "is_true": False,
-                    "explanation": response
+                    "explanation": "The AI response could not be parsed. This usually happens with very short or unusual texts.",
+                    "topic": "Error"
                 }]
             else:  # tr
                 return [{
-                    "statement": "Soru üretimi sırasında bir hata oluştu",
+                    "statement": "Soru üretimi sırasında bir hata oluştu. Lütfen tekrar deneyin veya destek ekibiyle iletişime geçin.",
                     "is_true": False,
-                    "explanation": response
+                    "explanation": "AI yanıtı işlenemedi. Bu durum genellikle çok kısa veya alışılmadık metinlerde oluşur.",
+                    "topic": "Hata"
                 }]
     
     def generate_flashcards(self, text: str, count: int = 10, level: str = 'high_school', user_type: str = 'student', language: str = None) -> List[Dict[str, str]]:
@@ -927,16 +959,23 @@ Dokümanda ele alınan konular, öğrencilerin konuyu anlaması için gerekli te
             
             flashcards = json.loads(response_clean.strip())
             return flashcards
-        except json.JSONDecodeError:
+        except json.JSONDecodeError as e:
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"JSON parse error in generate_flashcards: {str(e)}")
+            logger.error(f"Raw response (first 500 chars): {response[:500]}")
+            
             if language == 'en':
                 return [{
-                    "front": "An error occurred during flashcard generation",
-                    "back": response
+                    "front": "An error occurred during flashcard generation. Please try again.",
+                    "back": "The AI response could not be parsed. This usually happens with very short or unusual texts. Please try uploading a different document.",
+                    "topic": "Error"
                 }]
             else:  # tr
                 return [{
-                    "front": "Flashcard üretimi sırasında bir hata oluştu",
-                    "back": response
+                    "front": "Flashcard üretimi sırasında bir hata oluştu. Lütfen tekrar deneyin.",
+                    "back": "AI yanıtı işlenemedi. Bu durum genellikle çok kısa veya alışılmadık metinlerde oluşur. Lütfen farklı bir dosya yüklemeyi deneyin.",
+                    "topic": "Hata"
                 }]
     
     def generate_all_content(self, text: str, level: str = 'high_school', user_type: str = 'student', user_plan: str = 'free', language: str = None) -> Dict[str, Any]:

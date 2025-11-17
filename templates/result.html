@@ -58,9 +58,13 @@
                             <i class="bi bi-info-circle"></i>
                         </div>
                         <div class="panel-content">
-                            <h6 class="mb-2">{{ _('Yüklenen Materyal Az İçerikli') }}</h6>
+                            <h6 class="mb-2">{{ _('Az Sayıda Soru Üretildi') }}</h6>
                             <p class="mb-0">
-                                {{ _('Yüklediğiniz dosyada yaklaşık %(count)s soru üretilebilecek kadar içerik var. Daha fazla soru üretmek için aşağıdaki seçeneklerden birini tercih edebilirsiniz:', count=content_analysis.estimated_questions) }}
+                                {% if content_analysis.total_generated %}
+                                    {{ _('Yüklediğiniz dosyadan toplam %(count)s soru üretilebildi. Daha fazla soru üretmek için aşağıdaki seçeneklerden birini tercih edebilirsiniz:', count=content_analysis.total_generated) }}
+                                {% else %}
+                                    {{ _('Yüklediğiniz dosyadan az sayıda soru üretilebildi. Daha fazla soru üretmek için aşağıdaki seçeneklerden birini tercih edebilirsiniz.') }}
+                                {% endif %}
                             </p>
                         </div>
                     </div>
@@ -69,7 +73,7 @@
                     <div class="row g-3 mt-3">
                         <!-- Option 1: Material Only (FREE) -->
                         <div class="col-12">
-                            <div class="sb-option-card" data-mode="material_only">
+                            <div class="sb-option-card selected" data-mode="material_only" data-cost="0">
                                 <div class="card-header-row">
                                     <div class="card-icon">
                                         <i class="bi bi-file-text"></i>
@@ -80,21 +84,32 @@
                                     </div>
                                 </div>
                                 <p class="card-description">
-                                    {{ _('Sadece yüklediğiniz dosyadan soru üretilir. Az sayıda soru elde edeceksiniz.') }}
+                                    {{ _('Sadece yüklediğiniz dosyadan soru üretilir. Zaten üretilmiş sonuçları gösterir.') }}
                                 </p>
                             </div>
                         </div>
                         
-                        <!-- Option 2: Topic Expanded (PREMIUM) -->
+                        <!-- Option 2: Topic Expanded -->
                         <div class="col-12">
-                            <div class="sb-option-card {% if user.subscription_plan != 'premium' %}disabled{% endif %}" data-mode="topic_expanded">
+                            {% set topic_cost = config.TOKEN_COSTS.topic_expansion %}
+                            {% set topic_can_afford = user.subscription_plan == 'premium' or user.tokens_remaining >= topic_cost %}
+                            <div class="sb-option-card {% if not topic_can_afford %}disabled{% endif %}" 
+                                 data-mode="topic_expanded" 
+                                 data-cost="{{ topic_cost }}"
+                                 data-can-afford="{{ 'true' if topic_can_afford else 'false' }}">
                                 <div class="card-header-row">
                                     <div class="card-icon">
                                         <i class="bi bi-lightbulb"></i>
                                     </div>
                                     <div class="card-title-area">
                                         <h6 class="card-title-text">{{ _('Konu Genişletme') }}</h6>
-                                        <span class="sb-badge-premium">{{ _('Premium') }}</span>
+                                        {% if user.subscription_plan == 'premium' %}
+                                            <span class="sb-badge-premium">{{ _('Premium - Ücretsiz') }}</span>
+                                        {% elif topic_can_afford %}
+                                            <span class="sb-badge-token">{{ topic_cost }} <i class="bi bi-coin"></i></span>
+                                        {% else %}
+                                            <span class="sb-badge-locked">{{ _('Yetersiz Fiş') }}</span>
+                                        {% endif %}
                                     </div>
                                 </div>
                                 <p class="card-description">
@@ -104,7 +119,7 @@
                                     {{ _('Materyal konusu tespit edilip genel bilgiden çok sayıda soru üretilir.') }}
                                     {% endif %}
                                 </p>
-                                {% if user.subscription_plan != 'premium' %}
+                                {% if not topic_can_afford %}
                                 <div class="premium-lock-overlay">
                                     <i class="bi bi-lock-fill"></i>
                                 </div>
@@ -112,22 +127,33 @@
                             </div>
                         </div>
                         
-                        <!-- Option 3: Hybrid (PREMIUM) -->
+                        <!-- Option 3: Hybrid -->
                         <div class="col-12">
-                            <div class="sb-option-card {% if user.subscription_plan != 'premium' %}disabled{% endif %}" data-mode="hybrid">
+                            {% set hybrid_cost = config.TOKEN_COSTS.hybrid_expansion %}
+                            {% set hybrid_can_afford = user.subscription_plan == 'premium' or user.tokens_remaining >= hybrid_cost %}
+                            <div class="sb-option-card {% if not hybrid_can_afford %}disabled{% endif %}" 
+                                 data-mode="hybrid" 
+                                 data-cost="{{ hybrid_cost }}"
+                                 data-can-afford="{{ 'true' if hybrid_can_afford else 'false' }}">
                                 <div class="card-header-row">
                                     <div class="card-icon">
                                         <i class="bi bi-stars"></i>
                                     </div>
                                     <div class="card-title-area">
                                         <h6 class="card-title-text">{{ _('Karma (Materyal + Konu)') }}</h6>
-                                        <span class="sb-badge-premium">{{ _('Premium') }}</span>
+                                        {% if user.subscription_plan == 'premium' %}
+                                            <span class="sb-badge-premium">{{ _('Premium - Ücretsiz') }}</span>
+                                        {% elif hybrid_can_afford %}
+                                            <span class="sb-badge-token">{{ hybrid_cost }} <i class="bi bi-coin"></i></span>
+                                        {% else %}
+                                            <span class="sb-badge-locked">{{ _('Yetersiz Fiş') }}</span>
+                                        {% endif %}
                                     </div>
                                 </div>
                                 <p class="card-description">
                                     {{ _('Hem yüklenen materyalden hem de genel bilgiden sorular üretilir. En dengeli seçenek.') }}
                                 </p>
-                                {% if user.subscription_plan != 'premium' %}
+                                {% if not hybrid_can_afford %}
                                 <div class="premium-lock-overlay">
                                     <i class="bi bi-lock-fill"></i>
                                 </div>
@@ -135,10 +161,31 @@
                             </div>
                         </div>
                     </div>
+                    
+                    <!-- Token Info & Buy Button -->
+                    {% if user.subscription_plan != 'premium' %}
+                    <div class="mt-3 p-3 bg-light rounded">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div>
+                                <i class="bi bi-wallet2"></i> 
+                                <strong>{{ _('Mevcut Fişiniz:') }}</strong> {{ user.tokens_remaining }} <i class="bi bi-coin text-warning"></i>
+                            </div>
+                            {% if user.tokens_remaining < config.TOKEN_COSTS.topic_expansion %}
+                            <a href="{{ url_for('pricing') }}" class="btn btn-sm btn-warning">
+                                <i class="bi bi-cart-plus"></i> {{ _('Fiş Satın Al') }}
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
                 </div>
                 <div class="modal-footer border-0 pt-2">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ _('İptal') }}</button>
-                    <button type="button" class="btn btn-primary" id="confirmExpansionBtn" disabled>{{ _('Devam Et') }}</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle"></i> {{ _('Vazgeç') }}
+                    </button>
+                    <button type="button" class="btn btn-primary" id="confirmExpansionBtn">
+                        <i class="bi bi-check-circle"></i> {{ _('Devam Et') }}
+                    </button>
                 </div>
             </div>
         </div>
@@ -1246,17 +1293,30 @@
         const expansionModal = new bootstrap.Modal(document.getElementById('contentExpansionModal'));
         const confirmBtn = document.getElementById('confirmExpansionBtn');
         const optionCards = document.querySelectorAll('.sb-option-card');
-        let selectedMode = null;
+        let selectedMode = 'material_only';  // Varsayılan seçim
+        let selectedCost = 0;
         
         // Modal'ı otomatik aç
         expansionModal.show();
         
+        // İlk kart zaten seçili, butonu aktif et
+        confirmBtn.disabled = false;
+        
         // Kart seçim işlemleri
         optionCards.forEach(card => {
             card.addEventListener('click', function() {
+                const canAfford = this.dataset.canAfford === 'true';
+                const cost = parseInt(this.dataset.cost) || 0;
+                const mode = this.dataset.mode;
+                
                 if (this.classList.contains('disabled')) {
-                    // Premium özellik - kullanıcıyı uyar
-                    alert("{{ _('Bu özellik Premium kullanıcılara özeldir. Lütfen paket yükseltin.') }}");
+                    // Yetersiz fiş - kullanıcıyı bilgilendir
+                    const isPremium = {{ 'true' if user.subscription_plan == 'premium' else 'false' }};
+                    if (isPremium) {
+                        alert("{{ _('Bu özellik Premium kullanıcılara özeldir.') }}");
+                    } else {
+                        alert("{{ _('Bu özellik için yeterli fişiniz yok!') }}\n{{ _('Gerekli fiş:') }} " + cost + "\n{{ _('Mevcut fişiniz:') }} {{ user.tokens_remaining }}\n\n{{ _('Lütfen fiş satın alın veya Premium üye olun.') }}");
+                    }
                     return;
                 }
                 
@@ -1264,8 +1324,16 @@
                 optionCards.forEach(c => c.classList.remove('selected'));
                 this.classList.add('selected');
                 
-                selectedMode = this.dataset.mode;
+                selectedMode = mode;
+                selectedCost = cost;
                 confirmBtn.disabled = false;
+                
+                // Buton metnini güncelle
+                if (cost > 0) {
+                    confirmBtn.innerHTML = '<i class="bi bi-coin"></i> ' + cost + ' {{ _("Fiş Harca ve Devam Et") }}';
+                } else {
+                    confirmBtn.textContent = '{{ _("Devam Et") }}';
+                }
             });
         });
         
@@ -1273,9 +1341,15 @@
         confirmBtn.addEventListener('click', function() {
             if (!selectedMode) return;
             
+            // Fiş harcama onayı
+            if (selectedCost > 0) {
+                const confirmUse = confirm("{{ _('Bu işlem için') }} " + selectedCost + " {{ _('fiş harcanacak. Devam etmek istiyor musunuz?') }}");
+                if (!confirmUse) return;
+            }
+            
             // Şimdilik sadece modal'ı kapat - backend entegrasyonu yapılacak
             // TODO: Backend'e generation_mode parametresi gönder ve sonuçları yeniden üret
-            alert("{{ _('Seçilen mod:') }} " + selectedMode + "\n{{ _('Bu özellik yakında aktif olacak!') }}");
+            alert("{{ _('Seçilen mod:') }} " + selectedMode + "\n{{ _('Maliyet:') }} " + selectedCost + " {{ _('fiş') }}\n\n{{ _('Bu özellik yakında aktif olacak!') }}");
             expansionModal.hide();
         });
         {% endif %}

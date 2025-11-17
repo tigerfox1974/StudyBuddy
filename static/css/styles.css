@@ -2731,6 +2731,37 @@ body {
     box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
 }
 
+/* Quiz Modu: Cevapları ve açıklamaları gizle */
+.quiz-mode-active .answer-icon {
+    display: none !important;
+}
+
+.quiz-mode-active .answer-explanation {
+    display: none !important;
+}
+
+.quiz-mode-active .answer-badge {
+    display: none !important;
+}
+
+/* Quiz Modu: Kısa cevap ve boş doldurma input alanları */
+.quiz-mode-active .answer-status-icon {
+    display: none !important;
+}
+
+/* Quiz Modu KAPALI: Cevapları göster */
+.answer-icon {
+    display: inline-block;
+}
+
+.answer-explanation {
+    display: block;
+}
+
+.answer-badge {
+    display: inline-block;
+}
+
 .correct-answer {
     background: #e8f5e9;
     border-color: #4caf50;
@@ -3923,6 +3954,30 @@ body {
     font-weight: 600;
     background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
     color: #78350f;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.sb-badge-token {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    color: white;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.sb-badge-locked {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    color: white;
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }

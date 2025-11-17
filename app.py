@@ -689,11 +689,6 @@ def process():
         text = DocumentReader.truncate_text(text)
         estimated_tokens = estimate_tokens(text)
         
-        # İçerik zenginliğini analiz et
-        from utils import analyze_content_richness, detect_main_topic
-        content_analysis = analyze_content_richness(text)
-        topic_info = detect_main_topic(text) if content_analysis['is_limited'] else None
-        
         # AI ile içerik üret
         try:
             Config.validate_config()
@@ -779,6 +774,31 @@ def process():
             
             # Token bilgilerini al
             token_info = get_user_token_info(current_user)
+            
+            # ÖNEMLİ: İçerik analizi GERÇEK soru sayılarına göre yapılmalı
+            # Tahmini kelime sayısı değil, üretilen sorulara bak!
+            from utils import detect_main_topic
+            
+            # Toplam üretilen soru sayısını hesapla
+            total_questions = 0
+            question_types = ['multiple_choice', 'short_answer', 'fill_blank', 'true_false']
+            for q_type in question_types:
+                if q_type in results and isinstance(results[q_type], list):
+                    total_questions += len(results[q_type])
+            
+            # İçerik analizi: Gerçek soru sayısına göre
+            content_analysis = None
+            topic_info = None
+            
+            # Sadece 5 veya daha az soru üretildiyse modal göster
+            if total_questions > 0 and total_questions <= 5:
+                content_analysis = {
+                    'is_limited': True,
+                    'estimated_questions': total_questions,
+                    'total_generated': total_questions,
+                    'reason': f'Sadece {total_questions} soru üretilebildi'
+                }
+                topic_info = detect_main_topic(text)
             
             # Sonuçları göster
             return render_template('result.html',

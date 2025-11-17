@@ -251,7 +251,9 @@ class Config:
     TOKEN_COSTS = {
         'base_processing': 1,  # Temel işleme (özet + flashcard): 1 fiş
         'question_type': 0.5,  # Her soru türü için: 0.5 fiş
-        'export': 2  # Export için: 2 fiş (premium'da 0)
+        'export': 2,  # Export için: 2 fiş (premium'da 0)
+        'topic_expansion': 5,  # Konu genişletme özelliği: 5 fiş (premium'da 0)
+        'hybrid_expansion': 7  # Karma genişletme özelliği: 7 fiş (premium'da 0)
     }
     
     # Dosya yükleme ayarları
